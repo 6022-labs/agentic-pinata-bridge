@@ -1,6 +1,6 @@
 FROM golang:1.24-alpine AS builder
 
-WORKDIR /usr/local/go/src/github.com/6022protocol/agentic-ai-orchestrator/back-end
+WORKDIR /usr/local/go/src/github.com/6022protocol/agentic-ai-pinata-bridge
 
 COPY ./go.mod ./
 COPY ./go.sum ./
@@ -9,7 +9,7 @@ RUN go mod download
 
 COPY ./ ./
 
-WORKDIR /usr/local/go/src/github.com/6022protocol/agentic-ai-orchestrator/back-end/src/orchestrator_dapp_api
+WORKDIR /usr/local/go/src/github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_api
 
 # Build the executable to `/app`. Mark the build as statically linked.
 RUN CGO_ENABLED=0 go build \
@@ -20,7 +20,6 @@ FROM scratch AS final
 
 # Import the compiled executable from the first stage.
 COPY --from=builder /app /app
-COPY --from=builder /usr/local/go/src/github.com/6022protocol/agentic-ai-orchestrator/back-end/src/orchestrator_dapp_api/images/nft_mark.png /images/nft_mark.png
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 
 EXPOSE 8000
