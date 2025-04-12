@@ -1,6 +1,7 @@
 package use_cases_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/use_cases"
@@ -10,14 +11,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenPushingAgentImageFromAgentImageCidTestSuite struct {
+type WhenPushingAllAgentImageCidsTestSuite struct {
 	sut *use_cases.PushAgentImageCidToPinata
 
 	pinataRequester                   *services_mocks.MockPinataRequesterInterface
 	agenticAIAgentCollectionRequester *services_mocks.MockAgenticAIAgentCollectionRequesterInterface
 }
 
-func WhenPushingAgentImageFromAgentImageCidBeforeEach(t *testing.T) *WhenPushingAgentImageFromAgentImageCidTestSuite {
+func WhenPushingAllAgentImageCidsBeforeEach(t *testing.T) *WhenPushingAllAgentImageCidsTestSuite {
 	mockController := gomock.NewController(t)
 
 	pinataRequester := services_mocks.NewMockPinataRequesterInterface(mockController)
@@ -28,7 +29,7 @@ func WhenPushingAgentImageFromAgentImageCidBeforeEach(t *testing.T) *WhenPushing
 		pinataRequester,
 		agenticAIAgentCollectionRequester,
 	)
-	return &WhenPushingAgentImageFromAgentImageCidTestSuite{
+	return &WhenPushingAllAgentImageCidsTestSuite{
 		sut: sut,
 
 		pinataRequester:                   pinataRequester,
@@ -36,34 +37,44 @@ func WhenPushingAgentImageFromAgentImageCidBeforeEach(t *testing.T) *WhenPushing
 	}
 }
 
-func TestWhenPushingAgentImageFromAgentImageCid(t *testing.T) {
+func TestWhenPushingAllAgentImageCids(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given error occurs while pushing to pinata", func(t *testing.T) {
+	t.Run("Given error occurs while getting all token ids", func(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should return error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenPushingAgentImageFromAgentImageCidBeforeEach(t)
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any()).Return(assert.AnError)
+			suite := WhenPushingAllAgentImageCidsBeforeEach(t)
+			suite.agenticAIAgentCollectionRequester.EXPECT().GetAllTokenIds().Return(nil, assert.AnError)
 
-			err := suite.sut.PushFromAgentImageCid("test-cid")
+			err := suite.sut.PushAllAgentImageCids()
 			assert.Equal(t, err, assert.AnError)
 		})
 	})
 
-	t.Run("Given no error occurs while pushing to pinata", func(t *testing.T) {
+	t.Run("Given no error occurs while getting all token ids", func(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should return no error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenPushingAgentImageFromAgentImageCidBeforeEach(t)
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any()).Return(nil)
+			suite := WhenPushingAllAgentImageCidsBeforeEach(t)
 
-			err := suite.sut.PushFromAgentImageCid("test-cid")
-			assert.Equal(t, err, nil)
+			tokenIds := []big.Int{
+				*big.NewInt(1),
+				*big.NewInt(2),
+			}
+
+			imageCid := "test-cid"
+
+			suite.agenticAIAgentCollectionRequester.EXPECT().GetAllTokenIds().Return(tokenIds, nil)
+			suite.agenticAIAgentCollectionRequester.EXPECT().GetAgentImage(gomock.Any()).Return(&imageCid, nil).Times(len(tokenIds))
+			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any()).Return(nil).Times(len(tokenIds))
+
+			err := suite.sut.PushAllAgentImageCids()
+			assert.NoError(t, err)
 		})
 	})
 }

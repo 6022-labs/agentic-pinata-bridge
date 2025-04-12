@@ -54,3 +54,18 @@ func (mr *MockAgenticAIAgentCollectionRequesterInterfaceMockRecorder) GetAgentIm
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentImage", reflect.TypeOf((*MockAgenticAIAgentCollectionRequesterInterface)(nil).GetAgentImage), agentTokenId)
 }
+
+// GetAllTokenIds mocks base method.
+func (m *MockAgenticAIAgentCollectionRequesterInterface) GetAllTokenIds() ([]big.Int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllTokenIds")
+	ret0, _ := ret[0].([]big.Int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllTokenIds indicates an expected call of GetAllTokenIds.
+func (mr *MockAgenticAIAgentCollectionRequesterInterfaceMockRecorder) GetAllTokenIds() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllTokenIds", reflect.TypeOf((*MockAgenticAIAgentCollectionRequesterInterface)(nil).GetAllTokenIds))
+}

@@ -40,6 +40,20 @@ func (m *MockPushAgentImageCidToPinataInterface) EXPECT() *MockPushAgentImageCid
 	return m.recorder
 }
 
+// PushAllAgentImageCids mocks base method.
+func (m *MockPushAgentImageCidToPinataInterface) PushAllAgentImageCids() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushAllAgentImageCids")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PushAllAgentImageCids indicates an expected call of PushAllAgentImageCids.
+func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushAllAgentImageCids() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushAllAgentImageCids", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushAllAgentImageCids))
+}
+
 // PushFromAgentImageCid mocks base method.
 func (m *MockPushAgentImageCidToPinataInterface) PushFromAgentImageCid(cid string) error {
 	m.ctrl.T.Helper()

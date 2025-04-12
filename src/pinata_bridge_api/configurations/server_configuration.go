@@ -3,6 +3,7 @@ package configurations
 import (
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_api/settings"
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_event_listeners"
+	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_mvc_api"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -51,8 +52,9 @@ func registerListeners(p registerListenersParams) {
 type registerRoutesParams struct {
 	dig.In
 
-	App    *fiber.App
-	Logger *zap.Logger
+	App         *fiber.App
+	Logger      *zap.Logger
+	Controllers []pinata_bridge_mvc_api.ControllerInterface `group:"controllers"`
 }
 
 // RegisterRoutes hooks up the routes and uses Fx to create new controller instances per request
@@ -65,4 +67,8 @@ func registerRoutes(p registerRoutesParams) {
 	p.App.Use(fiberzap.New(fiberzap.Config{
 		Logger: p.Logger,
 	}))
+
+	for _, controller := range p.Controllers {
+		controller.InitRoutes(p.App)
+	}
 }

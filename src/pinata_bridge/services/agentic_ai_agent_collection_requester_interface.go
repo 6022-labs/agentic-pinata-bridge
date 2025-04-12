@@ -5,5 +5,6 @@ import (
 )
 
 type AgenticAIAgentCollectionRequesterInterface interface {
+	GetAllTokenIds() ([]big.Int, error)
 	GetAgentImage(agentTokenId big.Int) (*string, error)
 }

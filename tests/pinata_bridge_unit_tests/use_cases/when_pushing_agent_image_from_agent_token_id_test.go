@@ -8,6 +8,7 @@ import (
 	"github.com/6022protocol/agentic-ai-pinata-bridge/tests/pinata_bridge_mocks/services_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
 )
 
 type WhenPushingAgentImageFromAgentTokenIdTestSuite struct {
@@ -24,6 +25,7 @@ func WhenPushingAgentImageFromAgentTokenIdBeforeEach(t *testing.T) *WhenPushingA
 	agenticAIAgentCollectionRequester := services_mocks.NewMockAgenticAIAgentCollectionRequesterInterface(mockController)
 
 	sut := use_cases.NewPushAgentImageCidToPinata(
+		zap.NewNop(),
 		pinataRequester,
 		agenticAIAgentCollectionRequester,
 	)
