@@ -8,7 +8,8 @@ import (
 )
 
 type PinataSettings struct {
-	ApiKey string
+	ApiKey  string
+	BaseUrl string
 }
 
 func NewPinataSettings(logger *zap.Logger) *PinataSettings {
@@ -17,7 +18,13 @@ func NewPinataSettings(logger *zap.Logger) *PinataSettings {
 		logger.Fatal("please set your PINATA_API_KEY value in your environment")
 	}
 
+	pinataBaseUrl := os.Getenv("PINATA_BASE_URL")
+	if len(strings.TrimSpace(pinataBaseUrl)) == 0 {
+		logger.Fatal("please set your PINATA_BASE_URL value in your environment")
+	}
+
 	return &PinataSettings{
-		ApiKey: pinataApiKey,
+		ApiKey:  pinataApiKey,
+		BaseUrl: pinataBaseUrl,
 	}
 }

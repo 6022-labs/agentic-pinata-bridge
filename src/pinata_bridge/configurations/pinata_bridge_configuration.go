@@ -1,7 +1,27 @@
 package configurations
 
-import "go.uber.org/dig"
+import (
+	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/event_handlers"
+	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/use_cases"
+	"go.uber.org/dig"
+)
 
 func AddPinataBridgeConfiguration(container *dig.Container) {
+	// Event handlers
+	err := container.Provide(
+		event_handlers.NewMintedEventHandler,
+		dig.As(new(event_handlers.MintedEventHandlerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
 
+	// Use cases
+	err = container.Provide(
+		use_cases.NewPushAgentImageCidToPinata,
+		dig.As(new(use_cases.PushAgentImageCidToPinataInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
 }
