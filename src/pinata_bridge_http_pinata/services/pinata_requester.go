@@ -13,7 +13,7 @@ func NewPinataRequester(client clients.PinataClientInterface) *PinataRequester {
 }
 
 func (pr *PinataRequester) PinCidToPinata(cid string) error {
-	_, err := pr.client.PinCidToPinata(cid)
+	_, err := pr.client.PinByHash(cid)
 	if err != nil {
 		return err
 	}
