@@ -14,7 +14,7 @@ import (
 	reflect "reflect"
 
 	abi "github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
-	go_ethereum "github.com/ethereum/go-ethereum"
+	ethereum "github.com/ethereum/go-ethereum"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -43,10 +43,10 @@ func (m *MockAgenticAIAgentCollectionMintedSubscriberInterface) EXPECT() *MockAg
 }
 
 // SubscribeMinted mocks base method.
-func (m *MockAgenticAIAgentCollectionMintedSubscriberInterface) SubscribeMinted(ctx context.Context, logs chan<- *abi.AgenticAIAgentCollectionMinted) (go_ethereum.Subscription, error) {
+func (m *MockAgenticAIAgentCollectionMintedSubscriberInterface) SubscribeMinted(ctx context.Context, logs chan<- *abi.AgenticAIAgentCollectionMinted) (ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SubscribeMinted", ctx, logs)
-	ret0, _ := ret[0].(go_ethereum.Subscription)
+	ret0, _ := ret[0].(ethereum.Subscription)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

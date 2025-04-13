@@ -14,6 +14,7 @@ type WhenPushingAgentImageFromAgentImageCidTestSuite struct {
 	sut *use_cases.PushAgentImageCidToPinata
 
 	pinataRequester                   *services_mocks.MockPinataRequesterInterface
+	ipfsCheckRequester                *services_mocks.MockIpfsCheckRequesterInterface
 	agenticAIAgentCollectionRequester *services_mocks.MockAgenticAIAgentCollectionRequesterInterface
 }
 
@@ -21,17 +22,20 @@ func WhenPushingAgentImageFromAgentImageCidBeforeEach(t *testing.T) *WhenPushing
 	mockController := gomock.NewController(t)
 
 	pinataRequester := services_mocks.NewMockPinataRequesterInterface(mockController)
+	ipfsCheckRequester := services_mocks.NewMockIpfsCheckRequesterInterface(mockController)
 	agenticAIAgentCollectionRequester := services_mocks.NewMockAgenticAIAgentCollectionRequesterInterface(mockController)
 
 	sut := use_cases.NewPushAgentImageCidToPinata(
 		zap.NewNop(),
 		pinataRequester,
+		ipfsCheckRequester,
 		agenticAIAgentCollectionRequester,
 	)
 	return &WhenPushingAgentImageFromAgentImageCidTestSuite{
 		sut: sut,
 
 		pinataRequester:                   pinataRequester,
+		ipfsCheckRequester:                ipfsCheckRequester,
 		agenticAIAgentCollectionRequester: agenticAIAgentCollectionRequester,
 	}
 }
@@ -46,7 +50,8 @@ func TestWhenPushingAgentImageFromAgentImageCid(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPushingAgentImageFromAgentImageCidBeforeEach(t)
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any()).Return(assert.AnError)
+			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any(), gomock.Any()).Return(assert.AnError)
+			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return(nil, nil).AnyTimes()
 
 			err := suite.sut.PushFromAgentImageCid("test-cid")
 			assert.Equal(t, err, assert.AnError)
@@ -60,7 +65,8 @@ func TestWhenPushingAgentImageFromAgentImageCid(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPushingAgentImageFromAgentImageCidBeforeEach(t)
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any()).Return(nil)
+			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any(), gomock.Any()).Return(nil)
+			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return(nil, nil).AnyTimes()
 
 			err := suite.sut.PushFromAgentImageCid("test-cid")
 			assert.Equal(t, err, nil)

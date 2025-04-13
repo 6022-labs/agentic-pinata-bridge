@@ -15,6 +15,7 @@ type WhenPushingAllAgentImageCidsTestSuite struct {
 	sut *use_cases.PushAgentImageCidToPinata
 
 	pinataRequester                   *services_mocks.MockPinataRequesterInterface
+	ipfsCheckRequester                *services_mocks.MockIpfsCheckRequesterInterface
 	agenticAIAgentCollectionRequester *services_mocks.MockAgenticAIAgentCollectionRequesterInterface
 }
 
@@ -22,17 +23,20 @@ func WhenPushingAllAgentImageCidsBeforeEach(t *testing.T) *WhenPushingAllAgentIm
 	mockController := gomock.NewController(t)
 
 	pinataRequester := services_mocks.NewMockPinataRequesterInterface(mockController)
+	ipfsCheckRequester := services_mocks.NewMockIpfsCheckRequesterInterface(mockController)
 	agenticAIAgentCollectionRequester := services_mocks.NewMockAgenticAIAgentCollectionRequesterInterface(mockController)
 
 	sut := use_cases.NewPushAgentImageCidToPinata(
 		zap.NewNop(),
 		pinataRequester,
+		ipfsCheckRequester,
 		agenticAIAgentCollectionRequester,
 	)
 	return &WhenPushingAllAgentImageCidsTestSuite{
 		sut: sut,
 
 		pinataRequester:                   pinataRequester,
+		ipfsCheckRequester:                ipfsCheckRequester,
 		agenticAIAgentCollectionRequester: agenticAIAgentCollectionRequester,
 	}
 }
@@ -71,7 +75,8 @@ func TestWhenPushingAllAgentImageCids(t *testing.T) {
 
 			suite.agenticAIAgentCollectionRequester.EXPECT().GetAllTokenIds().Return(tokenIds, nil)
 			suite.agenticAIAgentCollectionRequester.EXPECT().GetAgentImage(gomock.Any()).Return(&imageCid, nil).Times(len(tokenIds))
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any()).Return(nil).Times(len(tokenIds))
+			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any(), gomock.Any()).Return(nil).Times(len(tokenIds))
+			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return(nil, nil).AnyTimes()
 
 			err := suite.sut.PushAllAgentImageCids()
 			assert.NoError(t, err)

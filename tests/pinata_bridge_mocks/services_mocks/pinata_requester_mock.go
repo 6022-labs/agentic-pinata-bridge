@@ -40,15 +40,15 @@ func (m *MockPinataRequesterInterface) EXPECT() *MockPinataRequesterInterfaceMoc
 }
 
 // PinCidToPinata mocks base method.
-func (m *MockPinataRequesterInterface) PinCidToPinata(cid string) error {
+func (m *MockPinataRequesterInterface) PinCidToPinata(cid string, hostNodes []string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PinCidToPinata", cid)
+	ret := m.ctrl.Call(m, "PinCidToPinata", cid, hostNodes)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PinCidToPinata indicates an expected call of PinCidToPinata.
-func (mr *MockPinataRequesterInterfaceMockRecorder) PinCidToPinata(cid any) *gomock.Call {
+func (mr *MockPinataRequesterInterfaceMockRecorder) PinCidToPinata(cid, hostNodes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PinCidToPinata", reflect.TypeOf((*MockPinataRequesterInterface)(nil).PinCidToPinata), cid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PinCidToPinata", reflect.TypeOf((*MockPinataRequesterInterface)(nil).PinCidToPinata), cid, hostNodes)
 }

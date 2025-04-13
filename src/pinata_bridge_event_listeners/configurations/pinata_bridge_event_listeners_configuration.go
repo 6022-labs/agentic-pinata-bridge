@@ -5,7 +5,7 @@ import (
 	"go.uber.org/dig"
 )
 
-func AddPinataBridgeEventWatcherConfiguration(container *dig.Container) {
+func AddPinataBridgeEventListenersConfiguration(container *dig.Container) {
 	// Listeners
 	err := container.Provide(
 		pinata_bridge_event_listeners.NewAgenticAIAgentCollectionMintedListener,

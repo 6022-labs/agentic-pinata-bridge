@@ -1,5 +1,5 @@
 package services
 
 type PinataRequesterInterface interface {
-	PinCidToPinata(cid string) error
+	PinCidToPinata(cid string, hostNodes []string) error
 }

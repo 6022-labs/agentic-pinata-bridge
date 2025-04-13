@@ -13,7 +13,7 @@ import (
 )
 
 type PinataClientInterface interface {
-	PinByHash(hash string) (*models.ExternalPinByHashResponse, error)
+	PinByHash(request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error)
 }
 
 const (
@@ -32,22 +32,18 @@ func NewPinataClient(logger *zap.Logger, pinataSettings *settings.PinataSettings
 	}
 }
 
-func (p *PinataClient) PinByHash(hash string) (*models.ExternalPinByHashResponse, error) {
+func (p *PinataClient) PinByHash(request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error) {
 	// Construct the URL
 	url := fmt.Sprintf("%s%s", p.pinataSettings.BaseUrl, PinataPinCidEndpoint)
 
-	// Create the JSON payload
-	payload := map[string]string{
-		"hashToPin": hash,
-	}
-	payloadBytes, err := json.Marshal(payload)
+	bodyBytes, err := json.Marshal(request)
 	if err != nil {
-		p.logger.Error("Failed to marshal payload", zap.Error(err))
-		return nil, fmt.Errorf("failed to marshal payload: %w", err)
+		p.logger.Error("Failed to marshal body", zap.Error(err))
+		return nil, fmt.Errorf("failed to marshal body: %w", err)
 	}
 
 	// Create the HTTP request
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payloadBytes))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		p.logger.Error("Failed to create HTTP request", zap.Error(err))
 		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
