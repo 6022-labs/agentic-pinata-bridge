@@ -30,7 +30,7 @@ func NewAgenticAIAgentCollectionMintedListener(
 func (listener *AgenticAIAgentCollectionMintedListener) Listen() error {
 	ctx := context.Background()
 
-	listener.logger.Info("Starting AgenticAIAgentCollectionMintedWithSignatureListener")
+	listener.logger.Info("Starting AgenticAIAgentCollectionMintedListener")
 
 	events := make(chan *abi.AgenticAIAgentCollectionMinted)
 
