@@ -21,7 +21,7 @@ func (pr *PinataRequester) PinCidToPinata(cid string, hostNodes []string) error 
 	}
 
 	if len(hostNodes) > 0 {
-		request.PinataOptions = models.ExternalPinataOptions{
+		request.PinataOptions = &models.ExternalPinataOptions{
 			HostNodes: hostNodes,
 		}
 	}

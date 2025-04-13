@@ -1,9 +1,9 @@
 package models
 
 type ExternalPinByHashRequest struct {
-	HashToPin      string                 `json:"hashToPin"`
-	PinataOptions  ExternalPinataOptions  `json:"pinataOptions"`
-	PinataMetadata ExternalPinataMetadata `json:"pinataMetadata"`
+	HashToPin      string                  `json:"hashToPin"`
+	PinataOptions  *ExternalPinataOptions  `json:"pinataOptions"`
+	PinataMetadata *ExternalPinataMetadata `json:"pinataMetadata"`
 }
 
 type ExternalPinataOptions struct {

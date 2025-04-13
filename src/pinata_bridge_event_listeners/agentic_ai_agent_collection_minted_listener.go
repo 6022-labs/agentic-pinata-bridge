@@ -39,12 +39,12 @@ func (listener *AgenticAIAgentCollectionMintedListener) Listen() error {
 		return err
 	}
 
-	listener.logger.Debug("Subscribed to AgenticAIAgentCollectionMintedWithSignature")
+	listener.logger.Debug("Subscribed to AgenticAIAgentCollectionMinted")
 
 	for {
 		select {
 		case event := <-events:
-			listener.logger.Info("Received AgenticAIAgentCollectionMintedWithSignature event", zap.Any("event", event))
+			listener.logger.Info("Received AgenticAIAgentCollectionMinted event", zap.Any("event", event))
 
 			err = listener.mintedEventHandler.Handle(event)
 
