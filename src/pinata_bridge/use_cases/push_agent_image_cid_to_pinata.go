@@ -78,8 +78,14 @@ func (p *PushAgentImageCidToPinata) PushFromAgentImageCid(cid string) error {
 
 	err = p.pinataRequester.PinCidToPinata(cid, addresses)
 	if err != nil {
-		return err
+		// Try again without host addresses
+		p.logger.Warn("Failed to pin cid to pinata with host addresses, retrying without", zap.String("cid", cid), zap.Error(err))
+		err = p.pinataRequester.PinCidToPinata(cid, nil)
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 
