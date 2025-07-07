@@ -47,7 +47,7 @@ func (s *AgentCollectionsManagerCollectionCreatedSubscriber) SubscribeCollection
 	}
 
 	s.logger.Info(
-		"Subscribed to AgentCollectionsManager Collection Created events",
+		"Subscribed to AgentCollectionsManager.CollectionCreated events",
 		zap.String("address", s.agentCollectionsManagerSettings.SmartContractAddress.Hex()),
 	)
 

@@ -8,7 +8,6 @@ import (
 
 	pinata_bridge_abi "github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_blockchain/settings"
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -70,9 +69,9 @@ func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses() ([]common
 			return nil, err
 		}
 
-		msg := ethereum.CallMsg{
-			To:   &a.agentCollectionsManagerSettings.SmartContractAddress,
-			Data: data,
+		msg := map[string]interface{}{
+			"to":   a.agentCollectionsManagerSettings.SmartContractAddress.Hex(),
+			"data": "0x" + common.Bytes2Hex(data),
 		}
 
 		batch = append(batch, rpc.BatchElem{
@@ -88,11 +87,17 @@ func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses() ([]common
 
 	addresses := make([]common.Address, 0, collectionCount)
 	for _, res := range results {
-		var unpacked []interface{}
-		if err := agentABI.UnpackIntoInterface(&unpacked, "collections", res); err != nil {
+		var hexStr string
+		if err := json.Unmarshal(res, &hexStr); err != nil {
 			return nil, err
 		}
-		addresses = append(addresses, unpacked[0].(common.Address))
+		hexStr = strings.TrimPrefix(hexStr, "0x")
+		dataBytes := common.FromHex("0x" + hexStr)
+		var unpacked common.Address
+		if err := agentABI.UnpackIntoInterface(&unpacked, "collections", dataBytes); err != nil {
+			return nil, err
+		}
+		addresses = append(addresses, unpacked)
 	}
 
 	return addresses, nil

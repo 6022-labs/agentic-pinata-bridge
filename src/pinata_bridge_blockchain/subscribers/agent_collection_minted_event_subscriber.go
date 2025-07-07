@@ -44,7 +44,7 @@ func (s *AgentCollectionMintedSubscriber) SubscribeMinted(ctx context.Context, a
 	}
 
 	s.logger.Info(
-		"Subscribed to AgentCollection Minted events",
+		"Subscribed to AgentCollection.sMinted events",
 		zap.String("address", agentCollectionAddress.Hex()),
 	)
 
