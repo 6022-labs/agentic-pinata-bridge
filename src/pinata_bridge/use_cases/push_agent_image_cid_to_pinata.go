@@ -11,6 +11,8 @@ import (
 type PushAgentImageCidToPinataInterface interface {
 	PushAllAgentImageCids() error
 	PushImagesOfAgent(agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error
+	PushImagesOfMintProposal(agentCollectionAddress common.Address, proposalId big.Int) error
+	PushImageOfAgentImageProposal(agentCollectionAddress common.Address, proposalId big.Int) error
 	PushFromCid(cid string) error
 }
 
@@ -73,7 +75,7 @@ func (p *PushAgentImageCidToPinata) PushImagesOfAgent(agentCollectionAddress com
 	}
 
 	for _, cid := range cids {
-		p.logger.Info("Pushing agent image cid to pinata",
+		p.logger.Info("Pushing agent images cid to pinata",
 			zap.String("cid", cid),
 			zap.String("agentCollectionAddress", agentCollectionAddress.String()),
 			zap.Int64("agentCollectionTokenId", agentCollectionTokenId.Int64()),
@@ -84,6 +86,50 @@ func (p *PushAgentImageCidToPinata) PushImagesOfAgent(agentCollectionAddress com
 			p.logger.Error("Failed to push agent image cid to pinata", zap.String("cid", cid), zap.Error(err))
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (p *PushAgentImageCidToPinata) PushImagesOfMintProposal(agentCollectionAddress common.Address, proposalId big.Int) error {
+	cids, err := p.agentCollectionRequester.GetMintProposalImages(agentCollectionAddress, proposalId)
+	if err != nil {
+		return err
+	}
+
+	for _, cid := range cids {
+		p.logger.Info("Pushing mint proposal image cid to pinata",
+			zap.String("cid", cid),
+			zap.String("agentCollectionAddress", agentCollectionAddress.String()),
+			zap.Int64("proposalId", proposalId.Int64()),
+		)
+
+		err = p.PushFromCid(cid)
+		if err != nil {
+			p.logger.Error("Failed to push agent image cid to pinata", zap.String("cid", cid), zap.Error(err))
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (p *PushAgentImageCidToPinata) PushImageOfAgentImageProposal(agentCollectionAddress common.Address, proposalId big.Int) error {
+	cid, err := p.agentCollectionRequester.GetAgentImageProposalImage(agentCollectionAddress, proposalId)
+	if err != nil {
+		return err
+	}
+
+	p.logger.Info("Pushing agent image proposal cid to pinata",
+		zap.String("cid", *cid),
+		zap.String("agentCollectionAddress", agentCollectionAddress.String()),
+		zap.Int64("proposalId", proposalId.Int64()),
+	)
+
+	err = p.PushFromCid(*cid)
+	if err != nil {
+		p.logger.Error("Failed to push agent image proposal cid to pinata", zap.String("cid", *cid), zap.Error(err))
+		return err
 	}
 
 	return nil

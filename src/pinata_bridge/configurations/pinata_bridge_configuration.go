@@ -16,6 +16,22 @@ func AddPinataBridgeConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(
+		event_handlers.NewMintProposalCreatedEventHandler,
+		dig.As(new(event_handlers.MintProposalCreatedEventHandlerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		event_handlers.NewAgentImageProposalCreatedEventHandler,
+		dig.As(new(event_handlers.AgentImageProposalCreatedEventHandlerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	// Use cases
 	err = container.Provide(
 		use_cases.NewPushAgentImageCidToPinata,

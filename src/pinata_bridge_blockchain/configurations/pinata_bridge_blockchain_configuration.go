@@ -32,8 +32,24 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		blockchain_subscribers.NewAgentCollectionMintProposalCreatedSubscriber,
+		dig.As(new(subscribers.AgentCollectionMintProposalCreatedSubscriberInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		blockchain_subscribers.NewAgentCollectionsManagerCollectionCreatedSubscriber,
 		dig.As(new(subscribers.AgentCollectionsManagerCollectionCreatedSubscriberInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		blockchain_subscribers.NewAgentCollectionAgentImageProposalCreatedSubscriber,
+		dig.As(new(subscribers.AgentCollectionAgentImageProposalCreatedSubscriberInterface)),
 	)
 	if err != nil {
 		panic(err)
