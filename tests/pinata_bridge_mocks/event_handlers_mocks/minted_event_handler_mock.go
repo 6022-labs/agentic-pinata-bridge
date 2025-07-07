@@ -41,7 +41,7 @@ func (m *MockMintedEventHandlerInterface) EXPECT() *MockMintedEventHandlerInterf
 }
 
 // Handle mocks base method.
-func (m *MockMintedEventHandlerInterface) Handle(event *abi.AgenticAIAgentCollectionMinted) error {
+func (m *MockMintedEventHandlerInterface) Handle(event *abi.AgentCollectionV1Minted) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Handle", event)
 	ret0, _ := ret[0].(error)

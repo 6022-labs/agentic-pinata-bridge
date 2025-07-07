@@ -5,12 +5,13 @@ import (
 	"strings"
 
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/use_cases"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/gofiber/fiber/v2"
 )
 
 const (
 	PUSH_ALL_AGENT_IMAGE_CIDS = "/push_all_agent_image_cids"
-	PUSH_FROM_AGENT_TOKEN_ID  = "/push_from_agent_token_id/:tokenId"
+	PUSH_IMAGE_OF_AGENT       = "/push_image_of_agent/:agentCollectionAddress/:agentCollectionTokenId"
 )
 
 type PinataPushController struct {
@@ -26,7 +27,7 @@ func NewPinataPushController(
 }
 
 func (controller *PinataPushController) InitRoutes(c fiber.Router) {
-	c.Post(PUSH_FROM_AGENT_TOKEN_ID, controller.PushFromAgentTokenId)
+	c.Post(PUSH_IMAGE_OF_AGENT, controller.PushImagesOfAgent)
 	c.Post(PUSH_ALL_AGENT_IMAGE_CIDS, controller.PushAllAgentImageCids)
 }
 
@@ -34,16 +35,27 @@ func (controller *PinataPushController) PushAllAgentImageCids(c *fiber.Ctx) erro
 	return controller.pushAgentImageCidToPinata.PushAllAgentImageCids()
 }
 
-func (controller *PinataPushController) PushFromAgentTokenId(c *fiber.Ctx) error {
-	tokenIdStr := c.Params("tokenId")
-	if len(strings.TrimSpace(tokenIdStr)) == 0 {
-		return fiber.NewError(fiber.StatusBadRequest, "tokenId is required")
+func (controller *PinataPushController) PushImagesOfAgent(c *fiber.Ctx) error {
+	agentCollectionAddressStr := c.Params("agentCollectionAddress")
+	if len(strings.TrimSpace(agentCollectionAddressStr)) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "agentCollectionAddress is required")
 	}
 
-	tokenId, ok := big.NewInt(0).SetString(tokenIdStr, 10)
+	agentCollectionTokenIdStr := c.Params("agentCollectionTokenId")
+	if len(strings.TrimSpace(agentCollectionTokenIdStr)) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "agentCollectionTokenId is required")
+	}
+
+	if !common.IsHexAddress(agentCollectionAddressStr) {
+		return fiber.NewError(fiber.StatusBadRequest, "agentCollectionAddress is invalid")
+	}
+
+	agentCollectionAddress := common.HexToAddress(agentCollectionAddressStr)
+
+	tokenId, ok := big.NewInt(0).SetString(agentCollectionTokenIdStr, 10)
 	if !ok {
-		return fiber.NewError(fiber.StatusBadRequest, "tokenId is invalid")
+		return fiber.NewError(fiber.StatusBadRequest, "agentCollectionTokenId is invalid")
 	}
 
-	return controller.pushAgentImageCidToPinata.PushFromAgentTokenId(*tokenId)
+	return controller.pushAgentImageCidToPinata.PushImagesOfAgent(agentCollectionAddress, *tokenId)
 }

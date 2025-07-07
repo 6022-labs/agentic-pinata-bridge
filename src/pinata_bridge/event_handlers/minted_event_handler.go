@@ -6,7 +6,7 @@ import (
 )
 
 type MintedEventHandlerInterface interface {
-	Handle(event *abi.AgenticAIAgentCollectionMinted) error
+	Handle(event *abi.AgentCollectionV1Minted) error
 }
 
 type MintedEventHandler struct {
@@ -19,6 +19,6 @@ func NewMintedEventHandler(pushAgentImageCidToPinata use_cases.PushAgentImageCid
 	}
 }
 
-func (h *MintedEventHandler) Handle(event *abi.AgenticAIAgentCollectionMinted) error {
-	return h.pushAgentImageCidToPinata.PushFromAgentTokenId(*event.TokenId)
+func (h *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) error {
+	return h.pushAgentImageCidToPinata.PushImagesOfAgent(event.Raw.Address, *event.TokenId)
 }

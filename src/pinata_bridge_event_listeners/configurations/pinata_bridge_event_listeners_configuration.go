@@ -6,9 +6,34 @@ import (
 )
 
 func AddPinataBridgeEventListenersConfiguration(container *dig.Container) {
-	// Listeners
-	err := container.Provide(
-		pinata_bridge_event_listeners.NewAgenticAIAgentCollectionMintedListener,
+	// Listener
+	err := container.Provide(pinata_bridge_event_listeners.NewAgentCollectionMintedListener)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(func(l *pinata_bridge_event_listeners.AgentCollectionMintedListener) pinata_bridge_event_listeners.ListenerInterface {
+		return l
+	},
+		dig.Group("listeners"),
+		dig.As(new(pinata_bridge_event_listeners.ListenerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(func(l *pinata_bridge_event_listeners.AgentCollectionMintedListener) pinata_bridge_event_listeners.CollectionListenerInterface {
+		return l
+	},
+		dig.Group("collection_listeners"),
+		dig.As(new(pinata_bridge_event_listeners.CollectionListenerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		pinata_bridge_event_listeners.NewAgentCollectionsManagerCollectionCreatedListener,
 		dig.Group("listeners"),
 		dig.As(new(pinata_bridge_event_listeners.ListenerInterface)),
 	)

@@ -7,6 +7,8 @@ import (
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/event_handlers"
 	"github.com/6022protocol/agentic-ai-pinata-bridge/tests/pinata_bridge_mocks/use_cases_mocks"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -38,12 +40,15 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 		t.Parallel()
 
 		suite := WhenHandlingMintedEventBeforeEach(t)
-		suite.pushAgentImageCidToPinata.EXPECT().PushFromAgentTokenId(gomock.Any()).DoAndReturn(func(tokenId big.Int) error {
-			assert.Equal(t, tokenId.String(), "123")
+		suite.pushAgentImageCidToPinata.EXPECT().PushImagesOfAgent(gomock.Any(), gomock.Any()).DoAndReturn(func(collectionAddress common.Address, collectionAgentTokenId big.Int) error {
+			assert.Equal(t, collectionAgentTokenId.String(), "123")
 			return nil
 		})
 
-		err := suite.sut.Handle(&abi.AgenticAIAgentCollectionMinted{
+		err := suite.sut.Handle(&abi.AgentCollectionV1Minted{
+			Raw: types.Log{
+				Address: common.HexToAddress("0x1234567890123456789012345678901234567890"),
+			},
 			TokenId: big.NewInt(123),
 		})
 

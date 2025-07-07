@@ -4,70 +4,92 @@ import (
 	"math/big"
 
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/services"
+	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 )
 
 type PushAgentImageCidToPinataInterface interface {
 	PushAllAgentImageCids() error
-	PushFromAgentTokenId(tokenId big.Int) error
-	PushFromAgentImageCid(cid string) error
+	PushImagesOfAgent(agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error
+	PushFromCid(cid string) error
 }
 
 type PushAgentImageCidToPinata struct {
-	logger                            *zap.Logger
-	pinataRequester                   services.PinataRequesterInterface
-	ipfsCheckRequester                services.IpfsCheckRequesterInterface
-	agenticAIAgentCollectionRequester services.AgenticAIAgentCollectionRequesterInterface
+	logger                           *zap.Logger
+	pinataRequester                  services.PinataRequesterInterface
+	ipfsCheckRequester               services.IpfsCheckRequesterInterface
+	agentCollectionRequester         services.AgentCollectionRequesterInterface
+	agentCollectionsManagerRequester services.AgentCollectionsManagerRequesterInterface
 }
 
 func NewPushAgentImageCidToPinata(
 	logger *zap.Logger,
 	pinataRequester services.PinataRequesterInterface,
 	ipfsCheckRequester services.IpfsCheckRequesterInterface,
-	agenticAIAgentCollectionRequester services.AgenticAIAgentCollectionRequesterInterface,
+	agentCollectionRequester services.AgentCollectionRequesterInterface,
+	agentCollectionsManagerRequester services.AgentCollectionsManagerRequesterInterface,
 ) *PushAgentImageCidToPinata {
 	return &PushAgentImageCidToPinata{
-		logger:                            logger,
-		pinataRequester:                   pinataRequester,
-		ipfsCheckRequester:                ipfsCheckRequester,
-		agenticAIAgentCollectionRequester: agenticAIAgentCollectionRequester,
+		logger:                           logger,
+		pinataRequester:                  pinataRequester,
+		ipfsCheckRequester:               ipfsCheckRequester,
+		agentCollectionRequester:         agentCollectionRequester,
+		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
 	}
 }
 
 func (p *PushAgentImageCidToPinata) PushAllAgentImageCids() error {
-	tokenIds, err := p.agenticAIAgentCollectionRequester.GetAllTokenIds()
+	allCollections, err := p.agentCollectionsManagerRequester.GetAllCollectionAddresses()
 	if err != nil {
 		return err
 	}
 
-	for _, tokenId := range tokenIds {
-		err = p.PushFromAgentTokenId(tokenId)
+	for _, collectionAddress := range allCollections {
+		p.logger.Info("Processing collection", zap.String("collectionAddress", collectionAddress.String()))
+
+		tokenIds, err := p.agentCollectionRequester.GetAllTokenIds(collectionAddress)
 		if err != nil {
-			p.logger.Error("Failed to push agent image cid to pinata", zap.Error(err))
-			continue
+			return err
 		}
 
-		p.logger.Info("Successfully pushed agent image cid to pinata", zap.String("tokenId", tokenId.String()))
+		for _, tokenId := range tokenIds {
+			err = p.PushImagesOfAgent(collectionAddress, tokenId)
+			if err != nil {
+				p.logger.Error("Failed to push agent image cid to pinata", zap.Error(err))
+				continue
+			}
+
+			p.logger.Info("Successfully pushed agent image cid to pinata", zap.String("tokenId", tokenId.String()))
+		}
 	}
 
 	return nil
 }
 
-func (p *PushAgentImageCidToPinata) PushFromAgentTokenId(tokenId big.Int) error {
-	cid, err := p.agenticAIAgentCollectionRequester.GetAgentImage(tokenId)
+func (p *PushAgentImageCidToPinata) PushImagesOfAgent(agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error {
+	cids, err := p.agentCollectionRequester.GetAgentImages(agentCollectionAddress, agentCollectionTokenId)
 	if err != nil {
 		return err
 	}
 
-	err = p.PushFromAgentImageCid(*cid)
-	if err != nil {
-		return err
+	for _, cid := range cids {
+		p.logger.Info("Pushing agent image cid to pinata",
+			zap.String("cid", cid),
+			zap.String("agentCollectionAddress", agentCollectionAddress.String()),
+			zap.Int64("agentCollectionTokenId", agentCollectionTokenId.Int64()),
+		)
+
+		err = p.PushFromCid(cid)
+		if err != nil {
+			p.logger.Error("Failed to push agent image cid to pinata", zap.String("cid", cid), zap.Error(err))
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (p *PushAgentImageCidToPinata) PushFromAgentImageCid(cid string) error {
+func (p *PushAgentImageCidToPinata) PushFromCid(cid string) error {
 	addresses, err := p.getCidHostAddresses(cid)
 	if err != nil {
 		p.logger.Warn("Failed to get host addresses for cid", zap.String("cid", cid), zap.Error(err))

@@ -1,11 +1,11 @@
 package configurations
 
 import (
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/event_subscribers"
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/services"
-	blockchain_event_subscribers "github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_blockchain/event_subscribers"
+	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/subscribers"
 	blockchain_services "github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_blockchain/services"
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_blockchain/settings"
+	blockchain_subscribers "github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_blockchain/subscribers"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/dig"
 )
@@ -17,15 +17,23 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(settings.NewAgenticAIAgentCollectionSettings)
+	err = container.Provide(settings.NewAgentCollectionsManagerSettings)
 	if err != nil {
 		panic(err)
 	}
 
 	// Event subscribers
 	err = container.Provide(
-		blockchain_event_subscribers.NewAgenticAIAgentCollectionMintedSubscriber,
-		dig.As(new(event_subscribers.AgenticAIAgentCollectionMintedSubscriberInterface)),
+		blockchain_subscribers.NewAgentCollectionMintedSubscriber,
+		dig.As(new(subscribers.AgentCollectionMintedSubscriberInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		blockchain_subscribers.NewAgentCollectionsManagerCollectionCreatedSubscriber,
+		dig.As(new(subscribers.AgentCollectionsManagerCollectionCreatedSubscriberInterface)),
 	)
 	if err != nil {
 		panic(err)
@@ -33,8 +41,16 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 
 	// Services
 	err = container.Provide(
-		blockchain_services.NewAgenticAIAgentCollectionRequester,
-		dig.As(new(services.AgenticAIAgentCollectionRequesterInterface)),
+		blockchain_services.NewAgentCollectionRequester,
+		dig.As(new(services.AgentCollectionRequesterInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		blockchain_services.NewAgentCollectionsManagerRequester,
+		dig.As(new(services.AgentCollectionsManagerRequesterInterface)),
 	)
 	if err != nil {
 		panic(err)

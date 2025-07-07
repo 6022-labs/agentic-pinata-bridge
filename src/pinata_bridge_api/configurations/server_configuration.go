@@ -1,6 +1,7 @@
 package configurations
 
 import (
+	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_api/settings"
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_event_listeners"
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_mvc_api"
@@ -34,12 +35,28 @@ func newHttpServer(httpServerSettings *settings.HttpServerSettings) *fiber.App {
 type registerListenersParams struct {
 	dig.In
 
-	Listeners []pinata_bridge_event_listeners.ListenerInterface `group:"listeners"`
+	AgentCollectionsManagerRequester services.AgentCollectionsManagerRequesterInterface
+	Listeners                        []pinata_bridge_event_listeners.ListenerInterface `group:"listeners"`
 }
 
 // RegisterListeners
 func registerListeners(p registerListenersParams) {
+	collectionAddresses, err := p.AgentCollectionsManagerRequester.GetAllCollectionAddresses()
+	if err != nil {
+		panic(err)
+	}
+
 	for _, listener := range p.Listeners {
+		// If the listener is a CollectionListenerInterface, subscribe to the collections
+		if collectionListener, ok := listener.(pinata_bridge_event_listeners.CollectionListenerInterface); ok {
+			for _, collection := range collectionAddresses {
+				err := collectionListener.Subscribe(collection)
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+
 		go func() {
 			err := listener.Listen()
 			if err != nil {
