@@ -40,12 +40,12 @@ func (a *AgentCollectionRequester) GetAllTokenIds(collectionAddress common.Addre
 		a.client,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create agent collection instance: %w", err)
 	}
 
 	nextTokenId, err := AgentCollection.NextTokenId(nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get next token ID: %w", err)
 	}
 	if nextTokenId.Cmp(big.NewInt(1)) == 0 {
 		return []big.Int{}, nil
@@ -67,12 +67,12 @@ func (a *AgentCollectionRequester) GetAgentImages(collectionAddress common.Addre
 		a.client,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create agent collection instance: %w", err)
 	}
 
 	imagesKeyValues, err := agentCollection.ImagesOf(nil, &agentTokenId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get agent images: %w", err)
 	}
 
 	images := make([]string, 0, len(imagesKeyValues))
@@ -89,12 +89,12 @@ func (a *AgentCollectionRequester) GetMintProposalImages(collectionAddress commo
 		a.client,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create agent collection instance: %w", err)
 	}
 
 	mintProposals, err := a.getMintProposals(agentCollection, collectionAddress)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get mint proposals: %w", err)
 	}
 
 	for _, proposal := range mintProposals {
@@ -114,12 +114,12 @@ func (a *AgentCollectionRequester) GetAgentImageProposalImage(collectionAddress 
 		a.client,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create agent collection: %w", err)
 	}
 
 	addOrUpdateImageProposals, err := a.getAddOrUpdateImageProposals(agentCollection, collectionAddress)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get add or update image proposals: %w", err)
 	}
 
 	for _, proposal := range addOrUpdateImageProposals {
@@ -134,12 +134,12 @@ func (a *AgentCollectionRequester) GetAgentImageProposalImage(collectionAddress 
 func (a *AgentCollectionRequester) getMintProposals(agentCollection *pinata_bridge_abi.AgentCollectionV1, agentCollectionAddress common.Address) ([]pinata_bridge_abi.MintProposal, error) {
 	mintProposalLength, err := agentCollection.MintProposalsLength(nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get mint proposal length: %w", err)
 	}
 
 	agentCollectionABI, err := abi.JSON(strings.NewReader(pinata_bridge_abi.AgentCollectionV1ABI)) // You must expose raw ABI string
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse agent collection ABI: %w", err)
 	}
 
 	batch := make([]rpc.BatchElem, 0, mintProposalLength.Int64())
@@ -148,7 +148,7 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *pinata_brid
 	for i := uint64(0); i < mintProposalLength.Uint64(); i++ {
 		data, err := agentCollectionABI.Pack("mintProposal", big.NewInt(int64(i)))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to pack mintProposal call: %w", err)
 		}
 
 		msg := map[string]interface{}{
@@ -164,7 +164,7 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *pinata_brid
 	}
 
 	if err := a.client.Client().BatchCallContext(context.Background(), batch); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to batch call mint proposals: %w", err)
 	}
 
 	mintProposals := make([]pinata_bridge_abi.MintProposal, 0, mintProposalLength.Int64())
@@ -175,7 +175,7 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *pinata_brid
 
 		var mintProposal pinata_bridge_abi.MintProposal
 		if err := agentCollectionABI.UnpackIntoInterface(&mintProposal, "mintProposal", result); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to unpack mintProposal result: %w", err)
 		}
 
 		mintProposals = append(mintProposals, mintProposal)
@@ -187,12 +187,12 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *pinata_brid
 func (a *AgentCollectionRequester) getAddOrUpdateImageProposals(agentCollection *pinata_bridge_abi.AgentCollectionV1, agentCollectionAddress common.Address) ([]pinata_bridge_abi.AddOrUpdateImageProposal, error) {
 	addOrUpdateImageProposalLength, err := agentCollection.AddOrUpdateImageProposalsLength(nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get add or update image proposal length: %w", err)
 	}
 
 	agentCollectionABI, err := abi.JSON(strings.NewReader(pinata_bridge_abi.AgentCollectionV1ABI)) // You must expose raw ABI string
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse agent collection ABI: %w", err)
 	}
 
 	batch := make([]rpc.BatchElem, 0, addOrUpdateImageProposalLength.Int64())
@@ -201,7 +201,7 @@ func (a *AgentCollectionRequester) getAddOrUpdateImageProposals(agentCollection 
 	for i := uint64(0); i < addOrUpdateImageProposalLength.Uint64(); i++ {
 		data, err := agentCollectionABI.Pack("addOrUpdateImageProposal", big.NewInt(int64(i)))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to pack addOrUpdateImageProposal call: %w", err)
 		}
 
 		msg := map[string]interface{}{
@@ -217,7 +217,7 @@ func (a *AgentCollectionRequester) getAddOrUpdateImageProposals(agentCollection 
 	}
 
 	if err := a.client.Client().BatchCallContext(context.Background(), batch); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to batch call add or update image proposals: %w", err)
 	}
 
 	addOrUpdateImageProposals := make([]pinata_bridge_abi.AddOrUpdateImageProposal, 0, addOrUpdateImageProposalLength.Int64())
@@ -229,7 +229,7 @@ func (a *AgentCollectionRequester) getAddOrUpdateImageProposals(agentCollection 
 
 		var addOrUpdateImageProposal pinata_bridge_abi.AddOrUpdateImageProposal
 		if err := agentCollectionABI.UnpackIntoInterface(&addOrUpdateImageProposal, "addOrUpdateImageProposal", result); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to unpack addOrUpdateImageProposal result: %w", err)
 		}
 
 		addOrUpdateImageProposals = append(addOrUpdateImageProposals, addOrUpdateImageProposal)
