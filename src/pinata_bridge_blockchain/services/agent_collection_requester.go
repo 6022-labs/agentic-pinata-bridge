@@ -137,7 +137,7 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *pinata_brid
 		return nil, err
 	}
 
-	agentCollectionABI, err := abi.JSON(strings.NewReader(pinata_bridge_abi.AgentCollectionsManagerABI)) // You must expose raw ABI string
+	agentCollectionABI, err := abi.JSON(strings.NewReader(pinata_bridge_abi.AgentCollectionV1ABI)) // You must expose raw ABI string
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ func (a *AgentCollectionRequester) getAddOrUpdateImageProposals(agentCollection 
 		return nil, err
 	}
 
-	agentCollectionABI, err := abi.JSON(strings.NewReader(pinata_bridge_abi.AgentCollectionsManagerABI)) // You must expose raw ABI string
+	agentCollectionABI, err := abi.JSON(strings.NewReader(pinata_bridge_abi.AgentCollectionV1ABI)) // You must expose raw ABI string
 	if err != nil {
 		return nil, err
 	}
