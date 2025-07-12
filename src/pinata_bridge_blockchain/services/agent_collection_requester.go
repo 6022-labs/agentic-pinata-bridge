@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math/big"
 	"strings"
@@ -10,6 +9,7 @@ import (
 	pinata_bridge_abi "github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/samber/lo"
@@ -143,7 +143,7 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *pinata_brid
 	}
 
 	batch := make([]rpc.BatchElem, 0, mintProposalLength.Int64())
-	results := make([]json.RawMessage, mintProposalLength.Int64())
+	results := make([]hexutil.Bytes, mintProposalLength.Int64())
 
 	for i := uint64(0); i < mintProposalLength.Uint64(); i++ {
 		data, err := agentCollectionABI.Pack("mintProposal", big.NewInt(int64(i)))
@@ -163,7 +163,7 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *pinata_brid
 		})
 	}
 
-	if err := a.client.Client().BatchCallContext(context.Background(), batch); err != nil {
+	if err := a.client.Client().BatchCall(batch); err != nil {
 		return nil, fmt.Errorf("failed to batch call mint proposals: %w", err)
 	}
 
@@ -173,10 +173,11 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *pinata_brid
 			continue
 		}
 
-		var mintProposal pinata_bridge_abi.MintProposal
-		if err := agentCollectionABI.UnpackIntoInterface(&mintProposal, "mintProposal", result); err != nil {
+		unpacked, err := agentCollectionABI.Unpack("mintProposal", result)
+		if err != nil {
 			return nil, fmt.Errorf("failed to unpack mintProposal result: %w", err)
 		}
+		mintProposal := *abi.ConvertType(unpacked[0], new(pinata_bridge_abi.MintProposal)).(*pinata_bridge_abi.MintProposal)
 
 		mintProposals = append(mintProposals, mintProposal)
 	}
@@ -196,7 +197,7 @@ func (a *AgentCollectionRequester) getAddOrUpdateImageProposals(agentCollection 
 	}
 
 	batch := make([]rpc.BatchElem, 0, addOrUpdateImageProposalLength.Int64())
-	results := make([]json.RawMessage, addOrUpdateImageProposalLength.Int64())
+	results := make([]hexutil.Bytes, addOrUpdateImageProposalLength.Int64())
 
 	for i := uint64(0); i < addOrUpdateImageProposalLength.Uint64(); i++ {
 		data, err := agentCollectionABI.Pack("addOrUpdateImageProposal", big.NewInt(int64(i)))
@@ -227,10 +228,11 @@ func (a *AgentCollectionRequester) getAddOrUpdateImageProposals(agentCollection 
 			continue
 		}
 
-		var addOrUpdateImageProposal pinata_bridge_abi.AddOrUpdateImageProposal
-		if err := agentCollectionABI.UnpackIntoInterface(&addOrUpdateImageProposal, "addOrUpdateImageProposal", result); err != nil {
+		unpacked, err := agentCollectionABI.Unpack("addOrUpdateImageProposal", result)
+		if err != nil {
 			return nil, fmt.Errorf("failed to unpack addOrUpdateImageProposal result: %w", err)
 		}
+		addOrUpdateImageProposal := *abi.ConvertType(unpacked[0], new(pinata_bridge_abi.AddOrUpdateImageProposal)).(*pinata_bridge_abi.AddOrUpdateImageProposal)
 
 		addOrUpdateImageProposals = append(addOrUpdateImageProposals, addOrUpdateImageProposal)
 	}
