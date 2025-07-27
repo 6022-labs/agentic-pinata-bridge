@@ -9,7 +9,7 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/src/pinata_bridge_api",
+      "program": "${workspaceFolder}/src/pinata_bridge_host",
       "env": {},
       "args": []
     }

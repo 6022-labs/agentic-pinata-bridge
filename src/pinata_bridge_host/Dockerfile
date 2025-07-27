@@ -9,7 +9,7 @@ RUN go mod download
 
 COPY ./ ./
 
-WORKDIR /usr/local/go/src/github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_api
+WORKDIR /usr/local/go/src/github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_host
 
 # Build the executable to `/app`. Mark the build as statically linked.
 RUN CGO_ENABLED=0 go build \

@@ -1,4 +1,4 @@
-package pinata_bridge_mvc_api
+package pinata_bridge_mvc
 
 import "github.com/gofiber/fiber/v2"
 

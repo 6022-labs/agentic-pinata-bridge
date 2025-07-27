@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenPushingImagesOfAgentTestSuite struct {
+type WhenPushingMissingImagesOfAgentTestingSuite struct {
 	sut *use_cases.PushAgentImageCidToPinata
 
 	pinataRequester                  *services_mocks.MockPinataRequesterInterface
@@ -21,7 +21,7 @@ type WhenPushingImagesOfAgentTestSuite struct {
 	agentCollectionsManagerRequester *services_mocks.MockAgentCollectionsManagerRequesterInterface
 }
 
-func WhenPushingImagesOfAgentBeforeEach(t *testing.T) *WhenPushingImagesOfAgentTestSuite {
+func WhenPushingMissingImagesOfAgentBeforeEach(t *testing.T) *WhenPushingMissingImagesOfAgentTestingSuite {
 	mockController := gomock.NewController(t)
 
 	pinataRequester := services_mocks.NewMockPinataRequesterInterface(mockController)
@@ -37,7 +37,7 @@ func WhenPushingImagesOfAgentBeforeEach(t *testing.T) *WhenPushingImagesOfAgentT
 		agentCollectionsManagerRequester,
 	)
 
-	return &WhenPushingImagesOfAgentTestSuite{
+	return &WhenPushingMissingImagesOfAgentTestingSuite{
 		sut: sut,
 
 		pinataRequester:                  pinataRequester,
@@ -56,11 +56,31 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 		t.Run("Should return error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenPushingImagesOfAgentBeforeEach(t)
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
 			suite.agentCollectionRequester.EXPECT().GetAgentImages(gomock.Any(), gomock.Any()).Return(nil, assert.AnError)
 
-			err := suite.sut.PushImagesOfAgent(common.HexToAddress(""), *big.NewInt(123))
-			assert.Equal(t, err, assert.AnError)
+			err := suite.sut.PushMissingImagesOfAgent(common.HexToAddress(""), *big.NewInt(123))
+
+			assert.NotNil(t, err)
+		})
+	})
+
+	t.Run("Given error occurs while checking if cid is already pinned", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return no error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
+
+			testCid := "test-cid"
+			suite.agentCollectionRequester.EXPECT().GetAgentImages(gomock.Any(), gomock.Any()).Return([]string{testCid}, nil)
+			suite.pinataRequester.EXPECT().IsCidUploaded(testCid).Return(nil, assert.AnError)
+
+			tokenId := big.NewInt(123)
+			err := suite.sut.PushMissingImagesOfAgent(common.HexToAddress(""), *tokenId)
+
+			assert.NotNil(t, err)
 		})
 	})
 
@@ -70,34 +90,60 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 		t.Run("Should return error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenPushingImagesOfAgentBeforeEach(t)
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
 
 			testCid := "test-cid"
+			isCidUploaded := false
 			suite.agentCollectionRequester.EXPECT().GetAgentImages(gomock.Any(), gomock.Any()).Return([]string{testCid}, nil)
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any(), gomock.Any()).Return(assert.AnError).Times(2)
+			suite.pinataRequester.EXPECT().IsCidUploaded(testCid).Return(&isCidUploaded, nil)
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any()).Return(assert.AnError).Times(2)
 			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).AnyTimes()
 
 			tokenId := big.NewInt(123)
-			err := suite.sut.PushImagesOfAgent(common.HexToAddress(""), *tokenId)
-			assert.Equal(t, err, assert.AnError)
+			err := suite.sut.PushMissingImagesOfAgent(common.HexToAddress(""), *tokenId)
+
+			assert.NotNil(t, err)
 		})
 	})
 
-	t.Run("Given no error occurs", func(t *testing.T) {
+	t.Run("Given image cid is already pinned", func(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should return no error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenPushingImagesOfAgentBeforeEach(t)
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
 
 			testCid := "test-cid"
+			isCidUploaded := true
 			suite.agentCollectionRequester.EXPECT().GetAgentImages(gomock.Any(), gomock.Any()).Return([]string{testCid}, nil)
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			suite.pinataRequester.EXPECT().IsCidUploaded(testCid).Return(&isCidUploaded, nil)
+
+			tokenId := big.NewInt(123)
+			err := suite.sut.PushMissingImagesOfAgent(common.HexToAddress(""), *tokenId)
+
+			assert.Nil(t, err)
+		})
+	})
+
+	t.Run("Given image cid is not yet pinned", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return no error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
+
+			testCid := "test-cid"
+			isCidUploaded := false
+			suite.agentCollectionRequester.EXPECT().GetAgentImages(gomock.Any(), gomock.Any()).Return([]string{testCid}, nil)
+			suite.pinataRequester.EXPECT().IsCidUploaded(testCid).Return(&isCidUploaded, nil)
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).AnyTimes()
 
-			err := suite.sut.PushImagesOfAgent(common.HexToAddress(""), *big.NewInt(123))
-			assert.Equal(t, err, nil)
+			err := suite.sut.PushMissingImagesOfAgent(common.HexToAddress(""), *big.NewInt(123))
+
+			assert.Nil(t, err)
 		})
 	})
 }

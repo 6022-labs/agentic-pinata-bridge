@@ -1,5 +1,6 @@
 package services
 
 type PinataRequesterInterface interface {
-	PinCidToPinata(cid string, hostNodes []string) error
+	PinCid(cid string, hostNodes []string) error
+	IsCidUploaded(cid string) (*bool, error)
 }

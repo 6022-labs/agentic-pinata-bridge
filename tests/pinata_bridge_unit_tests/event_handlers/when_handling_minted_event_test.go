@@ -40,7 +40,7 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 		t.Parallel()
 
 		suite := WhenHandlingMintedEventBeforeEach(t)
-		suite.pushAgentImageCidToPinata.EXPECT().PushImagesOfAgent(gomock.Any(), gomock.Any()).DoAndReturn(func(collectionAddress common.Address, collectionAgentTokenId big.Int) error {
+		suite.pushAgentImageCidToPinata.EXPECT().PushMissingImagesOfAgent(gomock.Any(), gomock.Any()).DoAndReturn(func(collectionAddress common.Address, collectionAgentTokenId big.Int) error {
 			assert.Equal(t, collectionAgentTokenId.String(), "123")
 			return nil
 		})

@@ -2,9 +2,9 @@ package configurations
 
 import (
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/services"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_api/settings"
 	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_event_listeners"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_mvc_api"
+	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_host/settings"
+	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_mvc"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -15,32 +15,41 @@ import (
 func ConfigureServer(container *dig.Container) {
 	container.Provide(newHttpServer)
 
-	err := container.Invoke(registerListeners)
+	err := container.Invoke(useRestApi)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Invoke(registerRoutes)
+	err = container.Invoke(useListeners)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func newHttpServer(httpServerSettings *settings.HttpServerSettings) *fiber.App {
+func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
+	if !hostSettings.UseApi {
+		return nil
+	}
+
 	return fiber.New(fiber.Config{
-		AppName: httpServerSettings.AppName,
+		AppName: hostSettings.AppName,
 	})
 }
 
-type registerListenersParams struct {
+type useListenersParams struct {
 	dig.In
 
+	HostSettings                     *settings.HostSettings
 	AgentCollectionsManagerRequester services.AgentCollectionsManagerRequesterInterface
 	Listeners                        []pinata_bridge_event_listeners.ListenerInterface `group:"listeners"`
 }
 
 // RegisterListeners
-func registerListeners(p registerListenersParams) {
+func useListeners(p useListenersParams) {
+	if !p.HostSettings.UseListeners {
+		return
+	}
+
 	collectionAddresses, err := p.AgentCollectionsManagerRequester.GetAllCollectionAddresses()
 	if err != nil {
 		panic(err)
@@ -66,16 +75,21 @@ func registerListeners(p registerListenersParams) {
 	}
 }
 
-type registerRoutesParams struct {
+type useRestApiParams struct {
 	dig.In
 
-	App         *fiber.App
-	Logger      *zap.Logger
-	Controllers []pinata_bridge_mvc_api.ControllerInterface `group:"controllers"`
+	HostSettings *settings.HostSettings
+	App          *fiber.App
+	Logger       *zap.Logger
+	Controllers  []pinata_bridge_mvc.ControllerInterface `group:"controllers"`
 }
 
-// RegisterRoutes hooks up the routes and uses Fx to create new controller instances per request
-func registerRoutes(p registerRoutesParams) {
+// UseRestApi hooks up the routes and uses Fx to create new controller instances per request
+func useRestApi(p useRestApiParams) {
+	if !p.HostSettings.UseApi {
+		return
+	}
+
 	p.App.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "*",

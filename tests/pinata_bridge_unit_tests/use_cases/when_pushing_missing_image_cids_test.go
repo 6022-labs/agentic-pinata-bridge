@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenPushingAllAgentImageCidsTestSuite struct {
+type WhenPushingMissingImageCidsTestingSuite struct {
 	sut *use_cases.PushAgentImageCidToPinata
 
 	pinataRequester                  *services_mocks.MockPinataRequesterInterface
@@ -21,7 +21,7 @@ type WhenPushingAllAgentImageCidsTestSuite struct {
 	agentCollectionsManagerRequester *services_mocks.MockAgentCollectionsManagerRequesterInterface
 }
 
-func WhenPushingAllAgentImageCidsBeforeEach(t *testing.T) *WhenPushingAllAgentImageCidsTestSuite {
+func WhenPushingMissingImageCidsBeforeEach(t *testing.T) *WhenPushingMissingImageCidsTestingSuite {
 	mockController := gomock.NewController(t)
 
 	pinataRequester := services_mocks.NewMockPinataRequesterInterface(mockController)
@@ -36,7 +36,7 @@ func WhenPushingAllAgentImageCidsBeforeEach(t *testing.T) *WhenPushingAllAgentIm
 		agentCollectionRequester,
 		agentCollectionsManagerRequester,
 	)
-	return &WhenPushingAllAgentImageCidsTestSuite{
+	return &WhenPushingMissingImageCidsTestingSuite{
 		sut: sut,
 
 		pinataRequester:                  pinataRequester,
@@ -46,7 +46,7 @@ func WhenPushingAllAgentImageCidsBeforeEach(t *testing.T) *WhenPushingAllAgentIm
 	}
 }
 
-func TestWhenPushingAllAgentImageCids(t *testing.T) {
+func TestWhenPushingMissingImageCids(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Given error occurs while getting all collections addresses", func(t *testing.T) {
@@ -55,10 +55,10 @@ func TestWhenPushingAllAgentImageCids(t *testing.T) {
 		t.Run("Should return error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenPushingAllAgentImageCidsBeforeEach(t)
+			suite := WhenPushingMissingImageCidsBeforeEach(t)
 			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses().Return(nil, assert.AnError)
 
-			err := suite.sut.PushAllAgentImageCids()
+			err := suite.sut.PushMissingImageCids()
 			assert.Equal(t, err, assert.AnError)
 		})
 	})
@@ -73,13 +73,13 @@ func TestWhenPushingAllAgentImageCids(t *testing.T) {
 				common.HexToAddress("0x1234567890123456789012345678901234567890"),
 			}
 
-			suite := WhenPushingAllAgentImageCidsBeforeEach(t)
+			suite := WhenPushingMissingImageCidsBeforeEach(t)
 			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses().Return(collectionAddress, nil)
 			for _, address := range collectionAddress {
 				suite.agentCollectionRequester.EXPECT().GetAllTokenIds(address).Return(nil, assert.AnError)
 			}
 
-			err := suite.sut.PushAllAgentImageCids()
+			err := suite.sut.PushMissingImageCids()
 			assert.Equal(t, err, assert.AnError)
 		})
 	})
@@ -90,7 +90,7 @@ func TestWhenPushingAllAgentImageCids(t *testing.T) {
 		t.Run("Should return no error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenPushingAllAgentImageCidsBeforeEach(t)
+			suite := WhenPushingMissingImageCidsBeforeEach(t)
 
 			collectionAddress := []common.Address{
 				common.HexToAddress("0x1234567890123456789012345678901234567890"),
@@ -111,10 +111,13 @@ func TestWhenPushingAllAgentImageCids(t *testing.T) {
 				}
 			}
 
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any(), gomock.Any()).Return(nil).Times(len(tokenIds))
+			isCidUploaded := false
+
+			suite.pinataRequester.EXPECT().IsCidUploaded(imageCid).Return(&isCidUploaded, nil).Times(len(tokenIds))
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any()).Return(nil).Times(len(tokenIds))
 			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return(nil, nil).AnyTimes()
 
-			err := suite.sut.PushAllAgentImageCids()
+			err := suite.sut.PushMissingImageCids()
 			assert.NoError(t, err)
 		})
 	})

@@ -1,4 +1,4 @@
-package pinata_bridge_mvc_api
+package pinata_bridge_mvc
 
 import (
 	"math/big"
@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	PUSH_ALL_AGENT_IMAGE_CIDS    = "/push_all_agent_image_cids"
-	PUSH_IMAGE_OF_AGENT          = "/push_image_of_agent/:agentCollectionAddress/:agentCollectionTokenId"
+	PUSH_MISSING_IMAGE_CIDS      = "/push_missing_image_cids"
+	PUSH_MISSING_IMAGES_OF_AGENT = "/push_missing_images_of_agent/:agentCollectionAddress/:agentCollectionTokenId"
 	PUSH_IMAGES_OF_MINT_PROPOSAL = "/push_images_of_mint_proposal/:agentCollectionAddress/:mintProposalId"
 )
 
@@ -28,16 +28,16 @@ func NewPinataPushController(
 }
 
 func (controller *PinataPushController) InitRoutes(c fiber.Router) {
-	c.Post(PUSH_IMAGE_OF_AGENT, controller.PushImagesOfAgent)
-	c.Post(PUSH_ALL_AGENT_IMAGE_CIDS, controller.PushAllAgentImageCids)
+	c.Post(PUSH_MISSING_IMAGE_CIDS, controller.PushMissingImageCids)
+	c.Post(PUSH_MISSING_IMAGES_OF_AGENT, controller.PushMissingImagesOfAgent)
 	c.Post(PUSH_IMAGES_OF_MINT_PROPOSAL, controller.PushImagesOfMintProposal)
 }
 
-func (controller *PinataPushController) PushAllAgentImageCids(c *fiber.Ctx) error {
-	return controller.pushAgentImageCidToPinata.PushAllAgentImageCids()
+func (controller *PinataPushController) PushMissingImageCids(c *fiber.Ctx) error {
+	return controller.pushAgentImageCidToPinata.PushMissingImageCids()
 }
 
-func (controller *PinataPushController) PushImagesOfAgent(c *fiber.Ctx) error {
+func (controller *PinataPushController) PushMissingImagesOfAgent(c *fiber.Ctx) error {
 	agentCollectionAddressStr := c.Params("agentCollectionAddress")
 	if len(strings.TrimSpace(agentCollectionAddressStr)) == 0 {
 		return fiber.NewError(fiber.StatusBadRequest, "agentCollectionAddress is required")
@@ -59,7 +59,7 @@ func (controller *PinataPushController) PushImagesOfAgent(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "agentCollectionTokenId is invalid")
 	}
 
-	return controller.pushAgentImageCidToPinata.PushImagesOfAgent(agentCollectionAddress, *tokenId)
+	return controller.pushAgentImageCidToPinata.PushMissingImagesOfAgent(agentCollectionAddress, *tokenId)
 }
 
 func (controller *PinataPushController) PushImagesOfMintProposal(c *fiber.Ctx) error {

@@ -15,7 +15,7 @@ func NewPinataRequester(client clients.PinataClientInterface) *PinataRequester {
 	}
 }
 
-func (pr *PinataRequester) PinCidToPinata(cid string, hostNodes []string) error {
+func (pr *PinataRequester) PinCid(cid string, hostNodes []string) error {
 	request := &models.ExternalPinByHashRequest{
 		HashToPin: cid,
 	}
@@ -32,4 +32,15 @@ func (pr *PinataRequester) PinCidToPinata(cid string, hostNodes []string) error 
 	}
 
 	return nil
+}
+
+func (pr *PinataRequester) IsCidUploaded(cid string) (*bool, error) {
+	response, err := pr.client.QueryFileByCid(cid)
+	if err != nil {
+		return nil, err
+	}
+
+	exist := len(response.Data.Files) == 1
+
+	return &exist, nil
 }

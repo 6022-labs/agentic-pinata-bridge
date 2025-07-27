@@ -41,20 +41,6 @@ func (m *MockPushAgentImageCidToPinataInterface) EXPECT() *MockPushAgentImageCid
 	return m.recorder
 }
 
-// PushAllAgentImageCids mocks base method.
-func (m *MockPushAgentImageCidToPinataInterface) PushAllAgentImageCids() error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PushAllAgentImageCids")
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PushAllAgentImageCids indicates an expected call of PushAllAgentImageCids.
-func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushAllAgentImageCids() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushAllAgentImageCids", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushAllAgentImageCids))
-}
-
 // PushFromCid mocks base method.
 func (m *MockPushAgentImageCidToPinataInterface) PushFromCid(cid string) error {
 	m.ctrl.T.Helper()
@@ -83,20 +69,6 @@ func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushImageOfAgentIm
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushImageOfAgentImageProposal", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushImageOfAgentImageProposal), agentCollectionAddress, proposalId)
 }
 
-// PushImagesOfAgent mocks base method.
-func (m *MockPushAgentImageCidToPinataInterface) PushImagesOfAgent(agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PushImagesOfAgent", agentCollectionAddress, agentCollectionTokenId)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PushImagesOfAgent indicates an expected call of PushImagesOfAgent.
-func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushImagesOfAgent(agentCollectionAddress, agentCollectionTokenId any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushImagesOfAgent", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushImagesOfAgent), agentCollectionAddress, agentCollectionTokenId)
-}
-
 // PushImagesOfMintProposal mocks base method.
 func (m *MockPushAgentImageCidToPinataInterface) PushImagesOfMintProposal(agentCollectionAddress common.Address, proposalId big.Int) error {
 	m.ctrl.T.Helper()
@@ -109,4 +81,32 @@ func (m *MockPushAgentImageCidToPinataInterface) PushImagesOfMintProposal(agentC
 func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushImagesOfMintProposal(agentCollectionAddress, proposalId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushImagesOfMintProposal", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushImagesOfMintProposal), agentCollectionAddress, proposalId)
+}
+
+// PushMissingImageCids mocks base method.
+func (m *MockPushAgentImageCidToPinataInterface) PushMissingImageCids() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushMissingImageCids")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PushMissingImageCids indicates an expected call of PushMissingImageCids.
+func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushMissingImageCids() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushMissingImageCids", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushMissingImageCids))
+}
+
+// PushMissingImagesOfAgent mocks base method.
+func (m *MockPushAgentImageCidToPinataInterface) PushMissingImagesOfAgent(agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushMissingImagesOfAgent", agentCollectionAddress, agentCollectionTokenId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PushMissingImagesOfAgent indicates an expected call of PushMissingImagesOfAgent.
+func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushMissingImagesOfAgent(agentCollectionAddress, agentCollectionTokenId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushMissingImagesOfAgent", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushMissingImagesOfAgent), agentCollectionAddress, agentCollectionTokenId)
 }

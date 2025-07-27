@@ -55,7 +55,7 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPushingImageOfAgentImageProposalBeforeEach(t)
-			suite.agentCollectionRequester.EXPECT().GetAgentImageProposalImage(gomock.Any(), gomock.Any()).Return("", assert.AnError)
+			suite.agentCollectionRequester.EXPECT().GetAgentImageProposalImage(gomock.Any(), gomock.Any()).Return(nil, assert.AnError)
 
 			err := suite.sut.PushImageOfAgentImageProposal(common.HexToAddress(""), *big.NewInt(123))
 
@@ -71,8 +71,8 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 
 			suite := WhenPushingImageOfAgentImageProposalBeforeEach(t)
 			testCid := "test-cid"
-			suite.agentCollectionRequester.EXPECT().GetAgentImageProposalImage(gomock.Any(), gomock.Any()).Return(testCid, nil)
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any(), gomock.Any()).Return(assert.AnError).Times(2)
+			suite.agentCollectionRequester.EXPECT().GetAgentImageProposalImage(gomock.Any(), gomock.Any()).Return(&testCid, nil)
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any()).Return(assert.AnError).Times(2)
 			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).AnyTimes()
 
 			err := suite.sut.PushImageOfAgentImageProposal(common.HexToAddress(""), *big.NewInt(123))
@@ -90,8 +90,8 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 			suite := WhenPushingImageOfAgentImageProposalBeforeEach(t)
 
 			testCid := "test-cid"
-			suite.agentCollectionRequester.EXPECT().GetAgentImageProposalImage(gomock.Any(), gomock.Any()).Return(testCid, nil)
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			suite.agentCollectionRequester.EXPECT().GetAgentImageProposalImage(gomock.Any(), gomock.Any()).Return(&testCid, nil)
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).AnyTimes()
 
 			err := suite.sut.PushImageOfAgentImageProposal(common.HexToAddress(""), *big.NewInt(123))

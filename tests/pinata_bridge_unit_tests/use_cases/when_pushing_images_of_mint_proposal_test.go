@@ -73,7 +73,7 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 
 			testCid := "test-cid"
 			suite.agentCollectionRequester.EXPECT().GetMintProposalImages(gomock.Any(), gomock.Any()).Return([]string{testCid}, nil)
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any(), gomock.Any()).Return(assert.AnError).Times(2)
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any()).Return(assert.AnError).Times(2)
 			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).AnyTimes()
 
 			err := suite.sut.PushImagesOfMintProposal(common.HexToAddress(""), *big.NewInt(123))
@@ -92,7 +92,7 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 
 			testCid := "test-cid"
 			suite.agentCollectionRequester.EXPECT().GetMintProposalImages(gomock.Any(), gomock.Any()).Return([]string{testCid}, nil)
-			suite.pinataRequester.EXPECT().PinCidToPinata(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).AnyTimes()
 
 			err := suite.sut.PushImagesOfMintProposal(common.HexToAddress(""), *big.NewInt(123))

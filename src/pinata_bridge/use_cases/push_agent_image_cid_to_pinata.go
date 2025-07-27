@@ -9,8 +9,8 @@ import (
 )
 
 type PushAgentImageCidToPinataInterface interface {
-	PushAllAgentImageCids() error
-	PushImagesOfAgent(agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error
+	PushMissingImageCids() error
+	PushMissingImagesOfAgent(agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error
 	PushImagesOfMintProposal(agentCollectionAddress common.Address, proposalId big.Int) error
 	PushImageOfAgentImageProposal(agentCollectionAddress common.Address, proposalId big.Int) error
 	PushFromCid(cid string) error
@@ -40,7 +40,7 @@ func NewPushAgentImageCidToPinata(
 	}
 }
 
-func (p *PushAgentImageCidToPinata) PushAllAgentImageCids() error {
+func (p *PushAgentImageCidToPinata) PushMissingImageCids() error {
 	allCollections, err := p.agentCollectionsManagerRequester.GetAllCollectionAddresses()
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func (p *PushAgentImageCidToPinata) PushAllAgentImageCids() error {
 		}
 
 		for _, tokenId := range tokenIds {
-			err = p.PushImagesOfAgent(collectionAddress, tokenId)
+			err = p.PushMissingImagesOfAgent(collectionAddress, tokenId)
 			if err != nil {
 				p.logger.Error("Failed to push agent image cid to pinata", zap.Error(err))
 				continue
@@ -68,13 +68,24 @@ func (p *PushAgentImageCidToPinata) PushAllAgentImageCids() error {
 	return nil
 }
 
-func (p *PushAgentImageCidToPinata) PushImagesOfAgent(agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error {
+func (p *PushAgentImageCidToPinata) PushMissingImagesOfAgent(agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error {
 	cids, err := p.agentCollectionRequester.GetAgentImages(agentCollectionAddress, agentCollectionTokenId)
 	if err != nil {
 		return err
 	}
 
 	for _, cid := range cids {
+		isUploaded, err := p.pinataRequester.IsCidUploaded(cid)
+		if err != nil {
+			p.logger.Error("Failed to check if cid is uploaded", zap.String("cid", cid), zap.Error(err))
+			return err
+		}
+
+		if *isUploaded {
+			p.logger.Debug("CID already uploaded to pinata, skipping", zap.String("cid", cid))
+			continue
+		}
+
 		p.logger.Info("Pushing agent images cid to pinata",
 			zap.String("cid", cid),
 			zap.String("agentCollectionAddress", agentCollectionAddress.String()),
@@ -144,11 +155,11 @@ func (p *PushAgentImageCidToPinata) PushFromCid(cid string) error {
 		p.logger.Warn("No host addresses found for cid", zap.String("cid", cid))
 	}
 
-	err = p.pinataRequester.PinCidToPinata(cid, addresses)
+	err = p.pinataRequester.PinCid(cid, addresses)
 	if err != nil {
 		// Try again without host addresses
 		p.logger.Warn("Failed to pin cid to pinata with host addresses, retrying without", zap.String("cid", cid), zap.Error(err))
-		err = p.pinataRequester.PinCidToPinata(cid, nil)
+		err = p.pinataRequester.PinCid(cid, nil)
 		if err != nil {
 			return err
 		}

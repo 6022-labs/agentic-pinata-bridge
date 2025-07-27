@@ -20,5 +20,5 @@ func NewMintedEventHandler(pushAgentImageCidToPinata use_cases.PushAgentImageCid
 }
 
 func (h *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) error {
-	return h.pushAgentImageCidToPinata.PushImagesOfAgent(event.Raw.Address, *event.TokenId)
+	return h.pushAgentImageCidToPinata.PushMissingImagesOfAgent(event.Raw.Address, *event.TokenId)
 }

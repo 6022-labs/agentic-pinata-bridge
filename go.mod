@@ -6,6 +6,7 @@ require (
 	github.com/ethereum/go-ethereum v1.15.8
 	github.com/gofiber/contrib/fiberzap/v2 v2.1.6
 	github.com/gofiber/fiber/v2 v2.52.6
+	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/samber/lo v1.51.0
 	github.com/stretchr/testify v1.10.0
@@ -30,7 +31,6 @@ require (
 	github.com/ethereum/go-verkle v0.2.2 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/holiman/uint256 v1.3.2 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
