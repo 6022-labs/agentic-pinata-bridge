@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/use_cases"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_host/configurations"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_host/settings"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/use_cases"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_host/configurations"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_host/settings"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"

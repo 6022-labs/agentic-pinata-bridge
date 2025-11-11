@@ -1,10 +1,10 @@
 package configurations
 
 import (
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/services"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_event_listeners"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_host/settings"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_mvc"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/services"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_event_listeners"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_host/settings"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_mvc"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"

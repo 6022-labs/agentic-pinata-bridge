@@ -3,8 +3,8 @@ package subscribers
 import (
 	"context"
 
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_blockchain/settings"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_blockchain/settings"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/dig"

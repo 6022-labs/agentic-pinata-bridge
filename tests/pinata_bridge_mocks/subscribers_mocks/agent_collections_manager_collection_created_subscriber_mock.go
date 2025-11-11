@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	abi "github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
+	abi "github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
 	ethereum "github.com/ethereum/go-ethereum"
 	gomock "go.uber.org/mock/gomock"
 )

@@ -4,8 +4,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/use_cases"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/tests/pinata_bridge_mocks/services_mocks"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/use_cases"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/tests/pinata_bridge_mocks/services_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"

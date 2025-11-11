@@ -3,8 +3,8 @@ package pinata_bridge_event_listeners
 import (
 	"context"
 
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/subscribers"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/subscribers"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )

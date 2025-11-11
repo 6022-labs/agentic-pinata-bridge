@@ -1,7 +1,7 @@
 package configurations
 
 import (
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge_event_listeners"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_event_listeners"
 	"go.uber.org/dig"
 )
 

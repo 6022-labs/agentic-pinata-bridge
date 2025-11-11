@@ -4,9 +4,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/src/pinata_bridge/event_handlers"
-	"github.com/6022protocol/agentic-ai-pinata-bridge/tests/pinata_bridge_mocks/use_cases_mocks"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/event_handlers"
+	"github.com/6022-labs/agentic-ai-pinata-bridge/tests/pinata_bridge_mocks/use_cases_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/assert"
