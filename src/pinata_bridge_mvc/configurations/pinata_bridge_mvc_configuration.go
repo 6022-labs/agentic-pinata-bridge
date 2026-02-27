@@ -1,7 +1,7 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_mvc"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc"
 	"go.uber.org/dig"
 )
 

@@ -1,11 +1,11 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/services"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/subscribers"
-	blockchain_services "github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_blockchain/services"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_blockchain/settings"
-	blockchain_subscribers "github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_blockchain/subscribers"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/subscribers"
+	blockchain_services "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/settings"
+	blockchain_subscribers "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/subscribers"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/dig"
 )

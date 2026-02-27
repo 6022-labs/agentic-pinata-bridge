@@ -12,7 +12,7 @@ package event_handlers_mocks
 import (
 	reflect "reflect"
 
-	abi "github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
+	abi "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	gomock "go.uber.org/mock/gomock"
 )
 

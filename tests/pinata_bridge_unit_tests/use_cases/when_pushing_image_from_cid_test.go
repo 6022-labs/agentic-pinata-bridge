@@ -3,8 +3,8 @@ package use_cases_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/use_cases"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/tests/pinata_bridge_mocks/services_mocks"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
+	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"

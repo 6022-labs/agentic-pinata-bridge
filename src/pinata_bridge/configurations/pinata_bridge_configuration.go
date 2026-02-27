@@ -1,8 +1,8 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/event_handlers"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/use_cases"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/event_handlers"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"go.uber.org/dig"
 )
 

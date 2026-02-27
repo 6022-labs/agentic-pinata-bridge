@@ -3,10 +3,10 @@ package configurations
 import (
 	"net/http"
 
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/services"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_http_pinata/clients"
-	http_pinata_services "github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_http_pinata/services"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_http_pinata/settings"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/clients"
+	http_pinata_services "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/settings"
 	"go.uber.org/dig"
 )
 

@@ -1,6 +1,6 @@
 package services
 
-import "github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_http_ipfs_check/clients"
+import "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/clients"
 
 type IpfsCheckRequester struct {
 	ipfsCheckClient clients.IpfsCheckClientInterface

@@ -1,10 +1,10 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/services"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_http_ipfs_check/clients"
-	ipfs_check_services "github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_http_ipfs_check/services"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_http_ipfs_check/settings"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/clients"
+	ipfs_check_services "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/settings"
 	"go.uber.org/dig"
 )
 

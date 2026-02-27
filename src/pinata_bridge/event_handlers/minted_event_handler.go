@@ -1,8 +1,8 @@
 package event_handlers
 
 import (
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/use_cases"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 )
 
 type MintedEventHandlerInterface interface {

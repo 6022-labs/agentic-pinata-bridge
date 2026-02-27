@@ -3,9 +3,9 @@ package pinata_bridge_event_listeners
 import (
 	"context"
 
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/event_handlers"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/subscribers"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/event_handlers"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/subscribers"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"

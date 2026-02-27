@@ -3,7 +3,7 @@ package use_cases
 import (
 	"math/big"
 
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 )

@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"strings"
 
-	pinata_bridge_abi "github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge/abi"
+	pinata_bridge_abi "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"

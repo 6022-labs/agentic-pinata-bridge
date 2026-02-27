@@ -7,8 +7,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_http_pinata/models"
-	"github.com/6022-labs/agentic-ai-pinata-bridge/src/pinata_bridge_http_pinata/settings"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/models"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/settings"
 	"go.uber.org/zap"
 )
 

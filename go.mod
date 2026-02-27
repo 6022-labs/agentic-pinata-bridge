@@ -1,4 +1,4 @@
-module github.com/6022-labs/agentic-ai-pinata-bridge
+module github.com/6022-labs/agentic-pinata-bridge
 
 go 1.24.0
 
