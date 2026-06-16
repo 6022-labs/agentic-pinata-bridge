@@ -2,41 +2,45 @@ package subscribers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/settings"
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
 
 type AgentCollectionsManagerCollectionCreatedSubscriber struct {
-	logger                          *zap.Logger
-	client                          *ethclient.Client
-	agentCollectionsManagerSettings *settings.AgentCollectionsManagerSettings
-}
-
-type newAgentCollectionsManagerCollectionCreatedSubscriberParams struct {
-	dig.In
-
-	Logger                          *zap.Logger
-	Client                          *ethclient.Client `name:"ws"`
-	AgentCollectionsManagerSettings *settings.AgentCollectionsManagerSettings
+	logger           *zap.Logger
+	ethClientFactory *factory.EthClientFactory
+	managers         *settings.AgentCollectionsManagersSettings
 }
 
 func NewAgentCollectionsManagerCollectionCreatedSubscriber(
-	params newAgentCollectionsManagerCollectionCreatedSubscriberParams,
+	logger *zap.Logger,
+	ethClientFactory *factory.EthClientFactory,
+	managers *settings.AgentCollectionsManagersSettings,
 ) *AgentCollectionsManagerCollectionCreatedSubscriber {
 	return &AgentCollectionsManagerCollectionCreatedSubscriber{
-		logger:                          params.Logger,
-		client:                          params.Client,
-		agentCollectionsManagerSettings: params.AgentCollectionsManagerSettings,
+		logger:           logger,
+		ethClientFactory: ethClientFactory,
+		managers:         managers,
 	}
 }
 
-func (s *AgentCollectionsManagerCollectionCreatedSubscriber) SubscribeCollectionCreated(ctx context.Context, logs chan<- *abi.AgentCollectionsManagerCollectionCreated) (ethereum.Subscription, error) {
-	agentCollectionsManager, err := abi.NewAgentCollectionsManager(s.agentCollectionsManagerSettings.SmartContractAddress, s.client)
+func (s *AgentCollectionsManagerCollectionCreatedSubscriber) SubscribeCollectionCreated(ctx context.Context, chainId uint64, logs chan<- *abi.AgentCollectionsManagerCollectionCreated) (ethereum.Subscription, error) {
+	client, err := s.ethClientFactory.Ws(chainId)
+	if err != nil {
+		return nil, err
+	}
+
+	managerAddress, ok := s.managers.Get(chainId)
+	if !ok {
+		return nil, fmt.Errorf("no agent collections manager configured for chain %d", chainId)
+	}
+
+	agentCollectionsManager, err := abi.NewAgentCollectionsManager(managerAddress, client)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +52,8 @@ func (s *AgentCollectionsManagerCollectionCreatedSubscriber) SubscribeCollection
 
 	s.logger.Info(
 		"Subscribed to AgentCollectionsManager.CollectionCreated events",
-		zap.String("address", s.agentCollectionsManagerSettings.SmartContractAddress.Hex()),
+		zap.Uint64("chain_id", chainId),
+		zap.String("address", managerAddress.Hex()),
 	)
 
 	return sub, nil

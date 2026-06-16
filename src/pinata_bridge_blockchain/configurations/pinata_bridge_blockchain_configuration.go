@@ -3,16 +3,16 @@ package configurations
 import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/subscribers"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	blockchain_services "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/settings"
 	blockchain_subscribers "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/subscribers"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/dig"
 )
 
 func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 	// Settings
-	err := container.Provide(settings.NewChainsSettings)
+	err := container.Provide(settings.NewRpcSettings)
 	if err != nil {
 		panic(err)
 	}
@@ -22,12 +22,8 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(settings.NewRpcNodeSettings)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(settings.NewAgentCollectionsManagerSettings)
+	// Eth client factory
+	err = container.Provide(factory.NewEthClientFactory)
 	if err != nil {
 		panic(err)
 	}
@@ -82,18 +78,4 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	// Ethereum clients
-	err = container.Provide(func(rpcNodeSettings *settings.RpcNodeSettings) (*ethclient.Client, error) {
-		return ethclient.Dial(rpcNodeSettings.WsUrl)
-	}, dig.Name("ws"))
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(func(rpcNodeSettings *settings.RpcNodeSettings) (*ethclient.Client, error) {
-		return ethclient.Dial(rpcNodeSettings.HttpUrl)
-	}, dig.Name("http"))
-	if err != nil {
-		panic(err)
-	}
 }

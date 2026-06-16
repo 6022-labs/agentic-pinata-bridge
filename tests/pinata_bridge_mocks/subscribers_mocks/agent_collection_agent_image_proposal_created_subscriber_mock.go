@@ -44,16 +44,16 @@ func (m *MockAgentCollectionAgentImageProposalCreatedSubscriberInterface) EXPECT
 }
 
 // SubscribeAgentImageProposalCreated mocks base method.
-func (m *MockAgentCollectionAgentImageProposalCreatedSubscriberInterface) SubscribeAgentImageProposalCreated(ctx context.Context, agentCollectionAddress common.Address, logs chan<- *abi.AgentCollectionV1AgentImageProposalCreated) (ethereum.Subscription, error) {
+func (m *MockAgentCollectionAgentImageProposalCreatedSubscriberInterface) SubscribeAgentImageProposalCreated(ctx context.Context, chainId uint64, agentCollectionAddress common.Address, logs chan<- *abi.AgentCollectionV1AgentImageProposalCreated) (ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubscribeAgentImageProposalCreated", ctx, agentCollectionAddress, logs)
+	ret := m.ctrl.Call(m, "SubscribeAgentImageProposalCreated", ctx, chainId, agentCollectionAddress, logs)
 	ret0, _ := ret[0].(ethereum.Subscription)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SubscribeAgentImageProposalCreated indicates an expected call of SubscribeAgentImageProposalCreated.
-func (mr *MockAgentCollectionAgentImageProposalCreatedSubscriberInterfaceMockRecorder) SubscribeAgentImageProposalCreated(ctx, agentCollectionAddress, logs any) *gomock.Call {
+func (mr *MockAgentCollectionAgentImageProposalCreatedSubscriberInterfaceMockRecorder) SubscribeAgentImageProposalCreated(ctx, chainId, agentCollectionAddress, logs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeAgentImageProposalCreated", reflect.TypeOf((*MockAgentCollectionAgentImageProposalCreatedSubscriberInterface)(nil).SubscribeAgentImageProposalCreated), ctx, agentCollectionAddress, logs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeAgentImageProposalCreated", reflect.TypeOf((*MockAgentCollectionAgentImageProposalCreatedSubscriberInterface)(nil).SubscribeAgentImageProposalCreated), ctx, chainId, agentCollectionAddress, logs)
 }

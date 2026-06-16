@@ -41,15 +41,15 @@ func (m *MockMintProposalCreatedEventHandlerInterface) EXPECT() *MockMintProposa
 }
 
 // Handle mocks base method.
-func (m *MockMintProposalCreatedEventHandlerInterface) Handle(event *abi.AgentCollectionV1MintProposalCreated) error {
+func (m *MockMintProposalCreatedEventHandlerInterface) Handle(chainId uint64, event *abi.AgentCollectionV1MintProposalCreated) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Handle", event)
+	ret := m.ctrl.Call(m, "Handle", chainId, event)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Handle indicates an expected call of Handle.
-func (mr *MockMintProposalCreatedEventHandlerInterfaceMockRecorder) Handle(event any) *gomock.Call {
+func (mr *MockMintProposalCreatedEventHandlerInterfaceMockRecorder) Handle(chainId, event any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockMintProposalCreatedEventHandlerInterface)(nil).Handle), event)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockMintProposalCreatedEventHandlerInterface)(nil).Handle), chainId, event)
 }

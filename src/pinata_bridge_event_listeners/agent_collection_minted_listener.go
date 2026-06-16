@@ -17,7 +17,7 @@ type AgentCollectionMintedListener struct {
 	agentCollectionMintedSubscriber subscribers.AgentCollectionMintedSubscriberInterface
 
 	errorChannel  chan error
-	eventChannel  chan *abi.AgentCollectionV1Minted
+	eventChannel  chan ChainEvent[abi.AgentCollectionV1Minted]
 	subscriptions []ethereum.Subscription
 }
 
@@ -33,19 +33,19 @@ func NewAgentCollectionMintedListener(
 
 		subscriptions: []ethereum.Subscription{},
 		errorChannel:  make(chan error),
-		eventChannel:  make(chan *abi.AgentCollectionV1Minted),
+		eventChannel:  make(chan ChainEvent[abi.AgentCollectionV1Minted]),
 	}
 }
 
 func (listener *AgentCollectionMintedListener) Listen() error {
 	for {
 		select {
-		case event := <-listener.eventChannel:
-			listener.logger.Info("Received AgentCollection.Minted event", zap.Any("event", event))
+		case received := <-listener.eventChannel:
+			listener.logger.Info("Received AgentCollection.Minted event", zap.Uint64("chainId", received.chainId), zap.Any("event", received.event))
 
-			err := listener.mintedEventHandler.Handle(event)
+			err := listener.mintedEventHandler.Handle(received.chainId, received.event)
 			if err != nil {
-				listener.logger.Error("Failed to handle AgentCollection.Minted event", zap.Any("event", event), zap.Error(err))
+				listener.logger.Error("Failed to handle AgentCollection.Minted event", zap.Any("event", received.event), zap.Error(err))
 			}
 		case err := <-listener.errorChannel:
 			listener.logger.Error("Subscription error", zap.Error(err))
@@ -55,23 +55,32 @@ func (listener *AgentCollectionMintedListener) Listen() error {
 	}
 }
 
-func (listener *AgentCollectionMintedListener) Subscribe(collectionAddress common.Address) error {
+func (listener *AgentCollectionMintedListener) Subscribe(chainId uint64, collectionAddress common.Address) error {
 	ctx := context.Background()
 
-	listener.logger.Debug("Subscribing to AgentCollection.Minted events", zap.String("collectionAddress", collectionAddress.Hex()))
+	listener.logger.Debug("Subscribing to AgentCollection.Minted events", zap.Uint64("chainId", chainId), zap.String("collectionAddress", collectionAddress.Hex()))
 
-	subscription, err := listener.agentCollectionMintedSubscriber.SubscribeMinted(ctx, collectionAddress, listener.eventChannel)
+	rawEvents := make(chan *abi.AgentCollectionV1Minted)
+	subscription, err := listener.agentCollectionMintedSubscriber.SubscribeMinted(ctx, chainId, collectionAddress, rawEvents)
 	if err != nil {
 		return err
 	}
 
 	go func() {
-		if err := <-subscription.Err(); err != nil {
-			listener.errorChannel <- err
+		for {
+			select {
+			case event := <-rawEvents:
+				listener.eventChannel <- ChainEvent[abi.AgentCollectionV1Minted]{chainId: chainId, event: event}
+			case err := <-subscription.Err():
+				if err != nil {
+					listener.errorChannel <- err
+				}
+				return
+			}
 		}
 	}()
 
-	listener.logger.Info("Listening for AgentCollection.Minted events", zap.String("collectionAddress", collectionAddress.Hex()))
+	listener.logger.Info("Listening for AgentCollection.Minted events", zap.Uint64("chainId", chainId), zap.String("collectionAddress", collectionAddress.Hex()))
 	listener.subscriptions = append(listener.subscriptions, subscription)
 
 	return nil

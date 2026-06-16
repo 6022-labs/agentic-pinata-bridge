@@ -9,5 +9,5 @@ import (
 )
 
 type AgentCollectionMintedSubscriberInterface interface {
-	SubscribeMinted(ctx context.Context, agentCollectionAddress common.Address, logs chan<- *abi.AgentCollectionV1Minted) (ethereum.Subscription, error)
+	SubscribeMinted(ctx context.Context, chainId uint64, agentCollectionAddress common.Address, logs chan<- *abi.AgentCollectionV1Minted) (ethereum.Subscription, error)
 }

@@ -2,13 +2,20 @@ package configurations
 
 import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/event_handlers"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"go.uber.org/dig"
 )
 
 func AddPinataBridgeConfiguration(container *dig.Container) {
+	// Settings
+	err := container.Provide(settings.NewChainsSettings)
+	if err != nil {
+		panic(err)
+	}
+
 	// Event handlers
-	err := container.Provide(
+	err = container.Provide(
 		event_handlers.NewMintedEventHandler,
 		dig.As(new(event_handlers.MintedEventHandlerInterface)),
 	)

@@ -41,16 +41,16 @@ func (m *MockAgentCollectionsManagerRequesterInterface) EXPECT() *MockAgentColle
 }
 
 // GetAllCollectionAddresses mocks base method.
-func (m *MockAgentCollectionsManagerRequesterInterface) GetAllCollectionAddresses() ([]common.Address, error) {
+func (m *MockAgentCollectionsManagerRequesterInterface) GetAllCollectionAddresses(chainId uint64) ([]common.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllCollectionAddresses")
+	ret := m.ctrl.Call(m, "GetAllCollectionAddresses", chainId)
 	ret0, _ := ret[0].([]common.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllCollectionAddresses indicates an expected call of GetAllCollectionAddresses.
-func (mr *MockAgentCollectionsManagerRequesterInterfaceMockRecorder) GetAllCollectionAddresses() *gomock.Call {
+func (mr *MockAgentCollectionsManagerRequesterInterfaceMockRecorder) GetAllCollectionAddresses(chainId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCollectionAddresses", reflect.TypeOf((*MockAgentCollectionsManagerRequesterInterface)(nil).GetAllCollectionAddresses))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCollectionAddresses", reflect.TypeOf((*MockAgentCollectionsManagerRequesterInterface)(nil).GetAllCollectionAddresses), chainId)
 }

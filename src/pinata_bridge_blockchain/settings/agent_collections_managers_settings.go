@@ -10,7 +10,6 @@ import (
 
 const AgentCollectionsManagersSettingsKey = "agent_collections_managers"
 
-// Per-chain AgentCollectionsManager contract addresses, keyed by chain id.
 type AgentCollectionsManagersSettings map[uint64]common.Address
 
 func NewAgentCollectionsManagersSettings(logger *zap.Logger, k *koanf.Koanf) *AgentCollectionsManagersSettings {

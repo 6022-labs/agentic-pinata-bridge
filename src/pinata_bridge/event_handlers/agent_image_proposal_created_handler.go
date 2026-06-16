@@ -6,7 +6,7 @@ import (
 )
 
 type AgentImageProposalCreatedEventHandlerInterface interface {
-	Handle(event *abi.AgentCollectionV1AgentImageProposalCreated) error
+	Handle(chainId uint64, event *abi.AgentCollectionV1AgentImageProposalCreated) error
 }
 
 type AgentImageProposalCreatedEventHandler struct {
@@ -19,6 +19,6 @@ func NewAgentImageProposalCreatedEventHandler(pushAgentImageCidToPinata use_case
 	}
 }
 
-func (h *AgentImageProposalCreatedEventHandler) Handle(event *abi.AgentCollectionV1AgentImageProposalCreated) error {
-	return h.pushAgentImageCidToPinata.PushImageOfAgentImageProposal(event.Raw.Address, *event.ProposalId)
+func (h *AgentImageProposalCreatedEventHandler) Handle(chainId uint64, event *abi.AgentCollectionV1AgentImageProposalCreated) error {
+	return h.pushAgentImageCidToPinata.PushImageOfAgentImageProposal(chainId, event.Raw.Address, *event.ProposalId)
 }

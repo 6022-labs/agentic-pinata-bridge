@@ -9,5 +9,5 @@ import (
 )
 
 type AgentCollectionAgentImageProposalCreatedSubscriberInterface interface {
-	SubscribeAgentImageProposalCreated(ctx context.Context, agentCollectionAddress common.Address, logs chan<- *abi.AgentCollectionV1AgentImageProposalCreated) (ethereum.Subscription, error)
+	SubscribeAgentImageProposalCreated(ctx context.Context, chainId uint64, agentCollectionAddress common.Address, logs chan<- *abi.AgentCollectionV1AgentImageProposalCreated) (ethereum.Subscription, error)
 }

@@ -17,7 +17,7 @@ type AgentCollectionAgentImageProposalCreatedListener struct {
 	agentCollectionAgentImageProposalCreatedSubscriber subscribers.AgentCollectionAgentImageProposalCreatedSubscriberInterface
 
 	errorChannel  chan error
-	eventChannel  chan *abi.AgentCollectionV1AgentImageProposalCreated
+	eventChannel  chan ChainEvent[abi.AgentCollectionV1AgentImageProposalCreated]
 	subscriptions []ethereum.Subscription
 }
 
@@ -33,19 +33,19 @@ func NewAgentCollectionAgentImageProposalCreatedListener(
 
 		subscriptions: []ethereum.Subscription{},
 		errorChannel:  make(chan error),
-		eventChannel:  make(chan *abi.AgentCollectionV1AgentImageProposalCreated),
+		eventChannel:  make(chan ChainEvent[abi.AgentCollectionV1AgentImageProposalCreated]),
 	}
 }
 
 func (listener *AgentCollectionAgentImageProposalCreatedListener) Listen() error {
 	for {
 		select {
-		case event := <-listener.eventChannel:
-			listener.logger.Info("Received AgentCollection.AgentImageProposalCreated event", zap.Any("event", event))
+		case received := <-listener.eventChannel:
+			listener.logger.Info("Received AgentCollection.AgentImageProposalCreated event", zap.Uint64("chainId", received.chainId), zap.Any("event", received.event))
 
-			err := listener.agentImageProposalCreatedEventHandler.Handle(event)
+			err := listener.agentImageProposalCreatedEventHandler.Handle(received.chainId, received.event)
 			if err != nil {
-				listener.logger.Error("Failed to handle AgentCollection.AgentImageProposalCreated event", zap.Any("event", event), zap.Error(err))
+				listener.logger.Error("Failed to handle AgentCollection.AgentImageProposalCreated event", zap.Any("event", received.event), zap.Error(err))
 			}
 		case err := <-listener.errorChannel:
 			listener.logger.Error("Subscription error", zap.Error(err))
@@ -55,23 +55,32 @@ func (listener *AgentCollectionAgentImageProposalCreatedListener) Listen() error
 	}
 }
 
-func (listener *AgentCollectionAgentImageProposalCreatedListener) Subscribe(collectionAddress common.Address) error {
+func (listener *AgentCollectionAgentImageProposalCreatedListener) Subscribe(chainId uint64, collectionAddress common.Address) error {
 	ctx := context.Background()
 
-	listener.logger.Debug("Subscribing to AgentCollection.AgentImageProposalCreated events", zap.String("collectionAddress", collectionAddress.Hex()))
+	listener.logger.Debug("Subscribing to AgentCollection.AgentImageProposalCreated events", zap.Uint64("chainId", chainId), zap.String("collectionAddress", collectionAddress.Hex()))
 
-	subscription, err := listener.agentCollectionAgentImageProposalCreatedSubscriber.SubscribeAgentImageProposalCreated(ctx, collectionAddress, listener.eventChannel)
+	rawEvents := make(chan *abi.AgentCollectionV1AgentImageProposalCreated)
+	subscription, err := listener.agentCollectionAgentImageProposalCreatedSubscriber.SubscribeAgentImageProposalCreated(ctx, chainId, collectionAddress, rawEvents)
 	if err != nil {
 		return err
 	}
 
 	go func() {
-		if err := <-subscription.Err(); err != nil {
-			listener.errorChannel <- err
+		for {
+			select {
+			case event := <-rawEvents:
+				listener.eventChannel <- ChainEvent[abi.AgentCollectionV1AgentImageProposalCreated]{chainId: chainId, event: event}
+			case err := <-subscription.Err():
+				if err != nil {
+					listener.errorChannel <- err
+				}
+				return
+			}
 		}
 	}()
 
-	listener.logger.Info("Listening for AgentCollection.AgentImageProposalCreated events", zap.String("collectionAddress", collectionAddress.Hex()))
+	listener.logger.Info("Listening for AgentCollection.AgentImageProposalCreated events", zap.Uint64("chainId", chainId), zap.String("collectionAddress", collectionAddress.Hex()))
 	listener.subscriptions = append(listener.subscriptions, subscription)
 
 	return nil

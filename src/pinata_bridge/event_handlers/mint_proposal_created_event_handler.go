@@ -6,7 +6,7 @@ import (
 )
 
 type MintProposalCreatedEventHandlerInterface interface {
-	Handle(event *abi.AgentCollectionV1MintProposalCreated) error
+	Handle(chainId uint64, event *abi.AgentCollectionV1MintProposalCreated) error
 }
 
 type MintProposalCreatedEventHandler struct {
@@ -19,6 +19,6 @@ func NewMintProposalCreatedEventHandler(pushAgentImageCidToPinata use_cases.Push
 	}
 }
 
-func (h *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectionV1MintProposalCreated) error {
-	return h.pushAgentImageCidToPinata.PushImagesOfMintProposal(event.Raw.Address, *event.ProposalId)
+func (h *MintProposalCreatedEventHandler) Handle(chainId uint64, event *abi.AgentCollectionV1MintProposalCreated) error {
+	return h.pushAgentImageCidToPinata.PushImagesOfMintProposal(chainId, event.Raw.Address, *event.ProposalId)
 }

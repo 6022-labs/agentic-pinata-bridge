@@ -3,48 +3,52 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"math/big"
 	"strings"
 
 	pinata_bridge_abi "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/settings"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
-	"go.uber.org/dig"
 )
 
 type AgentCollectionsManagerRequester struct {
-	client                          *ethclient.Client
-	agentCollectionsManagerSettings *settings.AgentCollectionsManagerSettings
-}
-
-type newAgentCollectionsManagerRequesterParams struct {
-	dig.In
-
-	Client                          *ethclient.Client `name:"http"`
-	AgentCollectionsManagerSettings *settings.AgentCollectionsManagerSettings
+	ethClientFactory *factory.EthClientFactory
+	managers         *settings.AgentCollectionsManagersSettings
 }
 
 func NewAgentCollectionsManagerRequester(
-	params newAgentCollectionsManagerRequesterParams,
+	ethClientFactory *factory.EthClientFactory,
+	managers *settings.AgentCollectionsManagersSettings,
 ) *AgentCollectionsManagerRequester {
 	return &AgentCollectionsManagerRequester{
-		client:                          params.Client,
-		agentCollectionsManagerSettings: params.AgentCollectionsManagerSettings,
+		ethClientFactory: ethClientFactory,
+		managers:         managers,
 	}
 }
 
-func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses() ([]common.Address, error) {
+func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses(chainId uint64) ([]common.Address, error) {
+	client, err := a.ethClientFactory.Http(chainId)
+	if err != nil {
+		return nil, err
+	}
+
+	managerAddress, ok := a.managers.Get(chainId)
+	if !ok {
+		return nil, fmt.Errorf("no agent collections manager configured for chain %d", chainId)
+	}
+
 	agentABI, err := abi.JSON(strings.NewReader(pinata_bridge_abi.AgentCollectionsManagerABI)) // You must expose raw ABI string
 	if err != nil {
 		return nil, err
 	}
 
 	contract, err := pinata_bridge_abi.NewAgentCollectionsManager(
-		a.agentCollectionsManagerSettings.SmartContractAddress,
-		a.client,
+		managerAddress,
+		client,
 	)
 	if err != nil {
 		return nil, err
@@ -70,7 +74,7 @@ func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses() ([]common
 		}
 
 		msg := map[string]interface{}{
-			"to":   a.agentCollectionsManagerSettings.SmartContractAddress.Hex(),
+			"to":   managerAddress.Hex(),
 			"data": "0x" + common.Bytes2Hex(data),
 		}
 
@@ -81,7 +85,7 @@ func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses() ([]common
 		})
 	}
 
-	if err := a.client.Client().BatchCallContext(context.Background(), batch); err != nil {
+	if err := client.Client().BatchCallContext(context.Background(), batch); err != nil {
 		return nil, err
 	}
 

@@ -42,61 +42,61 @@ func (m *MockAgentCollectionRequesterInterface) EXPECT() *MockAgentCollectionReq
 }
 
 // GetAgentImageProposalImage mocks base method.
-func (m *MockAgentCollectionRequesterInterface) GetAgentImageProposalImage(collectionAddress common.Address, proposalId big.Int) (*string, error) {
+func (m *MockAgentCollectionRequesterInterface) GetAgentImageProposalImage(chainId uint64, collectionAddress common.Address, proposalId big.Int) (*string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgentImageProposalImage", collectionAddress, proposalId)
+	ret := m.ctrl.Call(m, "GetAgentImageProposalImage", chainId, collectionAddress, proposalId)
 	ret0, _ := ret[0].(*string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAgentImageProposalImage indicates an expected call of GetAgentImageProposalImage.
-func (mr *MockAgentCollectionRequesterInterfaceMockRecorder) GetAgentImageProposalImage(collectionAddress, proposalId any) *gomock.Call {
+func (mr *MockAgentCollectionRequesterInterfaceMockRecorder) GetAgentImageProposalImage(chainId, collectionAddress, proposalId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentImageProposalImage", reflect.TypeOf((*MockAgentCollectionRequesterInterface)(nil).GetAgentImageProposalImage), collectionAddress, proposalId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentImageProposalImage", reflect.TypeOf((*MockAgentCollectionRequesterInterface)(nil).GetAgentImageProposalImage), chainId, collectionAddress, proposalId)
 }
 
 // GetAgentImages mocks base method.
-func (m *MockAgentCollectionRequesterInterface) GetAgentImages(collectionAddress common.Address, agentTokenId big.Int) ([]string, error) {
+func (m *MockAgentCollectionRequesterInterface) GetAgentImages(chainId uint64, collectionAddress common.Address, agentTokenId big.Int) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgentImages", collectionAddress, agentTokenId)
+	ret := m.ctrl.Call(m, "GetAgentImages", chainId, collectionAddress, agentTokenId)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAgentImages indicates an expected call of GetAgentImages.
-func (mr *MockAgentCollectionRequesterInterfaceMockRecorder) GetAgentImages(collectionAddress, agentTokenId any) *gomock.Call {
+func (mr *MockAgentCollectionRequesterInterfaceMockRecorder) GetAgentImages(chainId, collectionAddress, agentTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentImages", reflect.TypeOf((*MockAgentCollectionRequesterInterface)(nil).GetAgentImages), collectionAddress, agentTokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentImages", reflect.TypeOf((*MockAgentCollectionRequesterInterface)(nil).GetAgentImages), chainId, collectionAddress, agentTokenId)
 }
 
 // GetAllTokenIds mocks base method.
-func (m *MockAgentCollectionRequesterInterface) GetAllTokenIds(collectionAddress common.Address) ([]big.Int, error) {
+func (m *MockAgentCollectionRequesterInterface) GetAllTokenIds(chainId uint64, collectionAddress common.Address) ([]big.Int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllTokenIds", collectionAddress)
+	ret := m.ctrl.Call(m, "GetAllTokenIds", chainId, collectionAddress)
 	ret0, _ := ret[0].([]big.Int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllTokenIds indicates an expected call of GetAllTokenIds.
-func (mr *MockAgentCollectionRequesterInterfaceMockRecorder) GetAllTokenIds(collectionAddress any) *gomock.Call {
+func (mr *MockAgentCollectionRequesterInterfaceMockRecorder) GetAllTokenIds(chainId, collectionAddress any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllTokenIds", reflect.TypeOf((*MockAgentCollectionRequesterInterface)(nil).GetAllTokenIds), collectionAddress)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllTokenIds", reflect.TypeOf((*MockAgentCollectionRequesterInterface)(nil).GetAllTokenIds), chainId, collectionAddress)
 }
 
 // GetMintProposalImages mocks base method.
-func (m *MockAgentCollectionRequesterInterface) GetMintProposalImages(collectionAddress common.Address, proposalId big.Int) ([]string, error) {
+func (m *MockAgentCollectionRequesterInterface) GetMintProposalImages(chainId uint64, collectionAddress common.Address, proposalId big.Int) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMintProposalImages", collectionAddress, proposalId)
+	ret := m.ctrl.Call(m, "GetMintProposalImages", chainId, collectionAddress, proposalId)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetMintProposalImages indicates an expected call of GetMintProposalImages.
-func (mr *MockAgentCollectionRequesterInterfaceMockRecorder) GetMintProposalImages(collectionAddress, proposalId any) *gomock.Call {
+func (mr *MockAgentCollectionRequesterInterfaceMockRecorder) GetMintProposalImages(chainId, collectionAddress, proposalId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMintProposalImages", reflect.TypeOf((*MockAgentCollectionRequesterInterface)(nil).GetMintProposalImages), collectionAddress, proposalId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMintProposalImages", reflect.TypeOf((*MockAgentCollectionRequesterInterface)(nil).GetMintProposalImages), chainId, collectionAddress, proposalId)
 }

@@ -44,16 +44,16 @@ func (m *MockAgentCollectionMintProposalCreatedSubscriberInterface) EXPECT() *Mo
 }
 
 // SubscribeMintProposalCreated mocks base method.
-func (m *MockAgentCollectionMintProposalCreatedSubscriberInterface) SubscribeMintProposalCreated(ctx context.Context, agentCollectionAddress common.Address, logs chan<- *abi.AgentCollectionV1MintProposalCreated) (ethereum.Subscription, error) {
+func (m *MockAgentCollectionMintProposalCreatedSubscriberInterface) SubscribeMintProposalCreated(ctx context.Context, chainId uint64, agentCollectionAddress common.Address, logs chan<- *abi.AgentCollectionV1MintProposalCreated) (ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubscribeMintProposalCreated", ctx, agentCollectionAddress, logs)
+	ret := m.ctrl.Call(m, "SubscribeMintProposalCreated", ctx, chainId, agentCollectionAddress, logs)
 	ret0, _ := ret[0].(ethereum.Subscription)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SubscribeMintProposalCreated indicates an expected call of SubscribeMintProposalCreated.
-func (mr *MockAgentCollectionMintProposalCreatedSubscriberInterfaceMockRecorder) SubscribeMintProposalCreated(ctx, agentCollectionAddress, logs any) *gomock.Call {
+func (mr *MockAgentCollectionMintProposalCreatedSubscriberInterfaceMockRecorder) SubscribeMintProposalCreated(ctx, chainId, agentCollectionAddress, logs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeMintProposalCreated", reflect.TypeOf((*MockAgentCollectionMintProposalCreatedSubscriberInterface)(nil).SubscribeMintProposalCreated), ctx, agentCollectionAddress, logs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeMintProposalCreated", reflect.TypeOf((*MockAgentCollectionMintProposalCreatedSubscriberInterface)(nil).SubscribeMintProposalCreated), ctx, chainId, agentCollectionAddress, logs)
 }

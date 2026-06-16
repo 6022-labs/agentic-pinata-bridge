@@ -8,5 +8,5 @@ import (
 )
 
 type AgentCollectionsManagerCollectionCreatedSubscriberInterface interface {
-	SubscribeCollectionCreated(ctx context.Context, logs chan<- *abi.AgentCollectionsManagerCollectionCreated) (ethereum.Subscription, error)
+	SubscribeCollectionCreated(ctx context.Context, chainId uint64, logs chan<- *abi.AgentCollectionsManagerCollectionCreated) (ethereum.Subscription, error)
 }

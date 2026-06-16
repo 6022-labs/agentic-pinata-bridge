@@ -4,20 +4,22 @@ import (
 	"math/big"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 )
 
 type PushAgentImageCidToPinataInterface interface {
 	PushMissingImageCids() error
-	PushMissingImagesOfAgent(agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error
-	PushImagesOfMintProposal(agentCollectionAddress common.Address, proposalId big.Int) error
-	PushImageOfAgentImageProposal(agentCollectionAddress common.Address, proposalId big.Int) error
+	PushMissingImagesOfAgent(chainId uint64, agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error
+	PushImagesOfMintProposal(chainId uint64, agentCollectionAddress common.Address, proposalId big.Int) error
+	PushImageOfAgentImageProposal(chainId uint64, agentCollectionAddress common.Address, proposalId big.Int) error
 	PushFromCid(cid string) error
 }
 
 type PushAgentImageCidToPinata struct {
 	logger                           *zap.Logger
+	chainsSettings                   *settings.ChainsSettings
 	pinataRequester                  services.PinataRequesterInterface
 	ipfsCheckRequester               services.IpfsCheckRequesterInterface
 	agentCollectionRequester         services.AgentCollectionRequesterInterface
@@ -26,6 +28,7 @@ type PushAgentImageCidToPinata struct {
 
 func NewPushAgentImageCidToPinata(
 	logger *zap.Logger,
+	chainsSettings *settings.ChainsSettings,
 	pinataRequester services.PinataRequesterInterface,
 	ipfsCheckRequester services.IpfsCheckRequesterInterface,
 	agentCollectionRequester services.AgentCollectionRequesterInterface,
@@ -33,6 +36,7 @@ func NewPushAgentImageCidToPinata(
 ) *PushAgentImageCidToPinata {
 	return &PushAgentImageCidToPinata{
 		logger:                           logger,
+		chainsSettings:                   chainsSettings,
 		pinataRequester:                  pinataRequester,
 		ipfsCheckRequester:               ipfsCheckRequester,
 		agentCollectionRequester:         agentCollectionRequester,
@@ -41,35 +45,42 @@ func NewPushAgentImageCidToPinata(
 }
 
 func (p *PushAgentImageCidToPinata) PushMissingImageCids() error {
-	allCollections, err := p.agentCollectionsManagerRequester.GetAllCollectionAddresses()
-	if err != nil {
-		return err
-	}
+	for _, chainId := range p.chainsSettings.ChainIds() {
+		p.logger.Info("Processing chain", zap.Uint64("chainId", chainId))
 
-	for _, collectionAddress := range allCollections {
-		p.logger.Info("Processing collection", zap.String("collectionAddress", collectionAddress.String()))
-
-		tokenIds, err := p.agentCollectionRequester.GetAllTokenIds(collectionAddress)
+		allCollections, err := p.agentCollectionsManagerRequester.GetAllCollectionAddresses(chainId)
 		if err != nil {
 			return err
 		}
 
-		for _, tokenId := range tokenIds {
-			err = p.PushMissingImagesOfAgent(collectionAddress, tokenId)
+		for _, collectionAddress := range allCollections {
+			p.logger.Info("Processing collection",
+				zap.Uint64("chainId", chainId),
+				zap.String("collectionAddress", collectionAddress.String()),
+			)
+
+			tokenIds, err := p.agentCollectionRequester.GetAllTokenIds(chainId, collectionAddress)
 			if err != nil {
-				p.logger.Error("Failed to push agent image cid to pinata", zap.Error(err))
-				continue
+				return err
 			}
 
-			p.logger.Info("Successfully pushed agent image cid to pinata", zap.String("tokenId", tokenId.String()))
+			for _, tokenId := range tokenIds {
+				err = p.PushMissingImagesOfAgent(chainId, collectionAddress, tokenId)
+				if err != nil {
+					p.logger.Error("Failed to push agent image cid to pinata", zap.Error(err))
+					continue
+				}
+
+				p.logger.Info("Successfully pushed agent image cid to pinata", zap.String("tokenId", tokenId.String()))
+			}
 		}
 	}
 
 	return nil
 }
 
-func (p *PushAgentImageCidToPinata) PushMissingImagesOfAgent(agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error {
-	cids, err := p.agentCollectionRequester.GetAgentImages(agentCollectionAddress, agentCollectionTokenId)
+func (p *PushAgentImageCidToPinata) PushMissingImagesOfAgent(chainId uint64, agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error {
+	cids, err := p.agentCollectionRequester.GetAgentImages(chainId, agentCollectionAddress, agentCollectionTokenId)
 	if err != nil {
 		return err
 	}
@@ -102,8 +113,8 @@ func (p *PushAgentImageCidToPinata) PushMissingImagesOfAgent(agentCollectionAddr
 	return nil
 }
 
-func (p *PushAgentImageCidToPinata) PushImagesOfMintProposal(agentCollectionAddress common.Address, proposalId big.Int) error {
-	cids, err := p.agentCollectionRequester.GetMintProposalImages(agentCollectionAddress, proposalId)
+func (p *PushAgentImageCidToPinata) PushImagesOfMintProposal(chainId uint64, agentCollectionAddress common.Address, proposalId big.Int) error {
+	cids, err := p.agentCollectionRequester.GetMintProposalImages(chainId, agentCollectionAddress, proposalId)
 	if err != nil {
 		return err
 	}
@@ -125,8 +136,8 @@ func (p *PushAgentImageCidToPinata) PushImagesOfMintProposal(agentCollectionAddr
 	return nil
 }
 
-func (p *PushAgentImageCidToPinata) PushImageOfAgentImageProposal(agentCollectionAddress common.Address, proposalId big.Int) error {
-	cid, err := p.agentCollectionRequester.GetAgentImageProposalImage(agentCollectionAddress, proposalId)
+func (p *PushAgentImageCidToPinata) PushImageOfAgentImageProposal(chainId uint64, agentCollectionAddress common.Address, proposalId big.Int) error {
+	cid, err := p.agentCollectionRequester.GetAgentImageProposalImage(chainId, agentCollectionAddress, proposalId)
 	if err != nil {
 		return err
 	}

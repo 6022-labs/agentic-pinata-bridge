@@ -8,5 +8,5 @@ type ListenerInterface interface {
 
 type CollectionListenerInterface interface {
 	ListenerInterface
-	Subscribe(collectionAddress common.Address) error
+	Subscribe(chainId uint64, collectionAddress common.Address) error
 }

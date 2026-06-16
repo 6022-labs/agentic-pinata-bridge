@@ -3,6 +3,7 @@ package use_cases_test
 import (
 	"testing"
 
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks"
 	"github.com/stretchr/testify/assert"
@@ -29,6 +30,7 @@ func WhenPushingImageFromCidBeforeEach(t *testing.T) *WhenPushingImageFromCidTes
 
 	sut := use_cases.NewPushAgentImageCidToPinata(
 		zap.NewNop(),
+		settings.NewChainsSettingsFromChainIds([]uint64{testChainId}),
 		pinataRequester,
 		ipfsCheckRequester,
 		agentCollectionRequester,

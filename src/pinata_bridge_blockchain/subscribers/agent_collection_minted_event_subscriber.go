@@ -4,36 +4,34 @@ import (
 	"context"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
 
 type AgentCollectionMintedSubscriber struct {
-	logger *zap.Logger
-	client *ethclient.Client
-}
-
-type newAgentCollectionMintedSubscriberParams struct {
-	dig.In
-
-	Logger *zap.Logger
-	Client *ethclient.Client `name:"ws"`
+	logger           *zap.Logger
+	ethClientFactory *factory.EthClientFactory
 }
 
 func NewAgentCollectionMintedSubscriber(
-	params newAgentCollectionMintedSubscriberParams,
+	logger *zap.Logger,
+	ethClientFactory *factory.EthClientFactory,
 ) *AgentCollectionMintedSubscriber {
 	return &AgentCollectionMintedSubscriber{
-		logger: params.Logger,
-		client: params.Client,
+		logger:           logger,
+		ethClientFactory: ethClientFactory,
 	}
 }
 
-func (s *AgentCollectionMintedSubscriber) SubscribeMinted(ctx context.Context, agentCollectionAddress common.Address, logs chan<- *abi.AgentCollectionV1Minted) (ethereum.Subscription, error) {
-	agentCollection, err := abi.NewAgentCollectionV1(agentCollectionAddress, s.client)
+func (s *AgentCollectionMintedSubscriber) SubscribeMinted(ctx context.Context, chainId uint64, agentCollectionAddress common.Address, logs chan<- *abi.AgentCollectionV1Minted) (ethereum.Subscription, error) {
+	client, err := s.ethClientFactory.Ws(chainId)
+	if err != nil {
+		return nil, err
+	}
+
+	agentCollection, err := abi.NewAgentCollectionV1(agentCollectionAddress, client)
 	if err != nil {
 		return nil, err
 	}

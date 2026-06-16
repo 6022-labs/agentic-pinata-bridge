@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks"
 	"github.com/ethereum/go-ethereum/common"
@@ -11,6 +12,8 @@ import (
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
+
+const testChainId uint64 = 80002
 
 type WhenPushingMissingImageCidsTestingSuite struct {
 	sut *use_cases.PushAgentImageCidToPinata
@@ -31,6 +34,7 @@ func WhenPushingMissingImageCidsBeforeEach(t *testing.T) *WhenPushingMissingImag
 
 	sut := use_cases.NewPushAgentImageCidToPinata(
 		zap.NewNop(),
+		settings.NewChainsSettingsFromChainIds([]uint64{testChainId}),
 		pinataRequester,
 		ipfsCheckRequester,
 		agentCollectionRequester,
@@ -56,7 +60,7 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPushingMissingImageCidsBeforeEach(t)
-			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses().Return(nil, assert.AnError)
+			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses(gomock.Any()).Return(nil, assert.AnError)
 
 			err := suite.sut.PushMissingImageCids()
 			assert.Equal(t, err, assert.AnError)
@@ -74,9 +78,9 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 			}
 
 			suite := WhenPushingMissingImageCidsBeforeEach(t)
-			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses().Return(collectionAddress, nil)
+			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses(gomock.Any()).Return(collectionAddress, nil)
 			for _, address := range collectionAddress {
-				suite.agentCollectionRequester.EXPECT().GetAllTokenIds(address).Return(nil, assert.AnError)
+				suite.agentCollectionRequester.EXPECT().GetAllTokenIds(gomock.Any(), address).Return(nil, assert.AnError)
 			}
 
 			err := suite.sut.PushMissingImageCids()
@@ -103,11 +107,11 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 
 			imageCid := "test-cid"
 
-			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses().Return(collectionAddress, nil)
+			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses(gomock.Any()).Return(collectionAddress, nil)
 			for _, address := range collectionAddress {
-				suite.agentCollectionRequester.EXPECT().GetAllTokenIds(address).Return(tokenIds, nil)
+				suite.agentCollectionRequester.EXPECT().GetAllTokenIds(gomock.Any(), address).Return(tokenIds, nil)
 				for _, tokenId := range tokenIds {
-					suite.agentCollectionRequester.EXPECT().GetAgentImages(address, tokenId).Return([]string{imageCid}, nil)
+					suite.agentCollectionRequester.EXPECT().GetAgentImages(gomock.Any(), address, tokenId).Return([]string{imageCid}, nil)
 				}
 			}
 

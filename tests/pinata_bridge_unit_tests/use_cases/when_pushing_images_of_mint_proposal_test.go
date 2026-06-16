@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks"
 	"github.com/ethereum/go-ethereum/common"
@@ -31,6 +32,7 @@ func WhenPushingImagesOfMintProposalBeforeEach(t *testing.T) *WhenPushingImagesO
 
 	sut := use_cases.NewPushAgentImageCidToPinata(
 		zap.NewNop(),
+		settings.NewChainsSettingsFromChainIds([]uint64{testChainId}),
 		pinataRequester,
 		ipfsCheckRequester,
 		agentCollectionRequester,
@@ -55,9 +57,9 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
-			suite.agentCollectionRequester.EXPECT().GetMintProposalImages(gomock.Any(), gomock.Any()).Return(nil, assert.AnError)
+			suite.agentCollectionRequester.EXPECT().GetMintProposalImages(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, assert.AnError)
 
-			err := suite.sut.PushImagesOfMintProposal(common.HexToAddress(""), *big.NewInt(123))
+			err := suite.sut.PushImagesOfMintProposal(testChainId, common.HexToAddress(""), *big.NewInt(123))
 
 			assert.Equal(t, err, assert.AnError)
 		})
@@ -72,11 +74,11 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
 
 			testCid := "test-cid"
-			suite.agentCollectionRequester.EXPECT().GetMintProposalImages(gomock.Any(), gomock.Any()).Return([]string{testCid}, nil)
+			suite.agentCollectionRequester.EXPECT().GetMintProposalImages(gomock.Any(), gomock.Any(), gomock.Any()).Return([]string{testCid}, nil)
 			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any()).Return(assert.AnError).Times(2)
 			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).AnyTimes()
 
-			err := suite.sut.PushImagesOfMintProposal(common.HexToAddress(""), *big.NewInt(123))
+			err := suite.sut.PushImagesOfMintProposal(testChainId, common.HexToAddress(""), *big.NewInt(123))
 
 			assert.Equal(t, err, assert.AnError)
 		})
@@ -91,11 +93,11 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
 
 			testCid := "test-cid"
-			suite.agentCollectionRequester.EXPECT().GetMintProposalImages(gomock.Any(), gomock.Any()).Return([]string{testCid}, nil)
+			suite.agentCollectionRequester.EXPECT().GetMintProposalImages(gomock.Any(), gomock.Any(), gomock.Any()).Return([]string{testCid}, nil)
 			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).AnyTimes()
 
-			err := suite.sut.PushImagesOfMintProposal(common.HexToAddress(""), *big.NewInt(123))
+			err := suite.sut.PushImagesOfMintProposal(testChainId, common.HexToAddress(""), *big.NewInt(123))
 
 			assert.Equal(t, err, nil)
 		})

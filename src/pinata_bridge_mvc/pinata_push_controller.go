@@ -2,6 +2,7 @@ package pinata_bridge_mvc
 
 import (
 	"math/big"
+	"strconv"
 	"strings"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
@@ -11,8 +12,8 @@ import (
 
 const (
 	PUSH_MISSING_IMAGE_CIDS      = "/push_missing_image_cids"
-	PUSH_MISSING_IMAGES_OF_AGENT = "/push_missing_images_of_agent/:agentCollectionAddress/:agentCollectionTokenId"
-	PUSH_IMAGES_OF_MINT_PROPOSAL = "/push_images_of_mint_proposal/:agentCollectionAddress/:mintProposalId"
+	PUSH_MISSING_IMAGES_OF_AGENT = "/push_missing_images_of_agent/:chainId/:agentCollectionAddress/:agentCollectionTokenId"
+	PUSH_IMAGES_OF_MINT_PROPOSAL = "/push_images_of_mint_proposal/:chainId/:agentCollectionAddress/:mintProposalId"
 )
 
 type PinataPushController struct {
@@ -38,6 +39,16 @@ func (controller *PinataPushController) PushMissingImageCids(c *fiber.Ctx) error
 }
 
 func (controller *PinataPushController) PushMissingImagesOfAgent(c *fiber.Ctx) error {
+	chainIdStr := c.Params("chainId")
+	if len(strings.TrimSpace(chainIdStr)) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "chainId is required")
+	}
+
+	chainId, err := strconv.ParseUint(chainIdStr, 10, 64)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "chainId is invalid")
+	}
+
 	agentCollectionAddressStr := c.Params("agentCollectionAddress")
 	if len(strings.TrimSpace(agentCollectionAddressStr)) == 0 {
 		return fiber.NewError(fiber.StatusBadRequest, "agentCollectionAddress is required")
@@ -59,10 +70,20 @@ func (controller *PinataPushController) PushMissingImagesOfAgent(c *fiber.Ctx) e
 		return fiber.NewError(fiber.StatusBadRequest, "agentCollectionTokenId is invalid")
 	}
 
-	return controller.pushAgentImageCidToPinata.PushMissingImagesOfAgent(agentCollectionAddress, *tokenId)
+	return controller.pushAgentImageCidToPinata.PushMissingImagesOfAgent(chainId, agentCollectionAddress, *tokenId)
 }
 
 func (controller *PinataPushController) PushImagesOfMintProposal(c *fiber.Ctx) error {
+	chainIdStr := c.Params("chainId")
+	if len(strings.TrimSpace(chainIdStr)) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "chainId is required")
+	}
+
+	chainId, err := strconv.ParseUint(chainIdStr, 10, 64)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "chainId is invalid")
+	}
+
 	agentCollectionAddressStr := c.Params("agentCollectionAddress")
 	if len(strings.TrimSpace(agentCollectionAddressStr)) == 0 {
 		return fiber.NewError(fiber.StatusBadRequest, "agentCollectionAddress is required")
@@ -85,6 +106,7 @@ func (controller *PinataPushController) PushImagesOfMintProposal(c *fiber.Ctx) e
 	}
 
 	return controller.pushAgentImageCidToPinata.PushImagesOfMintProposal(
+		chainId,
 		agentCollectionAddress,
 		*mintProposalId,
 	)

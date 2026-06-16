@@ -2,9 +2,11 @@ package configurations
 
 import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
+	pinata_bridge_settings "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_event_listeners"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -42,6 +44,7 @@ type useListenersParams struct {
 	dig.In
 
 	HostSettings                     *settings.HostSettings
+	ChainsSettings                   *pinata_bridge_settings.ChainsSettings
 	AgentCollectionsManagerRequester services.AgentCollectionsManagerRequesterInterface
 	Listeners                        []pinata_bridge_event_listeners.ListenerInterface `group:"listeners"`
 }
@@ -52,18 +55,23 @@ func useListeners(p useListenersParams) {
 		return
 	}
 
-	collectionAddresses, err := p.AgentCollectionsManagerRequester.GetAllCollectionAddresses()
-	if err != nil {
-		panic(err)
+	collectionsByChain := map[uint64][]common.Address{}
+	for _, chainId := range p.ChainsSettings.ChainIds() {
+		collections, err := p.AgentCollectionsManagerRequester.GetAllCollectionAddresses(chainId)
+		if err != nil {
+			panic(err)
+		}
+		collectionsByChain[chainId] = collections
 	}
 
 	for _, listener := range p.Listeners {
 		// If the listener is a CollectionListenerInterface, subscribe to the collections
 		if collectionListener, ok := listener.(pinata_bridge_event_listeners.CollectionListenerInterface); ok {
-			for _, collection := range collectionAddresses {
-				err := collectionListener.Subscribe(collection)
-				if err != nil {
-					panic(err)
+			for chainId, collections := range collectionsByChain {
+				for _, collection := range collections {
+					if err := collectionListener.Subscribe(chainId, collection); err != nil {
+						panic(err)
+					}
 				}
 			}
 		}

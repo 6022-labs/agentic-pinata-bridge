@@ -40,12 +40,13 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 		t.Parallel()
 
 		suite := WhenHandlingMintedEventBeforeEach(t)
-		suite.pushAgentImageCidToPinata.EXPECT().PushMissingImagesOfAgent(gomock.Any(), gomock.Any()).DoAndReturn(func(collectionAddress common.Address, collectionAgentTokenId big.Int) error {
+		suite.pushAgentImageCidToPinata.EXPECT().PushMissingImagesOfAgent(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(chainId uint64, collectionAddress common.Address, collectionAgentTokenId big.Int) error {
+			assert.Equal(t, chainId, uint64(80002))
 			assert.Equal(t, collectionAgentTokenId.String(), "123")
 			return nil
 		})
 
-		err := suite.sut.Handle(&abi.AgentCollectionV1Minted{
+		err := suite.sut.Handle(80002, &abi.AgentCollectionV1Minted{
 			Raw: types.Log{
 				Address: common.HexToAddress("0x1234567890123456789012345678901234567890"),
 			},
