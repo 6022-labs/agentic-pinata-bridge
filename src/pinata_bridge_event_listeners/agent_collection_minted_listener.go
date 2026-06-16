@@ -4,8 +4,7 @@ import (
 	"context"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/event_handlers"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/subscribers"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
@@ -13,8 +12,8 @@ import (
 
 type AgentCollectionMintedListener struct {
 	logger                          *zap.Logger
-	mintedEventHandler              event_handlers.MintedEventHandlerInterface
-	agentCollectionMintedSubscriber subscribers.AgentCollectionMintedSubscriberInterface
+	mintedEventHandler              interfaces.MintedEventHandlerInterface
+	agentCollectionMintedSubscriber interfaces.AgentCollectionMintedSubscriberInterface
 
 	errorChannel  chan error
 	eventChannel  chan ChainEvent[abi.AgentCollectionV1Minted]
@@ -23,8 +22,8 @@ type AgentCollectionMintedListener struct {
 
 func NewAgentCollectionMintedListener(
 	logger *zap.Logger,
-	mintedEventHandler event_handlers.MintedEventHandlerInterface,
-	agentCollectionMintedSubscriber subscribers.AgentCollectionMintedSubscriberInterface,
+	mintedEventHandler interfaces.MintedEventHandlerInterface,
+	agentCollectionMintedSubscriber interfaces.AgentCollectionMintedSubscriberInterface,
 ) *AgentCollectionMintedListener {
 	return &AgentCollectionMintedListener{
 		logger:                          logger,

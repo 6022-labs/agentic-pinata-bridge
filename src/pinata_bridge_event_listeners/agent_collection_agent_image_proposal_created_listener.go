@@ -4,8 +4,7 @@ import (
 	"context"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/event_handlers"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/subscribers"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
@@ -13,8 +12,8 @@ import (
 
 type AgentCollectionAgentImageProposalCreatedListener struct {
 	logger                                             *zap.Logger
-	agentImageProposalCreatedEventHandler              event_handlers.AgentImageProposalCreatedEventHandlerInterface
-	agentCollectionAgentImageProposalCreatedSubscriber subscribers.AgentCollectionAgentImageProposalCreatedSubscriberInterface
+	agentImageProposalCreatedEventHandler              interfaces.AgentImageProposalCreatedEventHandlerInterface
+	agentCollectionAgentImageProposalCreatedSubscriber interfaces.AgentCollectionAgentImageProposalCreatedSubscriberInterface
 
 	errorChannel  chan error
 	eventChannel  chan ChainEvent[abi.AgentCollectionV1AgentImageProposalCreated]
@@ -23,8 +22,8 @@ type AgentCollectionAgentImageProposalCreatedListener struct {
 
 func NewAgentCollectionAgentImageProposalCreatedListener(
 	logger *zap.Logger,
-	agentImageProposalCreatedEventHandler event_handlers.AgentImageProposalCreatedEventHandlerInterface,
-	agentCollectionAgentImageProposalCreatedSubscriber subscribers.AgentCollectionAgentImageProposalCreatedSubscriberInterface,
+	agentImageProposalCreatedEventHandler interfaces.AgentImageProposalCreatedEventHandlerInterface,
+	agentCollectionAgentImageProposalCreatedSubscriber interfaces.AgentCollectionAgentImageProposalCreatedSubscriberInterface,
 ) *AgentCollectionAgentImageProposalCreatedListener {
 	return &AgentCollectionAgentImageProposalCreatedListener{
 		logger:                                logger,

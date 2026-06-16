@@ -3,7 +3,7 @@ package configurations
 import (
 	"net/http"
 
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/clients"
 	http_pinata_services "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/settings"
@@ -20,7 +20,7 @@ func AddPinataBridgeHttpPinataConfiguration(container *dig.Container) {
 	// Services
 	err = container.Provide(
 		http_pinata_services.NewPinataRequester,
-		dig.As(new(services.PinataRequesterInterface)),
+		dig.As(new(interfaces.PinataRequesterInterface)),
 	)
 	if err != nil {
 		panic(err)

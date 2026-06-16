@@ -1,8 +1,7 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/subscribers"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	blockchain_services "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/settings"
@@ -31,7 +30,7 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 	// Event subscribers
 	err = container.Provide(
 		blockchain_subscribers.NewAgentCollectionMintedSubscriber,
-		dig.As(new(subscribers.AgentCollectionMintedSubscriberInterface)),
+		dig.As(new(interfaces.AgentCollectionMintedSubscriberInterface)),
 	)
 	if err != nil {
 		panic(err)
@@ -39,7 +38,7 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 
 	err = container.Provide(
 		blockchain_subscribers.NewAgentCollectionMintProposalCreatedSubscriber,
-		dig.As(new(subscribers.AgentCollectionMintProposalCreatedSubscriberInterface)),
+		dig.As(new(interfaces.AgentCollectionMintProposalCreatedSubscriberInterface)),
 	)
 	if err != nil {
 		panic(err)
@@ -47,7 +46,7 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 
 	err = container.Provide(
 		blockchain_subscribers.NewAgentCollectionsManagerCollectionCreatedSubscriber,
-		dig.As(new(subscribers.AgentCollectionsManagerCollectionCreatedSubscriberInterface)),
+		dig.As(new(interfaces.AgentCollectionsManagerCollectionCreatedSubscriberInterface)),
 	)
 	if err != nil {
 		panic(err)
@@ -55,7 +54,7 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 
 	err = container.Provide(
 		blockchain_subscribers.NewAgentCollectionAgentImageProposalCreatedSubscriber,
-		dig.As(new(subscribers.AgentCollectionAgentImageProposalCreatedSubscriberInterface)),
+		dig.As(new(interfaces.AgentCollectionAgentImageProposalCreatedSubscriberInterface)),
 	)
 	if err != nil {
 		panic(err)
@@ -64,7 +63,7 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 	// Services
 	err = container.Provide(
 		blockchain_services.NewAgentCollectionRequester,
-		dig.As(new(services.AgentCollectionRequesterInterface)),
+		dig.As(new(interfaces.AgentCollectionRequesterInterface)),
 	)
 	if err != nil {
 		panic(err)
@@ -72,7 +71,7 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 
 	err = container.Provide(
 		blockchain_services.NewAgentCollectionsManagerRequester,
-		dig.As(new(services.AgentCollectionsManagerRequesterInterface)),
+		dig.As(new(interfaces.AgentCollectionsManagerRequesterInterface)),
 	)
 	if err != nil {
 		panic(err)

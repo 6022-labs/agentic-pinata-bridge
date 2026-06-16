@@ -1,7 +1,7 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	pinata_bridge_settings "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_event_listeners"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
@@ -45,7 +45,7 @@ type useListenersParams struct {
 
 	HostSettings                     *settings.HostSettings
 	ChainsSettings                   *pinata_bridge_settings.ChainsSettings
-	AgentCollectionsManagerRequester services.AgentCollectionsManagerRequesterInterface
+	AgentCollectionsManagerRequester interfaces.AgentCollectionsManagerRequesterInterface
 	Listeners                        []pinata_bridge_event_listeners.ListenerInterface `group:"listeners"`
 }
 

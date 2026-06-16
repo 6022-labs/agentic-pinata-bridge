@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gofiber/fiber/v2"
 )
@@ -17,11 +17,11 @@ const (
 )
 
 type PinataPushController struct {
-	pushAgentImageCidToPinata use_cases.PushAgentImageCidToPinataInterface
+	pushAgentImageCidToPinata interfaces.PushAgentImageCidToPinataInterface
 }
 
 func NewPinataPushController(
-	pushAgentImageCidToPinata use_cases.PushAgentImageCidToPinataInterface,
+	pushAgentImageCidToPinata interfaces.PushAgentImageCidToPinataInterface,
 ) *PinataPushController {
 	return &PinataPushController{
 		pushAgentImageCidToPinata: pushAgentImageCidToPinata,

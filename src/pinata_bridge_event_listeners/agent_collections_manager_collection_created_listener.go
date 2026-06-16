@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/subscribers"
 	"github.com/ethereum/go-ethereum"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
@@ -15,7 +15,7 @@ type AgentCollectionsManagerCollectionCreatedListener struct {
 	logger                                             *zap.Logger
 	chainsSettings                                     *settings.ChainsSettings
 	collectionListeners                                []CollectionListenerInterface
-	agentCollectionsManagerCollectionCreatedSubscriber subscribers.AgentCollectionsManagerCollectionCreatedSubscriberInterface
+	agentCollectionsManagerCollectionCreatedSubscriber interfaces.AgentCollectionsManagerCollectionCreatedSubscriberInterface
 
 	errorChannel  chan error
 	eventChannel  chan ChainEvent[abi.AgentCollectionsManagerCollectionCreated]
@@ -28,7 +28,7 @@ type newAgentCollectionsManagerCollectionCreatedListenerParams struct {
 	Logger                                             *zap.Logger
 	ChainsSettings                                     *settings.ChainsSettings
 	CollectionListeners                                []CollectionListenerInterface `group:"collection_listeners"`
-	AgentCollectionsManagerCollectionCreatedSubscriber subscribers.AgentCollectionsManagerCollectionCreatedSubscriberInterface
+	AgentCollectionsManagerCollectionCreatedSubscriber interfaces.AgentCollectionsManagerCollectionCreatedSubscriberInterface
 }
 
 func NewAgentCollectionsManagerCollectionCreatedListener(
