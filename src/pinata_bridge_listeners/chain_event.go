@@ -1,4 +1,4 @@
-package pinata_bridge_event_listeners
+package pinata_bridge_listeners
 
 // ChainEvent pairs a decoded event with the chain it was observed on.
 type ChainEvent[T any] struct {

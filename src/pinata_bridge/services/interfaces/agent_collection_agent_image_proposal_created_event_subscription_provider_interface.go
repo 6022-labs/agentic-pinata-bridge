@@ -1,0 +1,11 @@
+package interfaces
+
+import (
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
+)
+
+type AgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterface interface {
+	StartAgentImageProposalCreatedSubscription(chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1AgentImageProposalCreated, ethereum.Subscription, error)
+}

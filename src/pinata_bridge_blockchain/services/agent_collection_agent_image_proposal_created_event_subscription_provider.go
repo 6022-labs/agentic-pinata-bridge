@@ -1,8 +1,6 @@
-package subscribers
+package services
 
 import (
-	"context"
-
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	"github.com/ethereum/go-ethereum"
@@ -10,35 +8,36 @@ import (
 	"go.uber.org/zap"
 )
 
-type AgentCollectionAgentImageProposalCreatedSubscriber struct {
+type AgentCollectionAgentImageProposalCreatedEventSubscriptionProvider struct {
 	logger           *zap.Logger
 	ethClientFactory *factory.EthClientFactory
 }
 
-func NewAgentCollectionAgentImageProposalCreatedSubscriber(
+func NewAgentCollectionAgentImageProposalCreatedEventSubscriptionProvider(
 	logger *zap.Logger,
 	ethClientFactory *factory.EthClientFactory,
-) *AgentCollectionAgentImageProposalCreatedSubscriber {
-	return &AgentCollectionAgentImageProposalCreatedSubscriber{
+) *AgentCollectionAgentImageProposalCreatedEventSubscriptionProvider {
+	return &AgentCollectionAgentImageProposalCreatedEventSubscriptionProvider{
 		logger:           logger,
 		ethClientFactory: ethClientFactory,
 	}
 }
 
-func (s *AgentCollectionAgentImageProposalCreatedSubscriber) SubscribeAgentImageProposalCreated(ctx context.Context, chainId uint64, agentCollectionAddress common.Address, logs chan<- *abi.AgentCollectionV1AgentImageProposalCreated) (ethereum.Subscription, error) {
+func (s *AgentCollectionAgentImageProposalCreatedEventSubscriptionProvider) StartAgentImageProposalCreatedSubscription(chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1AgentImageProposalCreated, ethereum.Subscription, error) {
 	client, err := s.ethClientFactory.Ws(chainId)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	agentCollection, err := abi.NewAgentCollectionV1(agentCollectionAddress, client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
+	logs := make(chan *abi.AgentCollectionV1AgentImageProposalCreated, 64)
 	sub, err := agentCollection.WatchAgentImageProposalCreated(nil, logs, nil, nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	s.logger.Info(
@@ -46,5 +45,5 @@ func (s *AgentCollectionAgentImageProposalCreatedSubscriber) SubscribeAgentImage
 		zap.String("address", agentCollectionAddress.Hex()),
 	)
 
-	return sub, nil
+	return logs, sub, nil
 }

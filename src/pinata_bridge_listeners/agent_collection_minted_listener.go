@@ -1,19 +1,20 @@
-package pinata_bridge_event_listeners
+package pinata_bridge_listeners
 
 import (
-	"context"
-
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 )
 
 type AgentCollectionMintedListener struct {
-	logger                          *zap.Logger
-	mintedEventHandler              interfaces.MintedEventHandlerInterface
-	agentCollectionMintedSubscriber interfaces.AgentCollectionMintedSubscriberInterface
+	logger                                         *zap.Logger
+	chainsSettings                                 *settings.ChainsSettings
+	mintedEventHandler                             interfaces.MintedEventHandlerInterface
+	agentCollectionsManagerRequester               interfaces.AgentCollectionsManagerRequesterInterface
+	agentCollectionMintedEventSubscriptionProvider interfaces.AgentCollectionMintedEventSubscriptionProviderInterface
 
 	errorChannel  chan error
 	eventChannel  chan ChainEvent[abi.AgentCollectionV1Minted]
@@ -22,18 +23,39 @@ type AgentCollectionMintedListener struct {
 
 func NewAgentCollectionMintedListener(
 	logger *zap.Logger,
+	chainsSettings *settings.ChainsSettings,
 	mintedEventHandler interfaces.MintedEventHandlerInterface,
-	agentCollectionMintedSubscriber interfaces.AgentCollectionMintedSubscriberInterface,
+	agentCollectionsManagerRequester interfaces.AgentCollectionsManagerRequesterInterface,
+	agentCollectionMintedEventSubscriptionProvider interfaces.AgentCollectionMintedEventSubscriptionProviderInterface,
 ) *AgentCollectionMintedListener {
 	return &AgentCollectionMintedListener{
-		logger:                          logger,
-		mintedEventHandler:              mintedEventHandler,
-		agentCollectionMintedSubscriber: agentCollectionMintedSubscriber,
+		logger:                           logger,
+		chainsSettings:                   chainsSettings,
+		mintedEventHandler:               mintedEventHandler,
+		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
+		agentCollectionMintedEventSubscriptionProvider: agentCollectionMintedEventSubscriptionProvider,
 
 		subscriptions: []ethereum.Subscription{},
 		errorChannel:  make(chan error),
 		eventChannel:  make(chan ChainEvent[abi.AgentCollectionV1Minted]),
 	}
+}
+
+func (listener *AgentCollectionMintedListener) SubscribeAll() error {
+	for _, chainId := range listener.chainsSettings.ChainIds() {
+		collections, err := listener.agentCollectionsManagerRequester.GetAllCollectionAddresses(chainId)
+		if err != nil {
+			return err
+		}
+
+		for _, collection := range collections {
+			if err := listener.Subscribe(chainId, collection); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (listener *AgentCollectionMintedListener) Listen() error {
@@ -55,12 +77,9 @@ func (listener *AgentCollectionMintedListener) Listen() error {
 }
 
 func (listener *AgentCollectionMintedListener) Subscribe(chainId uint64, collectionAddress common.Address) error {
-	ctx := context.Background()
-
 	listener.logger.Debug("Subscribing to AgentCollection.Minted events", zap.Uint64("chainId", chainId), zap.String("collectionAddress", collectionAddress.Hex()))
 
-	rawEvents := make(chan *abi.AgentCollectionV1Minted)
-	subscription, err := listener.agentCollectionMintedSubscriber.SubscribeMinted(ctx, chainId, collectionAddress, rawEvents)
+	rawEvents, subscription, err := listener.agentCollectionMintedEventSubscriptionProvider.StartMintedSubscription(chainId, collectionAddress)
 	if err != nil {
 		return err
 	}

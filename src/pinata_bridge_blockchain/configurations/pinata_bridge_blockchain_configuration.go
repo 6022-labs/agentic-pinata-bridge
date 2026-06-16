@@ -5,7 +5,6 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	blockchain_services "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/settings"
-	blockchain_subscribers "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/subscribers"
 	"go.uber.org/dig"
 )
 
@@ -27,34 +26,34 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	// Event subscribers
+	// Event subscription providers
 	err = container.Provide(
-		blockchain_subscribers.NewAgentCollectionMintedSubscriber,
-		dig.As(new(interfaces.AgentCollectionMintedSubscriberInterface)),
+		blockchain_services.NewAgentCollectionMintedEventSubscriptionProvider,
+		dig.As(new(interfaces.AgentCollectionMintedEventSubscriptionProviderInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		blockchain_subscribers.NewAgentCollectionMintProposalCreatedSubscriber,
-		dig.As(new(interfaces.AgentCollectionMintProposalCreatedSubscriberInterface)),
+		blockchain_services.NewAgentCollectionMintProposalCreatedEventSubscriptionProvider,
+		dig.As(new(interfaces.AgentCollectionMintProposalCreatedEventSubscriptionProviderInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		blockchain_subscribers.NewAgentCollectionsManagerCollectionCreatedSubscriber,
-		dig.As(new(interfaces.AgentCollectionsManagerCollectionCreatedSubscriberInterface)),
+		blockchain_services.NewAgentCollectionsManagerCollectionCreatedEventSubscriptionProvider,
+		dig.As(new(interfaces.AgentCollectionsManagerCollectionCreatedEventSubscriptionProviderInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		blockchain_subscribers.NewAgentCollectionAgentImageProposalCreatedSubscriber,
-		dig.As(new(interfaces.AgentCollectionAgentImageProposalCreatedSubscriberInterface)),
+		blockchain_services.NewAgentCollectionAgentImageProposalCreatedEventSubscriptionProvider,
+		dig.As(new(interfaces.AgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterface)),
 	)
 	if err != nil {
 		panic(err)

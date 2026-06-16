@@ -1,7 +1,6 @@
-package subscribers
+package services
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
@@ -11,43 +10,44 @@ import (
 	"go.uber.org/zap"
 )
 
-type AgentCollectionsManagerCollectionCreatedSubscriber struct {
+type AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider struct {
 	logger           *zap.Logger
 	ethClientFactory *factory.EthClientFactory
 	managers         *settings.AgentCollectionsManagersSettings
 }
 
-func NewAgentCollectionsManagerCollectionCreatedSubscriber(
+func NewAgentCollectionsManagerCollectionCreatedEventSubscriptionProvider(
 	logger *zap.Logger,
 	ethClientFactory *factory.EthClientFactory,
 	managers *settings.AgentCollectionsManagersSettings,
-) *AgentCollectionsManagerCollectionCreatedSubscriber {
-	return &AgentCollectionsManagerCollectionCreatedSubscriber{
+) *AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider {
+	return &AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider{
 		logger:           logger,
 		ethClientFactory: ethClientFactory,
 		managers:         managers,
 	}
 }
 
-func (s *AgentCollectionsManagerCollectionCreatedSubscriber) SubscribeCollectionCreated(ctx context.Context, chainId uint64, logs chan<- *abi.AgentCollectionsManagerCollectionCreated) (ethereum.Subscription, error) {
+func (s *AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider) StartCollectionCreatedSubscription(chainId uint64) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
 	client, err := s.ethClientFactory.Ws(chainId)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	managerAddress, ok := s.managers.Get(chainId)
 	if !ok {
-		return nil, fmt.Errorf("no agent collections manager configured for chain %d", chainId)
+		return nil, nil, fmt.Errorf("no agent collections manager configured for chain %d", chainId)
 	}
 
 	agentCollectionsManager, err := abi.NewAgentCollectionsManager(managerAddress, client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
+	logs := make(chan *abi.AgentCollectionsManagerCollectionCreated, 64)
 	sub, err := agentCollectionsManager.WatchCollectionCreated(nil, logs, nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	s.logger.Info(
@@ -56,5 +56,5 @@ func (s *AgentCollectionsManagerCollectionCreatedSubscriber) SubscribeCollection
 		zap.String("address", managerAddress.Hex()),
 	)
 
-	return sub, nil
+	return logs, sub, nil
 }

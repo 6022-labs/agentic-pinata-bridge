@@ -1,19 +1,20 @@
-package pinata_bridge_event_listeners
+package pinata_bridge_listeners
 
 import (
-	"context"
-
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 )
 
 type AgentCollectionAgentImageProposalCreatedListener struct {
-	logger                                             *zap.Logger
-	agentImageProposalCreatedEventHandler              interfaces.AgentImageProposalCreatedEventHandlerInterface
-	agentCollectionAgentImageProposalCreatedSubscriber interfaces.AgentCollectionAgentImageProposalCreatedSubscriberInterface
+	logger                                                            *zap.Logger
+	chainsSettings                                                    *settings.ChainsSettings
+	agentImageProposalCreatedEventHandler                             interfaces.AgentImageProposalCreatedEventHandlerInterface
+	agentCollectionsManagerRequester                                  interfaces.AgentCollectionsManagerRequesterInterface
+	agentCollectionAgentImageProposalCreatedEventSubscriptionProvider interfaces.AgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterface
 
 	errorChannel  chan error
 	eventChannel  chan ChainEvent[abi.AgentCollectionV1AgentImageProposalCreated]
@@ -22,18 +23,39 @@ type AgentCollectionAgentImageProposalCreatedListener struct {
 
 func NewAgentCollectionAgentImageProposalCreatedListener(
 	logger *zap.Logger,
+	chainsSettings *settings.ChainsSettings,
 	agentImageProposalCreatedEventHandler interfaces.AgentImageProposalCreatedEventHandlerInterface,
-	agentCollectionAgentImageProposalCreatedSubscriber interfaces.AgentCollectionAgentImageProposalCreatedSubscriberInterface,
+	agentCollectionsManagerRequester interfaces.AgentCollectionsManagerRequesterInterface,
+	agentCollectionAgentImageProposalCreatedEventSubscriptionProvider interfaces.AgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterface,
 ) *AgentCollectionAgentImageProposalCreatedListener {
 	return &AgentCollectionAgentImageProposalCreatedListener{
 		logger:                                logger,
+		chainsSettings:                        chainsSettings,
 		agentImageProposalCreatedEventHandler: agentImageProposalCreatedEventHandler,
-		agentCollectionAgentImageProposalCreatedSubscriber: agentCollectionAgentImageProposalCreatedSubscriber,
+		agentCollectionsManagerRequester:      agentCollectionsManagerRequester,
+		agentCollectionAgentImageProposalCreatedEventSubscriptionProvider: agentCollectionAgentImageProposalCreatedEventSubscriptionProvider,
 
 		subscriptions: []ethereum.Subscription{},
 		errorChannel:  make(chan error),
 		eventChannel:  make(chan ChainEvent[abi.AgentCollectionV1AgentImageProposalCreated]),
 	}
+}
+
+func (listener *AgentCollectionAgentImageProposalCreatedListener) SubscribeAll() error {
+	for _, chainId := range listener.chainsSettings.ChainIds() {
+		collections, err := listener.agentCollectionsManagerRequester.GetAllCollectionAddresses(chainId)
+		if err != nil {
+			return err
+		}
+
+		for _, collection := range collections {
+			if err := listener.Subscribe(chainId, collection); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (listener *AgentCollectionAgentImageProposalCreatedListener) Listen() error {
@@ -55,12 +77,9 @@ func (listener *AgentCollectionAgentImageProposalCreatedListener) Listen() error
 }
 
 func (listener *AgentCollectionAgentImageProposalCreatedListener) Subscribe(chainId uint64, collectionAddress common.Address) error {
-	ctx := context.Background()
-
 	listener.logger.Debug("Subscribing to AgentCollection.AgentImageProposalCreated events", zap.Uint64("chainId", chainId), zap.String("collectionAddress", collectionAddress.Hex()))
 
-	rawEvents := make(chan *abi.AgentCollectionV1AgentImageProposalCreated)
-	subscription, err := listener.agentCollectionAgentImageProposalCreatedSubscriber.SubscribeAgentImageProposalCreated(ctx, chainId, collectionAddress, rawEvents)
+	rawEvents, subscription, err := listener.agentCollectionAgentImageProposalCreatedEventSubscriptionProvider.StartAgentImageProposalCreatedSubscription(chainId, collectionAddress)
 	if err != nil {
 		return err
 	}

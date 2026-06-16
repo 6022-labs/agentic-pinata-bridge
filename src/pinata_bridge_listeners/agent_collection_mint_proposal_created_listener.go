@@ -1,19 +1,20 @@
-package pinata_bridge_event_listeners
+package pinata_bridge_listeners
 
 import (
-	"context"
-
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 )
 
 type AgentCollectionMintProposalCreatedListener struct {
-	logger                                       *zap.Logger
-	mintProposalCreatedEventHandler              interfaces.MintProposalCreatedEventHandlerInterface
-	agentCollectionMintProposalCreatedSubscriber interfaces.AgentCollectionMintProposalCreatedSubscriberInterface
+	logger                                                       *zap.Logger
+	chainsSettings                                               *settings.ChainsSettings
+	mintProposalCreatedEventHandler                              interfaces.MintProposalCreatedEventHandlerInterface
+	agentCollectionsManagerRequester                            interfaces.AgentCollectionsManagerRequesterInterface
+	agentCollectionMintProposalCreatedEventSubscriptionProvider interfaces.AgentCollectionMintProposalCreatedEventSubscriptionProviderInterface
 
 	errorChannel  chan error
 	eventChannel  chan ChainEvent[abi.AgentCollectionV1MintProposalCreated]
@@ -22,18 +23,39 @@ type AgentCollectionMintProposalCreatedListener struct {
 
 func NewAgentCollectionMintProposalCreatedListener(
 	logger *zap.Logger,
+	chainsSettings *settings.ChainsSettings,
 	mintProposalCreatedEventHandler interfaces.MintProposalCreatedEventHandlerInterface,
-	agentCollectionMintProposalCreatedSubscriber interfaces.AgentCollectionMintProposalCreatedSubscriberInterface,
+	agentCollectionsManagerRequester interfaces.AgentCollectionsManagerRequesterInterface,
+	agentCollectionMintProposalCreatedEventSubscriptionProvider interfaces.AgentCollectionMintProposalCreatedEventSubscriptionProviderInterface,
 ) *AgentCollectionMintProposalCreatedListener {
 	return &AgentCollectionMintProposalCreatedListener{
-		logger:                          logger,
-		mintProposalCreatedEventHandler: mintProposalCreatedEventHandler,
-		agentCollectionMintProposalCreatedSubscriber: agentCollectionMintProposalCreatedSubscriber,
+		logger:                           logger,
+		chainsSettings:                   chainsSettings,
+		mintProposalCreatedEventHandler:  mintProposalCreatedEventHandler,
+		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
+		agentCollectionMintProposalCreatedEventSubscriptionProvider: agentCollectionMintProposalCreatedEventSubscriptionProvider,
 
 		subscriptions: []ethereum.Subscription{},
 		errorChannel:  make(chan error),
 		eventChannel:  make(chan ChainEvent[abi.AgentCollectionV1MintProposalCreated]),
 	}
+}
+
+func (listener *AgentCollectionMintProposalCreatedListener) SubscribeAll() error {
+	for _, chainId := range listener.chainsSettings.ChainIds() {
+		collections, err := listener.agentCollectionsManagerRequester.GetAllCollectionAddresses(chainId)
+		if err != nil {
+			return err
+		}
+
+		for _, collection := range collections {
+			if err := listener.Subscribe(chainId, collection); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (listener *AgentCollectionMintProposalCreatedListener) Listen() error {
@@ -55,12 +77,9 @@ func (listener *AgentCollectionMintProposalCreatedListener) Listen() error {
 }
 
 func (listener *AgentCollectionMintProposalCreatedListener) Subscribe(chainId uint64, collectionAddress common.Address) error {
-	ctx := context.Background()
-
 	listener.logger.Debug("Subscribing to AgentCollection.MintProposalCreated events", zap.Uint64("chainId", chainId), zap.String("collectionAddress", collectionAddress.Hex()))
 
-	rawEvents := make(chan *abi.AgentCollectionV1MintProposalCreated)
-	subscription, err := listener.agentCollectionMintProposalCreatedSubscriber.SubscribeMintProposalCreated(ctx, chainId, collectionAddress, rawEvents)
+	rawEvents, subscription, err := listener.agentCollectionMintProposalCreatedEventSubscriptionProvider.StartMintProposalCreatedSubscription(chainId, collectionAddress)
 	if err != nil {
 		return err
 	}
