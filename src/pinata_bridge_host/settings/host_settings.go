@@ -1,59 +1,32 @@
 package settings
 
 import (
-	"os"
-	"strconv"
-	"strings"
-
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
+const HostSettingsKey = "host"
+
 type HostSettings struct {
-	UseApi       bool
-	UseListeners bool
-	ApiPort      int
-	AppName      string
+	UseApi       bool `koanf:"use_api"`
+	UseListeners bool `koanf:"use_listeners"`
+	ApiPort      int  `koanf:"api_port"`
 }
 
-func NewHostSettings(logger *zap.Logger) *HostSettings {
-	useApiStr := os.Getenv("USE_API")
-	if len(strings.TrimSpace(useApiStr)) == 0 {
-		logger.Warn("environment variable USE_API is not set, defaulting to true")
-		useApiStr = "true"
+func NewHostSettings(logger *zap.Logger, k *koanf.Koanf) *HostSettings {
+	settings := HostSettings{
+		UseApi:       true,
+		UseListeners: true,
+		ApiPort:      3000,
+	}
+	if err := k.Unmarshal(HostSettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal host settings", zap.Error(err))
 	}
 
-	useApi := strings.ToLower(useApiStr) == "true" || useApiStr == "1"
-
-	useListenersStr := os.Getenv("USE_LISTENERS")
-	if len(strings.TrimSpace(useListenersStr)) == 0 {
-		logger.Warn("environment variable USE_LISTENERS is not set, defaulting to true")
-		useListenersStr = "true"
+	if settings.ApiPort <= 0 {
+		logger.Warn("invalid host.api_port value, defaulting to 3000")
+		settings.ApiPort = 3000
 	}
 
-	useListeners := strings.ToLower(useListenersStr) == "true" || useListenersStr == "1"
-
-	portStr := os.Getenv("API_PORT")
-	if len(strings.TrimSpace(portStr)) == 0 {
-		logger.Warn("environment variable API_PORT is not set, defaulting to 3000")
-		portStr = "3000"
-	}
-
-	apiPort, err := strconv.Atoi(portStr)
-	if err != nil {
-		logger.Warn("invalid API_PORT environment variable value, defaulting to 3000")
-		apiPort = 3000
-	}
-
-	appName := os.Getenv("APP_NAME")
-	if len(strings.TrimSpace(appName)) == 0 {
-		logger.Fatal("please set your APP_NAME value in your environment")
-	}
-
-	return &HostSettings{
-		ApiPort: apiPort,
-		AppName: appName,
-
-		UseApi:       useApi,
-		UseListeners: useListeners,
-	}
+	return &settings
 }

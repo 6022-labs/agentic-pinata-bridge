@@ -1,30 +1,34 @@
 package settings
 
 import (
-	"os"
 	"strings"
 
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
+const PinataSettingsKey = "pinata"
+
 type PinataSettings struct {
-	ApiKey  string
-	BaseUrl string
+	ApiKey  string `koanf:"api_key"`
+	BaseUrl string `koanf:"base_url"`
 }
 
-func NewPinataSettings(logger *zap.Logger) *PinataSettings {
-	pinataApiKey := os.Getenv("PINATA_API_KEY")
-	if len(strings.TrimSpace(pinataApiKey)) == 0 {
-		logger.Fatal("please set your PINATA_API_KEY value in your environment")
+func NewPinataSettings(logger *zap.Logger, k *koanf.Koanf) *PinataSettings {
+	settings := PinataSettings{}
+	if err := k.Unmarshal(PinataSettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal pinata settings", zap.Error(err))
 	}
 
-	pinataBaseUrl := os.Getenv("PINATA_BASE_URL")
-	if len(strings.TrimSpace(pinataBaseUrl)) == 0 {
-		logger.Fatal("please set your PINATA_BASE_URL value in your environment")
+	settings.ApiKey = strings.TrimSpace(settings.ApiKey)
+	if settings.ApiKey == "" {
+		logger.Fatal("please set pinata.api_key (or PINATA__API_KEY env)")
 	}
 
-	return &PinataSettings{
-		ApiKey:  pinataApiKey,
-		BaseUrl: pinataBaseUrl,
+	settings.BaseUrl = strings.TrimSpace(settings.BaseUrl)
+	if settings.BaseUrl == "" {
+		logger.Fatal("please set pinata.base_url (or PINATA__BASE_URL env)")
 	}
+
+	return &settings
 }

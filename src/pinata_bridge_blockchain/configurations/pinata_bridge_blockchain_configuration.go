@@ -12,7 +12,17 @@ import (
 
 func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 	// Settings
-	err := container.Provide(settings.NewRpcNodeSettings)
+	err := container.Provide(settings.NewChainsSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(settings.NewAgentCollectionsManagersSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(settings.NewRpcNodeSettings)
 	if err != nil {
 		panic(err)
 	}

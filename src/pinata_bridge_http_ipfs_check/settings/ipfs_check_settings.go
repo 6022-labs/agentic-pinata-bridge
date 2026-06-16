@@ -1,23 +1,28 @@
 package settings
 
 import (
-	"os"
 	"strings"
 
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
+const IpfsCheckSettingsKey = "ipfs_check"
+
 type IpfsCheckSettings struct {
-	BaseUrl string `json:"BaseUrl"`
+	BaseUrl string `koanf:"base_url"`
 }
 
-func NewIpfsCheckSettings(logger *zap.Logger) *IpfsCheckSettings {
-	ipfsCheckBaseUrl := os.Getenv("IPFS_CHECK_BASE_URL")
-	if len(strings.TrimSpace(ipfsCheckBaseUrl)) == 0 {
-		logger.Fatal("IPFS_CHECK_BASE_URL is not set")
+func NewIpfsCheckSettings(logger *zap.Logger, k *koanf.Koanf) *IpfsCheckSettings {
+	settings := IpfsCheckSettings{}
+	if err := k.Unmarshal(IpfsCheckSettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal ipfs_check settings", zap.Error(err))
 	}
 
-	return &IpfsCheckSettings{
-		BaseUrl: ipfsCheckBaseUrl,
+	settings.BaseUrl = strings.TrimSpace(settings.BaseUrl)
+	if settings.BaseUrl == "" {
+		logger.Fatal("please set ipfs_check.base_url (or IPFS_CHECK__BASE_URL env)")
 	}
+
+	return &settings
 }

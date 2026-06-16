@@ -1,9 +1,6 @@
 package settings
 
 import (
-	"os"
-	"strings"
-
 	"go.uber.org/zap"
 )
 
@@ -12,19 +9,18 @@ type RpcNodeSettings struct {
 	HttpUrl string
 }
 
-func NewRpcNodeSettings(logger *zap.Logger) *RpcNodeSettings {
-	wsUrl := os.Getenv("RPC_NODE_WS_URL")
-	if len(strings.TrimSpace(wsUrl)) == 0 {
-		logger.Fatal("please set your RPC_NODE_WS_URL value in your environment")
+func NewRpcNodeSettings(logger *zap.Logger, chains *ChainsSettings) *RpcNodeSettings {
+	if chains == nil || len(*chains) != 1 {
+		logger.Fatal("single-chain build expects exactly one configured chain in 'chains'")
 	}
 
-	httpUrl := os.Getenv("RPC_NODE_HTTP_URL")
-	if len(strings.TrimSpace(httpUrl)) == 0 {
-		logger.Fatal("please set your RPC_NODE_HTTP_URL value in your environment")
+	for _, chain := range *chains {
+		return &RpcNodeSettings{
+			WsUrl:   chain.RpcWsUrl,
+			HttpUrl: chain.RpcHttpUrl,
+		}
 	}
 
-	return &RpcNodeSettings{
-		WsUrl:   wsUrl,
-		HttpUrl: httpUrl,
-	}
+	// Unreachable: the length check above guarantees exactly one entry.
+	return nil
 }

@@ -15,7 +15,12 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	container := configurations.ConfigureDI()
+	config, err := configurations.LoadKoanfConfig()
+	if err != nil {
+		panic(err)
+	}
+
+	container := configurations.ConfigureDI(config)
 	configurations.ConfigureLogging(container)
 	configurations.ConfigureServer(container)
 
@@ -28,7 +33,7 @@ func main() {
 		}
 	})
 
-	err := container.Invoke(func(logger *zap.Logger, pushAgentImageCidToPinata use_cases.PushAgentImageCidToPinataInterface) error {
+	err = container.Invoke(func(logger *zap.Logger, pushAgentImageCidToPinata use_cases.PushAgentImageCidToPinataInterface) error {
 		logger.Info("Pushing missing image cids...")
 		return pushAgentImageCidToPinata.PushMissingImageCids()
 	})

@@ -12,6 +12,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const appName = "Pinata-Bridge"
+
 func ConfigureServer(container *dig.Container) {
 	container.Provide(newHttpServer)
 
@@ -32,7 +34,7 @@ func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
 	}
 
 	return fiber.New(fiber.Config{
-		AppName: hostSettings.AppName,
+		AppName: appName,
 	})
 }
 

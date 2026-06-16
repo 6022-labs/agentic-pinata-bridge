@@ -8,11 +8,18 @@ import (
 	pinata_bridge_http_ipfs_check_configuration "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/configurations"
 	pinata_bridge_http_pinata_configuration "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/configurations"
 	pinata_bridge_mvc_configuration "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc/configurations"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/dig"
 )
 
-func ConfigureDI() *dig.Container {
+func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	container := dig.New()
+
+	if err := container.Provide(func() *koanf.Koanf {
+		return config
+	}); err != nil {
+		panic(err)
+	}
 
 	container.Provide(pinata_bridge_host_settings.NewHostSettings)
 

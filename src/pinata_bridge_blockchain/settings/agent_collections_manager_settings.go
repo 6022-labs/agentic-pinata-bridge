@@ -1,9 +1,6 @@
 package settings
 
 import (
-	"os"
-	"strings"
-
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 )
@@ -12,19 +9,32 @@ type AgentCollectionsManagerSettings struct {
 	SmartContractAddress common.Address
 }
 
-func NewAgentCollectionsManagerSettings(logger *zap.Logger) *AgentCollectionsManagerSettings {
-	smartContractAddressStr := os.Getenv("AGENT_COLLECTIONS_MANAGER_SMART_CONTRACT_ADDRESS")
-	if len(strings.TrimSpace(smartContractAddressStr)) == 0 {
-		logger.Fatal("please set your AGENT_COLLECTIONS_MANAGER_SMART_CONTRACT_ADDRESS value in your environment")
+// NewAgentCollectionsManagerSettings derives the single-chain manager address from the
+// per-chain managers map. This is a temporary single-chain adapter: the multi-chain
+// follow-up removes it and lets services consume AgentCollectionsManagersSettings directly.
+func NewAgentCollectionsManagerSettings(
+	logger *zap.Logger,
+	chains *ChainsSettings,
+	managers *AgentCollectionsManagersSettings,
+) *AgentCollectionsManagerSettings {
+	if chains == nil || len(*chains) != 1 {
+		logger.Fatal("single-chain build expects exactly one configured chain in 'chains'")
 	}
 
-	if !common.IsHexAddress(smartContractAddressStr) {
-		logger.Fatal("AGENT_COLLECTIONS_MANAGER_SMART_CONTRACT_ADDRESS is not a valid Ethereum address")
+	for chainId := range *chains {
+		address, ok := managers.Get(chainId)
+		if !ok {
+			logger.Fatal(
+				"no agent_collections_manager address configured for the chain",
+				zap.Uint64("chain_id", chainId),
+			)
+		}
+
+		return &AgentCollectionsManagerSettings{
+			SmartContractAddress: address,
+		}
 	}
 
-	smartContractAddress := common.HexToAddress(smartContractAddressStr)
-
-	return &AgentCollectionsManagerSettings{
-		SmartContractAddress: smartContractAddress,
-	}
+	// Unreachable: the length check above guarantees exactly one entry.
+	return nil
 }
