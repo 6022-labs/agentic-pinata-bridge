@@ -1,0 +1,15 @@
+{
+  "_comment": "Well-known AgentCollectionsManager contract addresses per EVM chain id. Baked into the build, not operator config. Empty entries are skipped.",
+  "managers": [
+    {
+      "chainId": 137,
+      "name": "polygon-mainnet",
+      "address": "0xA39dC43bCAf07C142FF230cC73A8229347287958"
+    },
+    {
+      "chainId": 80002,
+      "name": "polygon-amoy",
+      "address": "0x33Fec4914A2f3e81Af2665B60b15Fb68c438e0d8"
+    }
+  ]
+}

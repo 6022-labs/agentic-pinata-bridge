@@ -5,84 +5,39 @@ import (
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/settings"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/knadh/koanf/providers/confmap"
-	"github.com/knadh/koanf/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
-const validManagerAddress = "0x52908400098527886E0F7030069857D2E4169EE7"
-
 func TestWhenLoadingAgentCollectionsManagersSettings(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given a valid manager address per chain", func(t *testing.T) {
+	t.Run("Given the embedded agent_collections_managers.json", func(t *testing.T) {
 		t.Parallel()
 
-		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]any{
-			"agent_collections_managers.80002": "  " + validManagerAddress + "  ",
-		}, "."), nil)
+		result := settings.NewAgentCollectionsManagersSettings(zap.NewNop())
 
-		t.Run("Should parse the address and resolve it via Get", func(t *testing.T) {
+		t.Run("Should expose the deployed manager address for polygon amoy", func(t *testing.T) {
 			t.Parallel()
-
-			result := settings.NewAgentCollectionsManagersSettings(zap.NewNop(), k)
 
 			addr, ok := result.Get(80002)
 			assert.True(t, ok)
-			assert.Equal(t, common.HexToAddress(validManagerAddress), addr)
-
-			_, missing := result.Get(999)
-			assert.False(t, missing)
+			assert.Equal(t, common.HexToAddress("0x33Fec4914A2f3e81Af2665B60b15Fb68c438e0d8"), addr)
 		})
-	})
 
-	t.Run("Given an empty manager address", func(t *testing.T) {
-		t.Parallel()
-
-		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]any{
-			"agent_collections_managers.80002": "   ",
-		}, "."), nil)
-
-		t.Run("Should fatal", func(t *testing.T) {
+		t.Run("Should expose the deployed manager address for polygon mainnet", func(t *testing.T) {
 			t.Parallel()
 
-			assert.Panics(t, func() {
-				settings.NewAgentCollectionsManagersSettings(panicLogger(), k)
-			})
+			addr, ok := result.Get(137)
+			assert.True(t, ok)
+			assert.Equal(t, common.HexToAddress("0xA39dC43bCAf07C142FF230cC73A8229347287958"), addr)
 		})
-	})
 
-	t.Run("Given an invalid hex address", func(t *testing.T) {
-		t.Parallel()
-
-		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]any{
-			"agent_collections_managers.80002": "not-an-address",
-		}, "."), nil)
-
-		t.Run("Should fatal", func(t *testing.T) {
+		t.Run("Should report not-ok for an unconfigured chain", func(t *testing.T) {
 			t.Parallel()
 
-			assert.Panics(t, func() {
-				settings.NewAgentCollectionsManagersSettings(panicLogger(), k)
-			})
-		})
-	})
-
-	t.Run("Given no managers are configured", func(t *testing.T) {
-		t.Parallel()
-
-		k := koanf.New(".")
-
-		t.Run("Should fatal", func(t *testing.T) {
-			t.Parallel()
-
-			assert.Panics(t, func() {
-				settings.NewAgentCollectionsManagersSettings(panicLogger(), k)
-			})
+			_, ok := result.Get(999)
+			assert.False(t, ok)
 		})
 	})
 }

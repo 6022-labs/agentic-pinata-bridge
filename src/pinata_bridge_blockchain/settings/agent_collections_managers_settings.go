@@ -1,41 +1,49 @@
 package settings
 
 import (
+	_ "embed"
+	"encoding/json"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
-const AgentCollectionsManagersSettingsKey = "agent_collections_managers"
+var agentCollectionsManagersJson []byte
 
+type agentCollectionsManagerEntry struct {
+	ChainId uint64 `json:"chainId"`
+	Name    string `json:"name"`
+	Address string `json:"address"`
+}
+
+type agentCollectionsManagersFile struct {
+	Managers []agentCollectionsManagerEntry `json:"managers"`
+}
+
+// Per-chain AgentCollectionsManager addresses baked into the build (not operator config).
 type AgentCollectionsManagersSettings map[uint64]common.Address
 
-func NewAgentCollectionsManagersSettings(logger *zap.Logger, k *koanf.Koanf) *AgentCollectionsManagersSettings {
-	raw := map[uint64]string{}
-	if err := k.UnmarshalWithConf(AgentCollectionsManagersSettingsKey, &raw, koanf.UnmarshalConf{Tag: "koanf"}); err != nil {
-		logger.Fatal("failed to unmarshal agent_collections_managers settings", zap.Error(err))
+func NewAgentCollectionsManagersSettings(logger *zap.Logger) *AgentCollectionsManagersSettings {
+	var f agentCollectionsManagersFile
+	if err := json.Unmarshal(agentCollectionsManagersJson, &f); err != nil {
+		logger.Fatal("failed to parse built-in agent_collections_managers.json", zap.Error(err))
 	}
 
 	settings := AgentCollectionsManagersSettings{}
-	for chainId, addr := range raw {
-		addr = strings.TrimSpace(addr)
+	for _, m := range f.Managers {
+		addr := strings.TrimSpace(m.Address)
 		if addr == "" {
-			logger.Fatal("agent_collections_manager address is required", zap.Uint64("chain_id", chainId))
+			continue
 		}
 		if !common.IsHexAddress(addr) {
 			logger.Fatal(
 				"agent_collections_manager address is not a valid hex address",
-				zap.Uint64("chain_id", chainId),
+				zap.Uint64("chain_id", m.ChainId),
 				zap.String("address", addr),
 			)
 		}
-		settings[chainId] = common.HexToAddress(addr)
-	}
-
-	if len(settings) == 0 {
-		logger.Fatal("agent_collections_managers settings is empty: configure at least one via appsettings.json or AGENT_COLLECTIONS_MANAGERS__<chain_id> env vars")
+		settings[m.ChainId] = common.HexToAddress(addr)
 	}
 
 	return &settings
