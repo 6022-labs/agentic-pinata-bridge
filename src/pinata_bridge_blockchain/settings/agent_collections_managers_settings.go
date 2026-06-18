@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:embed agent_collections_managers.json
 var agentCollectionsManagersJson []byte
 
 type agentCollectionsManagerEntry struct {
