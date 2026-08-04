@@ -35,7 +35,7 @@ func (s *AgentCollectionMintedEventSubscriptionProvider) StartMintedSubscription
 	}
 
 	logs := make(chan *abi.AgentCollectionV1Minted, 64)
-	sub, err := agentCollection.WatchMinted(nil, logs, nil, nil)
+	sub, err := agentCollection.WatchMinted(nil, logs, nil)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -35,7 +35,7 @@ func (s *AgentCollectionMintProposalCreatedEventSubscriptionProvider) StartMintP
 	}
 
 	logs := make(chan *abi.AgentCollectionV1MintProposalCreated, 64)
-	sub, err := agentCollection.WatchMintProposalCreated(nil, logs, nil, nil)
+	sub, err := agentCollection.WatchMintProposalCreated(nil, logs, nil)
 	if err != nil {
 		return nil, nil, err
 	}

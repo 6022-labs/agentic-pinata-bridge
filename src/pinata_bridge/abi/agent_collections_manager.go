@@ -29,9 +29,18 @@ var (
 	_ = abi.ConvertType
 )
 
+// AgentCollectionInfo is an auto generated low-level Go binding around an user-defined struct.
+type AgentCollectionInfo struct {
+	Name              string
+	Description       string
+	ModeratorCount    *big.Int
+	NextTokenId       *big.Int
+	CollectionAddress common.Address
+}
+
 // AgentCollectionsManagerMetaData contains all meta data concerning the AgentCollectionsManager contract.
 var AgentCollectionsManagerMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"collectionId\",\"type\":\"uint256\"}],\"name\":\"CollectionDoesNotExist\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"CollectionNameAlreadyExists\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"}],\"name\":\"CollectionSymbolAlreadyExists\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"collectionId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"collectionAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"}],\"name\":\"CollectionCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"CREATOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SIGNER_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newCollection\",\"type\":\"address\"}],\"name\":\"addCollection\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"collectionIdByName\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"collectionIdBySymbol\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"collections\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"isSigner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"moderatorOf\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextCollectionId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"collectionId\",\"type\":\"uint256\"}],\"name\":\"CollectionDoesNotExist\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"CollectionNameAlreadyExists\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"}],\"name\":\"CollectionSymbolAlreadyExists\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"collectionId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"collectionAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"}],\"name\":\"CollectionCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"CREATOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newCollection\",\"type\":\"address\"}],\"name\":\"addCollection\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"collectionIdByName\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"collectionIdBySymbol\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"collections\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"addressType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"offset\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"}],\"name\":\"findAgentByAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"next\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"isKnownCollection\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"offset\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"}],\"name\":\"listCollections\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"description\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"moderatorCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nextTokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"collectionAddress\",\"type\":\"address\"}],\"internalType\":\"structAgentCollectionInfo[]\",\"name\":\"infos\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"next\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"offset\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"}],\"name\":\"moderatorOf\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"moderatorCollections\",\"type\":\"address[]\"},{\"internalType\":\"uint256\",\"name\":\"next\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextCollectionId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // AgentCollectionsManagerABI is the input ABI used to generate the binding from.
@@ -242,37 +251,6 @@ func (_AgentCollectionsManager *AgentCollectionsManagerCallerSession) DEFAULTADM
 	return _AgentCollectionsManager.Contract.DEFAULTADMINROLE(&_AgentCollectionsManager.CallOpts)
 }
 
-// SIGNERROLE is a free data retrieval call binding the contract method 0xa1ebf35d.
-//
-// Solidity: function SIGNER_ROLE() view returns(bytes32)
-func (_AgentCollectionsManager *AgentCollectionsManagerCaller) SIGNERROLE(opts *bind.CallOpts) ([32]byte, error) {
-	var out []interface{}
-	err := _AgentCollectionsManager.contract.Call(opts, &out, "SIGNER_ROLE")
-
-	if err != nil {
-		return *new([32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
-
-	return out0, err
-
-}
-
-// SIGNERROLE is a free data retrieval call binding the contract method 0xa1ebf35d.
-//
-// Solidity: function SIGNER_ROLE() view returns(bytes32)
-func (_AgentCollectionsManager *AgentCollectionsManagerSession) SIGNERROLE() ([32]byte, error) {
-	return _AgentCollectionsManager.Contract.SIGNERROLE(&_AgentCollectionsManager.CallOpts)
-}
-
-// SIGNERROLE is a free data retrieval call binding the contract method 0xa1ebf35d.
-//
-// Solidity: function SIGNER_ROLE() view returns(bytes32)
-func (_AgentCollectionsManager *AgentCollectionsManagerCallerSession) SIGNERROLE() ([32]byte, error) {
-	return _AgentCollectionsManager.Contract.SIGNERROLE(&_AgentCollectionsManager.CallOpts)
-}
-
 // CollectionIdByName is a free data retrieval call binding the contract method 0x08fa3c65.
 //
 // Solidity: function collectionIdByName(string ) view returns(uint256)
@@ -366,6 +344,61 @@ func (_AgentCollectionsManager *AgentCollectionsManagerCallerSession) Collection
 	return _AgentCollectionsManager.Contract.Collections(&_AgentCollectionsManager.CallOpts, arg0)
 }
 
+// FindAgentByAddress is a free data retrieval call binding the contract method 0xe32f72a1.
+//
+// Solidity: function findAgentByAddress(string addressType, string value, uint256 offset, uint256 limit) view returns(address collection, uint256 tokenId, string name, uint256 next)
+func (_AgentCollectionsManager *AgentCollectionsManagerCaller) FindAgentByAddress(opts *bind.CallOpts, addressType string, value string, offset *big.Int, limit *big.Int) (struct {
+	Collection common.Address
+	TokenId    *big.Int
+	Name       string
+	Next       *big.Int
+}, error) {
+	var out []interface{}
+	err := _AgentCollectionsManager.contract.Call(opts, &out, "findAgentByAddress", addressType, value, offset, limit)
+
+	outstruct := new(struct {
+		Collection common.Address
+		TokenId    *big.Int
+		Name       string
+		Next       *big.Int
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.Collection = *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+	outstruct.TokenId = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.Name = *abi.ConvertType(out[2], new(string)).(*string)
+	outstruct.Next = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+
+	return *outstruct, err
+
+}
+
+// FindAgentByAddress is a free data retrieval call binding the contract method 0xe32f72a1.
+//
+// Solidity: function findAgentByAddress(string addressType, string value, uint256 offset, uint256 limit) view returns(address collection, uint256 tokenId, string name, uint256 next)
+func (_AgentCollectionsManager *AgentCollectionsManagerSession) FindAgentByAddress(addressType string, value string, offset *big.Int, limit *big.Int) (struct {
+	Collection common.Address
+	TokenId    *big.Int
+	Name       string
+	Next       *big.Int
+}, error) {
+	return _AgentCollectionsManager.Contract.FindAgentByAddress(&_AgentCollectionsManager.CallOpts, addressType, value, offset, limit)
+}
+
+// FindAgentByAddress is a free data retrieval call binding the contract method 0xe32f72a1.
+//
+// Solidity: function findAgentByAddress(string addressType, string value, uint256 offset, uint256 limit) view returns(address collection, uint256 tokenId, string name, uint256 next)
+func (_AgentCollectionsManager *AgentCollectionsManagerCallerSession) FindAgentByAddress(addressType string, value string, offset *big.Int, limit *big.Int) (struct {
+	Collection common.Address
+	TokenId    *big.Int
+	Name       string
+	Next       *big.Int
+}, error) {
+	return _AgentCollectionsManager.Contract.FindAgentByAddress(&_AgentCollectionsManager.CallOpts, addressType, value, offset, limit)
+}
+
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
 //
 // Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
@@ -428,12 +461,12 @@ func (_AgentCollectionsManager *AgentCollectionsManagerCallerSession) HasRole(ro
 	return _AgentCollectionsManager.Contract.HasRole(&_AgentCollectionsManager.CallOpts, role, account)
 }
 
-// IsSigner is a free data retrieval call binding the contract method 0x7df73e27.
+// IsKnownCollection is a free data retrieval call binding the contract method 0x3637b244.
 //
-// Solidity: function isSigner(address signer) view returns(bool)
-func (_AgentCollectionsManager *AgentCollectionsManagerCaller) IsSigner(opts *bind.CallOpts, signer common.Address) (bool, error) {
+// Solidity: function isKnownCollection(address ) view returns(bool)
+func (_AgentCollectionsManager *AgentCollectionsManagerCaller) IsKnownCollection(opts *bind.CallOpts, arg0 common.Address) (bool, error) {
 	var out []interface{}
-	err := _AgentCollectionsManager.contract.Call(opts, &out, "isSigner", signer)
+	err := _AgentCollectionsManager.contract.Call(opts, &out, "isKnownCollection", arg0)
 
 	if err != nil {
 		return *new(bool), err
@@ -445,49 +478,108 @@ func (_AgentCollectionsManager *AgentCollectionsManagerCaller) IsSigner(opts *bi
 
 }
 
-// IsSigner is a free data retrieval call binding the contract method 0x7df73e27.
+// IsKnownCollection is a free data retrieval call binding the contract method 0x3637b244.
 //
-// Solidity: function isSigner(address signer) view returns(bool)
-func (_AgentCollectionsManager *AgentCollectionsManagerSession) IsSigner(signer common.Address) (bool, error) {
-	return _AgentCollectionsManager.Contract.IsSigner(&_AgentCollectionsManager.CallOpts, signer)
+// Solidity: function isKnownCollection(address ) view returns(bool)
+func (_AgentCollectionsManager *AgentCollectionsManagerSession) IsKnownCollection(arg0 common.Address) (bool, error) {
+	return _AgentCollectionsManager.Contract.IsKnownCollection(&_AgentCollectionsManager.CallOpts, arg0)
 }
 
-// IsSigner is a free data retrieval call binding the contract method 0x7df73e27.
+// IsKnownCollection is a free data retrieval call binding the contract method 0x3637b244.
 //
-// Solidity: function isSigner(address signer) view returns(bool)
-func (_AgentCollectionsManager *AgentCollectionsManagerCallerSession) IsSigner(signer common.Address) (bool, error) {
-	return _AgentCollectionsManager.Contract.IsSigner(&_AgentCollectionsManager.CallOpts, signer)
+// Solidity: function isKnownCollection(address ) view returns(bool)
+func (_AgentCollectionsManager *AgentCollectionsManagerCallerSession) IsKnownCollection(arg0 common.Address) (bool, error) {
+	return _AgentCollectionsManager.Contract.IsKnownCollection(&_AgentCollectionsManager.CallOpts, arg0)
 }
 
-// ModeratorOf is a free data retrieval call binding the contract method 0x4b2d8148.
+// ListCollections is a free data retrieval call binding the contract method 0xc4c36e65.
 //
-// Solidity: function moderatorOf(address account) view returns(address[])
-func (_AgentCollectionsManager *AgentCollectionsManagerCaller) ModeratorOf(opts *bind.CallOpts, account common.Address) ([]common.Address, error) {
+// Solidity: function listCollections(uint256 offset, uint256 limit) view returns((string,string,uint256,uint256,address)[] infos, uint256 next)
+func (_AgentCollectionsManager *AgentCollectionsManagerCaller) ListCollections(opts *bind.CallOpts, offset *big.Int, limit *big.Int) (struct {
+	Infos []AgentCollectionInfo
+	Next  *big.Int
+}, error) {
 	var out []interface{}
-	err := _AgentCollectionsManager.contract.Call(opts, &out, "moderatorOf", account)
+	err := _AgentCollectionsManager.contract.Call(opts, &out, "listCollections", offset, limit)
 
+	outstruct := new(struct {
+		Infos []AgentCollectionInfo
+		Next  *big.Int
+	})
 	if err != nil {
-		return *new([]common.Address), err
+		return *outstruct, err
 	}
 
-	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
+	outstruct.Infos = *abi.ConvertType(out[0], new([]AgentCollectionInfo)).(*[]AgentCollectionInfo)
+	outstruct.Next = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
 
-	return out0, err
+	return *outstruct, err
 
 }
 
-// ModeratorOf is a free data retrieval call binding the contract method 0x4b2d8148.
+// ListCollections is a free data retrieval call binding the contract method 0xc4c36e65.
 //
-// Solidity: function moderatorOf(address account) view returns(address[])
-func (_AgentCollectionsManager *AgentCollectionsManagerSession) ModeratorOf(account common.Address) ([]common.Address, error) {
-	return _AgentCollectionsManager.Contract.ModeratorOf(&_AgentCollectionsManager.CallOpts, account)
+// Solidity: function listCollections(uint256 offset, uint256 limit) view returns((string,string,uint256,uint256,address)[] infos, uint256 next)
+func (_AgentCollectionsManager *AgentCollectionsManagerSession) ListCollections(offset *big.Int, limit *big.Int) (struct {
+	Infos []AgentCollectionInfo
+	Next  *big.Int
+}, error) {
+	return _AgentCollectionsManager.Contract.ListCollections(&_AgentCollectionsManager.CallOpts, offset, limit)
 }
 
-// ModeratorOf is a free data retrieval call binding the contract method 0x4b2d8148.
+// ListCollections is a free data retrieval call binding the contract method 0xc4c36e65.
 //
-// Solidity: function moderatorOf(address account) view returns(address[])
-func (_AgentCollectionsManager *AgentCollectionsManagerCallerSession) ModeratorOf(account common.Address) ([]common.Address, error) {
-	return _AgentCollectionsManager.Contract.ModeratorOf(&_AgentCollectionsManager.CallOpts, account)
+// Solidity: function listCollections(uint256 offset, uint256 limit) view returns((string,string,uint256,uint256,address)[] infos, uint256 next)
+func (_AgentCollectionsManager *AgentCollectionsManagerCallerSession) ListCollections(offset *big.Int, limit *big.Int) (struct {
+	Infos []AgentCollectionInfo
+	Next  *big.Int
+}, error) {
+	return _AgentCollectionsManager.Contract.ListCollections(&_AgentCollectionsManager.CallOpts, offset, limit)
+}
+
+// ModeratorOf is a free data retrieval call binding the contract method 0xc080ccab.
+//
+// Solidity: function moderatorOf(address account, uint256 offset, uint256 limit) view returns(address[] moderatorCollections, uint256 next)
+func (_AgentCollectionsManager *AgentCollectionsManagerCaller) ModeratorOf(opts *bind.CallOpts, account common.Address, offset *big.Int, limit *big.Int) (struct {
+	ModeratorCollections []common.Address
+	Next                 *big.Int
+}, error) {
+	var out []interface{}
+	err := _AgentCollectionsManager.contract.Call(opts, &out, "moderatorOf", account, offset, limit)
+
+	outstruct := new(struct {
+		ModeratorCollections []common.Address
+		Next                 *big.Int
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.ModeratorCollections = *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
+	outstruct.Next = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+
+	return *outstruct, err
+
+}
+
+// ModeratorOf is a free data retrieval call binding the contract method 0xc080ccab.
+//
+// Solidity: function moderatorOf(address account, uint256 offset, uint256 limit) view returns(address[] moderatorCollections, uint256 next)
+func (_AgentCollectionsManager *AgentCollectionsManagerSession) ModeratorOf(account common.Address, offset *big.Int, limit *big.Int) (struct {
+	ModeratorCollections []common.Address
+	Next                 *big.Int
+}, error) {
+	return _AgentCollectionsManager.Contract.ModeratorOf(&_AgentCollectionsManager.CallOpts, account, offset, limit)
+}
+
+// ModeratorOf is a free data retrieval call binding the contract method 0xc080ccab.
+//
+// Solidity: function moderatorOf(address account, uint256 offset, uint256 limit) view returns(address[] moderatorCollections, uint256 next)
+func (_AgentCollectionsManager *AgentCollectionsManagerCallerSession) ModeratorOf(account common.Address, offset *big.Int, limit *big.Int) (struct {
+	ModeratorCollections []common.Address
+	Next                 *big.Int
+}, error) {
+	return _AgentCollectionsManager.Contract.ModeratorOf(&_AgentCollectionsManager.CallOpts, account, offset, limit)
 }
 
 // NextCollectionId is a free data retrieval call binding the contract method 0xe77d6f7c.
