@@ -22,7 +22,7 @@ func TestWhenLoadingAgentCollectionsManagersSettings(t *testing.T) {
 
 			addr, ok := result.Get(80002)
 			assert.True(t, ok)
-			assert.Equal(t, common.HexToAddress("0x33Fec4914A2f3e81Af2665B60b15Fb68c438e0d8"), addr)
+			assert.Equal(t, common.HexToAddress("0x8095A0D4bE42A61db9e609aA693f516044Bda990"), addr)
 		})
 
 		t.Run("Should expose the deployed manager address for polygon mainnet", func(t *testing.T) {
@@ -30,7 +30,7 @@ func TestWhenLoadingAgentCollectionsManagersSettings(t *testing.T) {
 
 			addr, ok := result.Get(137)
 			assert.True(t, ok)
-			assert.Equal(t, common.HexToAddress("0xA39dC43bCAf07C142FF230cC73A8229347287958"), addr)
+			assert.Equal(t, common.HexToAddress("0xb0dc8a83c700A9BBcc53cA1a2C6993a63129d2F6"), addr)
 		})
 
 		t.Run("Should report not-ok for an unconfigured chain", func(t *testing.T) {
