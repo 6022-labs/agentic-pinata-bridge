@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /usr/local/go/src/github.com/6022-labs/agentic-pinata-bridge
 
@@ -22,7 +22,7 @@ FROM scratch AS final
 COPY --from=builder /app /app
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 
-EXPOSE 8000
+EXPOSE 3000
 
 # Run the compiled binary at container start.
 ENTRYPOINT ["/app"]
