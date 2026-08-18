@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	abi "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
@@ -43,9 +44,9 @@ func (m *MockAgentCollectionMintProposalCreatedEventSubscriptionProviderInterfac
 }
 
 // StartMintProposalCreatedSubscription mocks base method.
-func (m *MockAgentCollectionMintProposalCreatedEventSubscriptionProviderInterface) StartMintProposalCreatedSubscription(chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error) {
+func (m *MockAgentCollectionMintProposalCreatedEventSubscriptionProviderInterface) StartMintProposalCreatedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartMintProposalCreatedSubscription", chainId, agentCollectionAddress)
+	ret := m.ctrl.Call(m, "StartMintProposalCreatedSubscription", ctx, chainId, agentCollectionAddress)
 	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1MintProposalCreated)
 	ret1, _ := ret[1].(ethereum.Subscription)
 	ret2, _ := ret[2].(error)
@@ -53,7 +54,7 @@ func (m *MockAgentCollectionMintProposalCreatedEventSubscriptionProviderInterfac
 }
 
 // StartMintProposalCreatedSubscription indicates an expected call of StartMintProposalCreatedSubscription.
-func (mr *MockAgentCollectionMintProposalCreatedEventSubscriptionProviderInterfaceMockRecorder) StartMintProposalCreatedSubscription(chainId, agentCollectionAddress any) *gomock.Call {
+func (mr *MockAgentCollectionMintProposalCreatedEventSubscriptionProviderInterfaceMockRecorder) StartMintProposalCreatedSubscription(ctx, chainId, agentCollectionAddress any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintProposalCreatedSubscription", reflect.TypeOf((*MockAgentCollectionMintProposalCreatedEventSubscriptionProviderInterface)(nil).StartMintProposalCreatedSubscription), chainId, agentCollectionAddress)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintProposalCreatedSubscription", reflect.TypeOf((*MockAgentCollectionMintProposalCreatedEventSubscriptionProviderInterface)(nil).StartMintProposalCreatedSubscription), ctx, chainId, agentCollectionAddress)
 }

@@ -3,12 +3,22 @@ package configurations
 import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/metrics/interfaces"
 	blockchain_services "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/settings"
 	"go.uber.org/dig"
 )
 
 func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
+	// Metrics
+	if err := container.Provide(
+		metrics.NewBlockchainRpcMetrics,
+		dig.As(new(metrics_interfaces.BlockchainRpcMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	// Settings
 	err := container.Provide(settings.NewRpcSettings)
 	if err != nil {

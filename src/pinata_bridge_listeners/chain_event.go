@@ -5,3 +5,9 @@ type ChainEvent[T any] struct {
 	chainId uint64
 	event   *T
 }
+
+// ChainSubscriptionError pairs a failed subscription with the chain it was watching.
+type ChainSubscriptionError struct {
+	chainId uint64
+	err     error
+}

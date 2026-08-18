@@ -1,11 +1,14 @@
 package services_test
 
 import (
+	"context"
 	"math/big"
 	"testing"
 
+	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
+	metrics_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
@@ -22,6 +25,7 @@ type WhenPushingMissingImageCidsTestingSuite struct {
 	ipfsCheckRequester               *interfaces_mocks.MockIpfsCheckRequesterInterface
 	agentCollectionRequester         *interfaces_mocks.MockAgentCollectionRequesterInterface
 	agentCollectionsManagerRequester *interfaces_mocks.MockAgentCollectionsManagerRequesterInterface
+	pinMetrics                       *metrics_mocks.MockPinMetricsInterface
 }
 
 func WhenPushingMissingImageCidsBeforeEach(t *testing.T) *WhenPushingMissingImageCidsTestingSuite {
@@ -32,6 +36,8 @@ func WhenPushingMissingImageCidsBeforeEach(t *testing.T) *WhenPushingMissingImag
 	agentCollectionRequester := interfaces_mocks.NewMockAgentCollectionRequesterInterface(mockController)
 	agentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(mockController)
 
+	pinMetrics := metrics_mocks.NewMockPinMetricsInterface(mockController)
+
 	sut := services.NewPushAgentImageCidToPinata(
 		zap.NewNop(),
 		settings.NewChainsSettingsFromChainIds([]uint64{testChainId}),
@@ -39,6 +45,7 @@ func WhenPushingMissingImageCidsBeforeEach(t *testing.T) *WhenPushingMissingImag
 		ipfsCheckRequester,
 		agentCollectionRequester,
 		agentCollectionsManagerRequester,
+		pinMetrics,
 	)
 	return &WhenPushingMissingImageCidsTestingSuite{
 		sut: sut,
@@ -47,6 +54,7 @@ func WhenPushingMissingImageCidsBeforeEach(t *testing.T) *WhenPushingMissingImag
 		ipfsCheckRequester:               ipfsCheckRequester,
 		agentCollectionRequester:         agentCollectionRequester,
 		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
+		pinMetrics:                       pinMetrics,
 	}
 }
 
@@ -60,9 +68,11 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPushingMissingImageCidsBeforeEach(t)
-			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses(gomock.Any()).Return(nil, assert.AnError)
+			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses(gomock.Any(), gomock.Any()).Return(nil, assert.AnError)
 
-			err := suite.sut.PushMissingImageCids()
+			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAll, gomock.Any(), true)
+
+			err := suite.sut.PushMissingImageCids(context.Background())
 			assert.Equal(t, err, assert.AnError)
 		})
 	})
@@ -78,12 +88,14 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 			}
 
 			suite := WhenPushingMissingImageCidsBeforeEach(t)
-			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses(gomock.Any()).Return(collectionAddress, nil)
+			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses(gomock.Any(), gomock.Any()).Return(collectionAddress, nil)
 			for _, address := range collectionAddress {
-				suite.agentCollectionRequester.EXPECT().GetAllTokenIds(gomock.Any(), address).Return(nil, assert.AnError)
+				suite.agentCollectionRequester.EXPECT().GetAllTokenIds(gomock.Any(), gomock.Any(), address).Return(nil, assert.AnError)
 			}
 
-			err := suite.sut.PushMissingImageCids()
+			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAll, gomock.Any(), true)
+
+			err := suite.sut.PushMissingImageCids(context.Background())
 			assert.Equal(t, err, assert.AnError)
 		})
 	})
@@ -107,21 +119,27 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 
 			imageCid := "test-cid"
 
-			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses(gomock.Any()).Return(collectionAddress, nil)
+			suite.agentCollectionsManagerRequester.EXPECT().GetAllCollectionAddresses(gomock.Any(), gomock.Any()).Return(collectionAddress, nil)
 			for _, address := range collectionAddress {
-				suite.agentCollectionRequester.EXPECT().GetAllTokenIds(gomock.Any(), address).Return(tokenIds, nil)
+				suite.agentCollectionRequester.EXPECT().GetAllTokenIds(gomock.Any(), gomock.Any(), address).Return(tokenIds, nil)
 				for _, tokenId := range tokenIds {
-					suite.agentCollectionRequester.EXPECT().GetAgentImages(gomock.Any(), address, tokenId).Return([]string{imageCid}, nil)
+					suite.agentCollectionRequester.EXPECT().GetAgentImages(gomock.Any(), gomock.Any(), address, tokenId).Return([]string{imageCid}, nil)
 				}
 			}
 
 			isCidUploaded := false
 
-			suite.pinataRequester.EXPECT().IsCidUploaded(imageCid).Return(&isCidUploaded, nil).Times(len(tokenIds))
-			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any()).Return(nil).Times(len(tokenIds))
-			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any()).Return(nil, nil).AnyTimes()
+			suite.pinataRequester.EXPECT().IsCidUploaded(gomock.Any(), imageCid).Return(&isCidUploaded, nil).Times(len(tokenIds))
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(len(tokenIds))
+			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
-			err := suite.sut.PushMissingImageCids()
+			suite.pinMetrics.EXPECT().RecordHostLookup(gomock.Any(), metrics_interfaces.HostLookupOutcomeEmpty, int64(3)).Times(len(tokenIds))
+			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomePinned, false, gomock.Any()).Times(len(tokenIds))
+			suite.pinMetrics.EXPECT().RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomePinned).Times(len(tokenIds))
+			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), false).Times(len(tokenIds))
+			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAll, gomock.Any(), false)
+
+			err := suite.sut.PushMissingImageCids(context.Background())
 			assert.NoError(t, err)
 		})
 	})

@@ -1,5 +1,7 @@
 package interfaces
 
+import "context"
+
 type IpfsCheckRequesterInterface interface {
-	GetMultiAddresses(cid string) ([]string, error)
+	GetMultiAddresses(ctx context.Context, cid string) ([]string, error)
 }

@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	abi "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
@@ -43,9 +44,9 @@ func (m *MockAgentCollectionMintedEventSubscriptionProviderInterface) EXPECT() *
 }
 
 // StartMintedSubscription mocks base method.
-func (m *MockAgentCollectionMintedEventSubscriptionProviderInterface) StartMintedSubscription(chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
+func (m *MockAgentCollectionMintedEventSubscriptionProviderInterface) StartMintedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartMintedSubscription", chainId, agentCollectionAddress)
+	ret := m.ctrl.Call(m, "StartMintedSubscription", ctx, chainId, agentCollectionAddress)
 	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1Minted)
 	ret1, _ := ret[1].(ethereum.Subscription)
 	ret2, _ := ret[2].(error)
@@ -53,7 +54,7 @@ func (m *MockAgentCollectionMintedEventSubscriptionProviderInterface) StartMinte
 }
 
 // StartMintedSubscription indicates an expected call of StartMintedSubscription.
-func (mr *MockAgentCollectionMintedEventSubscriptionProviderInterfaceMockRecorder) StartMintedSubscription(chainId, agentCollectionAddress any) *gomock.Call {
+func (mr *MockAgentCollectionMintedEventSubscriptionProviderInterfaceMockRecorder) StartMintedSubscription(ctx, chainId, agentCollectionAddress any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintedSubscription", reflect.TypeOf((*MockAgentCollectionMintedEventSubscriptionProviderInterface)(nil).StartMintedSubscription), chainId, agentCollectionAddress)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintedSubscription", reflect.TypeOf((*MockAgentCollectionMintedEventSubscriptionProviderInterface)(nil).StartMintedSubscription), ctx, chainId, agentCollectionAddress)
 }

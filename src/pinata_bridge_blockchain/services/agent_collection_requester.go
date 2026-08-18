@@ -9,6 +9,7 @@ import (
 	pinata_bridge_abi "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -28,7 +29,7 @@ func NewAgentCollectionRequester(
 	}
 }
 
-func (a *AgentCollectionRequester) GetAllTokenIds(chainId uint64, collectionAddress common.Address) ([]big.Int, error) {
+func (a *AgentCollectionRequester) GetAllTokenIds(ctx context.Context, chainId uint64, collectionAddress common.Address) ([]big.Int, error) {
 	client, err := a.ethClientFactory.Http(chainId)
 	if err != nil {
 		return nil, err
@@ -42,7 +43,7 @@ func (a *AgentCollectionRequester) GetAllTokenIds(chainId uint64, collectionAddr
 		return nil, fmt.Errorf("failed to create agent collection instance: %w", err)
 	}
 
-	nextTokenId, err := AgentCollection.NextTokenId(nil)
+	nextTokenId, err := AgentCollection.NextTokenId(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get next token ID: %w", err)
 	}
@@ -60,7 +61,7 @@ func (a *AgentCollectionRequester) GetAllTokenIds(chainId uint64, collectionAddr
 	return tokenIds, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentImages(chainId uint64, collectionAddress common.Address, agentTokenId big.Int) ([]string, error) {
+func (a *AgentCollectionRequester) GetAgentImages(ctx context.Context, chainId uint64, collectionAddress common.Address, agentTokenId big.Int) ([]string, error) {
 	client, err := a.ethClientFactory.Http(chainId)
 	if err != nil {
 		return nil, err
@@ -74,7 +75,7 @@ func (a *AgentCollectionRequester) GetAgentImages(chainId uint64, collectionAddr
 		return nil, fmt.Errorf("failed to create agent collection instance: %w", err)
 	}
 
-	imageCount, err := agentCollection.ImagesCountOf(nil, &agentTokenId)
+	imageCount, err := agentCollection.ImagesCountOf(&bind.CallOpts{Context: ctx}, &agentTokenId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent image count: %w", err)
 	}
@@ -82,7 +83,7 @@ func (a *AgentCollectionRequester) GetAgentImages(chainId uint64, collectionAddr
 	imagesKeyValues := make([]pinata_bridge_abi.KeyValue, imageCount.Uint64())
 
 	for i := uint64(0); i < imageCount.Uint64(); i++ {
-		imageKeyValue, err := agentCollection.ImageOfByIndex(nil, &agentTokenId, big.NewInt(int64(i)))
+		imageKeyValue, err := agentCollection.ImageOfByIndex(&bind.CallOpts{Context: ctx}, &agentTokenId, big.NewInt(int64(i)))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get agent image at index %d: %w", i, err)
 		}
@@ -97,7 +98,7 @@ func (a *AgentCollectionRequester) GetAgentImages(chainId uint64, collectionAddr
 	return images, nil
 }
 
-func (a *AgentCollectionRequester) GetMintProposalImages(chainId uint64, collectionAddress common.Address, proposalId big.Int) ([]string, error) {
+func (a *AgentCollectionRequester) GetMintProposalImages(ctx context.Context, chainId uint64, collectionAddress common.Address, proposalId big.Int) ([]string, error) {
 	client, err := a.ethClientFactory.Http(chainId)
 	if err != nil {
 		return nil, err
@@ -111,7 +112,7 @@ func (a *AgentCollectionRequester) GetMintProposalImages(chainId uint64, collect
 		return nil, fmt.Errorf("failed to create agent collection instance: %w", err)
 	}
 
-	mintProposals, err := a.getMintProposals(client, agentCollection, collectionAddress)
+	mintProposals, err := a.getMintProposals(ctx, client, agentCollection, collectionAddress)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mint proposals: %w", err)
 	}
@@ -127,7 +128,7 @@ func (a *AgentCollectionRequester) GetMintProposalImages(chainId uint64, collect
 	return nil, fmt.Errorf("mint proposal with ID %s not found in collection %s", proposalId.String(), collectionAddress.Hex())
 }
 
-func (a *AgentCollectionRequester) GetAgentImageProposalImage(chainId uint64, collectionAddress common.Address, proposalId big.Int) (*string, error) {
+func (a *AgentCollectionRequester) GetAgentImageProposalImage(ctx context.Context, chainId uint64, collectionAddress common.Address, proposalId big.Int) (*string, error) {
 	client, err := a.ethClientFactory.Http(chainId)
 	if err != nil {
 		return nil, err
@@ -141,7 +142,7 @@ func (a *AgentCollectionRequester) GetAgentImageProposalImage(chainId uint64, co
 		return nil, fmt.Errorf("failed to create agent collection: %w", err)
 	}
 
-	addOrUpdateAgentImageProposals, err := a.getAddOrUpdateAgentImageProposals(client, agentCollection, collectionAddress)
+	addOrUpdateAgentImageProposals, err := a.getAddOrUpdateAgentImageProposals(ctx, client, agentCollection, collectionAddress)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get add or update agent image proposals: %w", err)
 	}
@@ -155,8 +156,8 @@ func (a *AgentCollectionRequester) GetAgentImageProposalImage(chainId uint64, co
 	return nil, fmt.Errorf("add or update agent image proposal with ID %s not found in collection %s", proposalId.String(), collectionAddress.Hex())
 }
 
-func (a *AgentCollectionRequester) getMintProposals(client *ethclient.Client, agentCollection *pinata_bridge_abi.AgentCollectionV1, agentCollectionAddress common.Address) ([]pinata_bridge_abi.MintProposal, error) {
-	mintProposalLength, err := agentCollection.MintProposalsLength(nil)
+func (a *AgentCollectionRequester) getMintProposals(ctx context.Context, client *ethclient.Client, agentCollection *pinata_bridge_abi.AgentCollectionV1, agentCollectionAddress common.Address) ([]pinata_bridge_abi.MintProposal, error) {
+	mintProposalLength, err := agentCollection.MintProposalsLength(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mint proposal length: %w", err)
 	}
@@ -187,7 +188,7 @@ func (a *AgentCollectionRequester) getMintProposals(client *ethclient.Client, ag
 		})
 	}
 
-	if err := client.Client().BatchCall(batch); err != nil {
+	if err := client.Client().BatchCallContext(ctx, batch); err != nil {
 		return nil, fmt.Errorf("failed to batch call mint proposals: %w", err)
 	}
 
@@ -209,8 +210,8 @@ func (a *AgentCollectionRequester) getMintProposals(client *ethclient.Client, ag
 	return mintProposals, nil
 }
 
-func (a *AgentCollectionRequester) getAddOrUpdateAgentImageProposals(client *ethclient.Client, agentCollection *pinata_bridge_abi.AgentCollectionV1, agentCollectionAddress common.Address) ([]pinata_bridge_abi.AddOrUpdateAgentImageProposal, error) {
-	addOrUpdateAgentImageProposalsLength, err := agentCollection.AddOrUpdateAgentImageProposalsLength(nil)
+func (a *AgentCollectionRequester) getAddOrUpdateAgentImageProposals(ctx context.Context, client *ethclient.Client, agentCollection *pinata_bridge_abi.AgentCollectionV1, agentCollectionAddress common.Address) ([]pinata_bridge_abi.AddOrUpdateAgentImageProposal, error) {
+	addOrUpdateAgentImageProposalsLength, err := agentCollection.AddOrUpdateAgentImageProposalsLength(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get add or update image proposal length: %w", err)
 	}
@@ -241,7 +242,7 @@ func (a *AgentCollectionRequester) getAddOrUpdateAgentImageProposals(client *eth
 		})
 	}
 
-	if err := client.Client().BatchCallContext(context.Background(), batch); err != nil {
+	if err := client.Client().BatchCallContext(ctx, batch); err != nil {
 		return nil, fmt.Errorf("failed to batch call add or update agent image proposals: %w", err)
 	}
 

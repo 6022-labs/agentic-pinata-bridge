@@ -1,6 +1,7 @@
 package clients_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -71,7 +72,7 @@ func TestWhenQueryingFileByCid(t *testing.T) {
 			defer WhenQueryingFileByCidAfterEach(suite)
 			initSuite(suite)
 
-			resp, err := suite.sut.QueryFileByCid("QmHash")
+			resp, err := suite.sut.QueryFileByCid(context.Background(), "QmHash")
 
 			assert.NoError(t, err)
 			assert.NotNil(t, resp)
@@ -102,7 +103,7 @@ func TestWhenQueryingFileByCid(t *testing.T) {
 			defer WhenQueryingFileByCidAfterEach(suite)
 			initSuite(suite)
 
-			resp, err := suite.sut.QueryFileByCid("QmHash")
+			resp, err := suite.sut.QueryFileByCid(context.Background(), "QmHash")
 
 			assert.Error(t, err)
 			assert.Nil(t, resp)

@@ -1,0 +1,96 @@
+services:
+  pinata-bridge:
+    build:
+      context: .
+      dockerfile: src/pinata_bridge_host/Dockerfile
+    env_file:
+      - src/pinata_bridge_host/.env
+    environment:
+      - TELEMETRY__ENABLED=true
+      - TELEMETRY__ENDPOINT=pinata-bridge-alloy:4317
+      - TELEMETRY__INSECURE=true
+      - TELEMETRY__INSTANCE_ID=local-dev
+      - TELEMETRY__ENVIRONMENT=local
+      # A token means bearer, a username + password means basic; setting both is fatal.
+      # - TELEMETRY__AUTH_TOKEN=shared-secret
+      # - TELEMETRY__AUTH_USERNAME=ingest-user
+      # - TELEMETRY__AUTH_PASSWORD=secret
+    ports:
+      - "3000:3000"
+
+  # Observability stack: Alloy (OTLP) -> Mimir + Loki + Tempo, shown in Grafana.
+  pinata-bridge-alloy:
+    build: ./grafana/alloy
+    container_name: pinata-bridge-alloy
+    environment:
+      - LOKI_URL=http://pinata-bridge-loki:3100
+      - MIMIR_URL=http://pinata-bridge-mimir:9009
+      - TEMPO_OTLP_URL=http://pinata-bridge-tempo:4318
+      # Ingest auth is off by default. htpasswd (one credential per sender, `$` escaped as `$$`)
+      # wins over token (one shared by every sender).
+      # - OTLP_AUTH_HTPASSWD=ingest-user:secret
+      # - OTLP_AUTH_TOKEN=shared-secret
+      # - OTLP_TLS_CERT_FILE=/certs/alloy.crt
+      # - OTLP_TLS_KEY_FILE=/certs/alloy.key
+      # - OTLP_TLS_CLIENT_CA_FILE=/certs/ca.crt
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+
+  pinata-bridge-mimir:
+    image: "grafana/mimir:3.1.1"
+    container_name: pinata-bridge-mimir
+    command: ["--config.file=/etc/mimir/mimir.yml", "--target=all"]
+    volumes:
+      - ./grafana/mimir/mimir-config.yaml:/etc/mimir/mimir.yml
+      - pinata-bridge-mimir-data:/mimir-data
+    ports:
+      - "9009:9009"
+
+  pinata-bridge-loki:
+    image: "grafana/loki:3.7.2"
+    container_name: pinata-bridge-loki
+    command: ["-config.file=/etc/loki/loki.yaml"]
+    volumes:
+      - ./grafana/loki/loki-config.yaml:/etc/loki/loki.yaml
+      - pinata-bridge-loki-data:/loki
+    ports:
+      - "3100:3100"
+
+  pinata-bridge-tempo:
+    image: "grafana/tempo:3.0.0"
+    container_name: pinata-bridge-tempo
+    depends_on:
+      - pinata-bridge-mimir
+    command: ["-config.file=/etc/tempo/tempo.yml"]
+    volumes:
+      - ./grafana/tempo/tempo-config.yaml:/etc/tempo/tempo.yml
+      - pinata-bridge-tempo-data:/var/tempo
+    ports:
+      - "3200:3200"
+
+  pinata-bridge-grafana:
+    image: "grafana/grafana:12.3.7"
+    container_name: pinata-bridge-grafana
+    depends_on:
+      - pinata-bridge-mimir
+      - pinata-bridge-loki
+      - pinata-bridge-tempo
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      MIMIR_URL: "http://pinata-bridge-mimir:9009"
+      LOKI_URL: "http://pinata-bridge-loki:3100"
+      TEMPO_URL: "http://pinata-bridge-tempo:3200"
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+
+volumes:
+  pinata-bridge-mimir-data:
+  pinata-bridge-loki-data:
+  pinata-bridge-tempo-data:

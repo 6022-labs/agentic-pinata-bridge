@@ -1,17 +1,21 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
+	"context"
+
+	mvc_middlewares "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/middlewares"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc"
 	"github.com/gofiber/contrib/fiberzap/v2"
+	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
 
-const appName = "Pinata-Bridge"
+const AppName = "6022-PinataBridge"
 
 func ConfigureServer(container *dig.Container) {
 	container.Provide(newHttpServer)
@@ -33,7 +37,7 @@ func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
 	}
 
 	return fiber.New(fiber.Config{
-		AppName: appName,
+		AppName: AppName,
 	})
 }
 
@@ -50,13 +54,15 @@ func useListeners(p useListenersParams) {
 		return
 	}
 
+	ctx := context.Background()
+
 	for _, listener := range p.EventListeners {
-		if err := listener.SubscribeAll(); err != nil {
+		if err := listener.SubscribeAll(ctx); err != nil {
 			panic(err)
 		}
 
 		go func(listener pinata_bridge_listeners.EventListenerInterface) {
-			if err := listener.Listen(); err != nil {
+			if err := listener.Listen(ctx); err != nil {
 				panic(err)
 			}
 		}(listener)
@@ -66,10 +72,11 @@ func useListeners(p useListenersParams) {
 type useRestApiParams struct {
 	dig.In
 
-	HostSettings *settings.HostSettings
-	App          *fiber.App
-	Logger       *zap.Logger
-	Controllers  []pinata_bridge_mvc.ControllerInterface `group:"controllers"`
+	HostSettings   *settings.HostSettings
+	App            *fiber.App
+	Logger         *zap.Logger
+	RequestMetrics *mvc_middlewares.ApiRequestMetricsMiddleware
+	Controllers    []pinata_bridge_mvc.ControllerInterface `group:"controllers"`
 }
 
 // UseRestApi hooks up the routes and uses Fx to create new controller instances per request
@@ -82,6 +89,10 @@ func useRestApi(p useRestApiParams) {
 		AllowOrigins: "*",
 		AllowHeaders: "*",
 	}))
+
+	// Spans only: ApiRequestMetrics owns http.server.*.
+	p.App.Use(otelfiber.Middleware(otelfiber.WithoutMetrics(true)))
+	p.App.Use(p.RequestMetrics.Handle)
 
 	p.App.Use(fiberzap.New(fiberzap.Config{
 		Logger: p.Logger,

@@ -1,12 +1,16 @@
 package pinata_bridge_listeners
 
-import "github.com/ethereum/go-ethereum/common"
+import (
+	"context"
+
+	"github.com/ethereum/go-ethereum/common"
+)
 
 type EventListenerInterface interface {
-	SubscribeAll() error
-	Listen() error
+	SubscribeAll(ctx context.Context) error
+	Listen(ctx context.Context) error
 }
 
 type CollectionEventSubscriberInterface interface {
-	Subscribe(chainId uint64, collectionAddress common.Address) error
+	Subscribe(ctx context.Context, chainId uint64, collectionAddress common.Address) error
 }

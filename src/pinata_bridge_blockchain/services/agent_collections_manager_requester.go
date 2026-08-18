@@ -11,6 +11,7 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/settings"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rpc"
 )
@@ -30,7 +31,7 @@ func NewAgentCollectionsManagerRequester(
 	}
 }
 
-func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses(chainId uint64) ([]common.Address, error) {
+func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses(ctx context.Context, chainId uint64) ([]common.Address, error) {
 	client, err := a.ethClientFactory.Http(chainId)
 	if err != nil {
 		return nil, err
@@ -54,7 +55,7 @@ func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses(chainId uin
 		return nil, err
 	}
 
-	nextId, err := contract.NextCollectionId(nil)
+	nextId, err := contract.NextCollectionId(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses(chainId uin
 		})
 	}
 
-	if err := client.Client().BatchCallContext(context.Background(), batch); err != nil {
+	if err := client.Client().BatchCallContext(ctx, batch); err != nil {
 		return nil, err
 	}
 

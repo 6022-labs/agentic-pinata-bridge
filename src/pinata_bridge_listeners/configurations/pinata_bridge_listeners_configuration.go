@@ -2,10 +2,20 @@ package configurations
 
 import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners/metrics/interfaces"
 	"go.uber.org/dig"
 )
 
 func AddPinataBridgeListenersConfiguration(container *dig.Container) {
+	// Metrics
+	if err := container.Provide(
+		metrics.NewChainEventMetrics,
+		dig.As(new(metrics_interfaces.ChainEventMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	// Listener
 	err := container.Provide(pinata_bridge_listeners.NewAgentCollectionMintedListener)
 	if err != nil {

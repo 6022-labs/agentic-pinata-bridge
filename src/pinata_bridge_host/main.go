@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
+	"github.com/6022-labs/agentic-pinata-bridge/src/common/host_configurations"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/configurations"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
@@ -13,7 +18,7 @@ import (
 )
 
 func main() {
-	godotenv.Load(".env")
+	_ = godotenv.Load(".env")
 
 	config, err := configurations.LoadKoanfConfig()
 	if err != nil {
@@ -22,44 +27,83 @@ func main() {
 
 	container := configurations.ConfigureDI(config)
 	configurations.ConfigureLogging(container)
+
+	shutdownTelemetry := host_configurations.ConfigureTelemetry(container, configurations.AppName)
+
 	configurations.ConfigureServer(container)
 
-	container.Invoke(func(logger *zap.Logger, hostSettings *settings.HostSettings) {
-		logger.Info("Starting Orchestrator SC Sync Host")
+	err = container.Invoke(func(logger *zap.Logger, hostSettings *settings.HostSettings) {
+		logger.Info("Starting Pinata Bridge Host")
 
 		if !hostSettings.UseApi && !hostSettings.UseListeners {
 			logger.Info("Both API and listeners are disabled. Waiting for 10 seconds before exiting to avoid too much requests to RPC nodes due to HTTP synchronization.")
 			time.Sleep(10 * time.Second)
 		}
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	err = container.Invoke(func(logger *zap.Logger, pushAgentImageCidToPinata interfaces.PushAgentImageCidToPinataInterface) error {
 		logger.Info("Pushing missing image cids...")
-		return pushAgentImageCidToPinata.PushMissingImageCids()
+		return pushAgentImageCidToPinata.PushMissingImageCids(context.Background())
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Invoke(func(logger *zap.Logger, hostSettings *settings.HostSettings) error {
+	err = container.Invoke(func(app *fiber.App, logger *zap.Logger, hostSettings *settings.HostSettings) error {
 		if !hostSettings.UseApi && !hostSettings.UseListeners {
 			return nil
 		}
 
-		if !hostSettings.UseApi && hostSettings.UseListeners {
-			logger.Info("Listeners are enabled, but API is disabled. Run long-running tasks to keep the application running.")
-			select {}
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+		// Listener-only mode has no server to wait on; the signal is the only thing that ends the process.
+		serverErrCh := make(chan error, 1)
+		if hostSettings.UseApi {
+			bind := fmt.Sprintf(":%d", hostSettings.ApiPort)
+			logger.Info("Starting server", zap.String("bind", bind))
+
+			go func() {
+				serverErrCh <- app.Listen(bind)
+			}()
+		} else {
+			logger.Info("Listeners are enabled, but API is disabled. Waiting for a shutdown signal.")
 		}
 
-		return container.Invoke(func(app *fiber.App) error {
-			apiPort := fmt.Sprintf("%d", hostSettings.ApiPort)
-			logger.Info("Starting server on port " + apiPort)
-			return app.Listen(fmt.Sprintf(":%s", apiPort))
-		})
-	})
+		select {
+		case sig := <-sigCh:
+			logger.Info("Shutdown signal received", zap.String("signal", sig.String()))
 
+			if hostSettings.UseApi {
+				if err := app.Shutdown(); err != nil {
+					logger.Warn("Fiber shutdown returned an error", zap.Error(err))
+				}
+
+				if err := <-serverErrCh; err != nil {
+					logger.Error("Server stopped with error", zap.Error(err))
+				} else {
+					logger.Info("Server stopped")
+				}
+			}
+			if err := shutdownTelemetry(context.Background()); err != nil {
+				logger.Warn("Telemetry shutdown returned an error", zap.Error(err))
+			}
+
+			logger.Info("Shutdown complete")
+			_ = logger.Sync()
+			return nil
+
+		case err := <-serverErrCh:
+			if err != nil {
+				return fmt.Errorf("server exited unexpectedly: %w", err)
+			}
+			return nil
+		}
+	})
 	if err != nil {
 		panic(err)
 	}
-
 }

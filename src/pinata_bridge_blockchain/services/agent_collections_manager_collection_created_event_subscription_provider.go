@@ -1,6 +1,9 @@
 package services
 
 import (
+	"context"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
@@ -28,7 +31,7 @@ func NewAgentCollectionsManagerCollectionCreatedEventSubscriptionProvider(
 	}
 }
 
-func (s *AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider) StartCollectionCreatedSubscription(chainId uint64) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
+func (s *AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider) StartCollectionCreatedSubscription(ctx context.Context, chainId uint64) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
 	client, err := s.ethClientFactory.Ws(chainId)
 	if err != nil {
 		return nil, nil, err
@@ -45,7 +48,7 @@ func (s *AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider) Star
 	}
 
 	logs := make(chan *abi.AgentCollectionsManagerCollectionCreated, 64)
-	sub, err := agentCollectionsManager.WatchCollectionCreated(nil, logs, nil)
+	sub, err := agentCollectionsManager.WatchCollectionCreated(&bind.WatchOpts{Context: ctx}, logs, nil)
 	if err != nil {
 		return nil, nil, err
 	}

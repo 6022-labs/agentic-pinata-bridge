@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -40,16 +41,16 @@ func (m *MockIpfsCheckRequesterInterface) EXPECT() *MockIpfsCheckRequesterInterf
 }
 
 // GetMultiAddresses mocks base method.
-func (m *MockIpfsCheckRequesterInterface) GetMultiAddresses(cid string) ([]string, error) {
+func (m *MockIpfsCheckRequesterInterface) GetMultiAddresses(ctx context.Context, cid string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMultiAddresses", cid)
+	ret := m.ctrl.Call(m, "GetMultiAddresses", ctx, cid)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetMultiAddresses indicates an expected call of GetMultiAddresses.
-func (mr *MockIpfsCheckRequesterInterfaceMockRecorder) GetMultiAddresses(cid any) *gomock.Call {
+func (mr *MockIpfsCheckRequesterInterfaceMockRecorder) GetMultiAddresses(ctx, cid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultiAddresses", reflect.TypeOf((*MockIpfsCheckRequesterInterface)(nil).GetMultiAddresses), cid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultiAddresses", reflect.TypeOf((*MockIpfsCheckRequesterInterface)(nil).GetMultiAddresses), ctx, cid)
 }

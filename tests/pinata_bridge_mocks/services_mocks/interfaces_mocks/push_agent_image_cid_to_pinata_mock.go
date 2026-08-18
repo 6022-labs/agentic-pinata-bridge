@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	big "math/big"
 	reflect "reflect"
 
@@ -42,71 +43,71 @@ func (m *MockPushAgentImageCidToPinataInterface) EXPECT() *MockPushAgentImageCid
 }
 
 // PushFromCid mocks base method.
-func (m *MockPushAgentImageCidToPinataInterface) PushFromCid(cid string) error {
+func (m *MockPushAgentImageCidToPinataInterface) PushFromCid(ctx context.Context, cid string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PushFromCid", cid)
+	ret := m.ctrl.Call(m, "PushFromCid", ctx, cid)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PushFromCid indicates an expected call of PushFromCid.
-func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushFromCid(cid any) *gomock.Call {
+func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushFromCid(ctx, cid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushFromCid", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushFromCid), cid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushFromCid", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushFromCid), ctx, cid)
 }
 
 // PushImageOfAgentImageProposal mocks base method.
-func (m *MockPushAgentImageCidToPinataInterface) PushImageOfAgentImageProposal(chainId uint64, agentCollectionAddress common.Address, proposalId big.Int) error {
+func (m *MockPushAgentImageCidToPinataInterface) PushImageOfAgentImageProposal(ctx context.Context, chainId uint64, agentCollectionAddress common.Address, proposalId big.Int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PushImageOfAgentImageProposal", chainId, agentCollectionAddress, proposalId)
+	ret := m.ctrl.Call(m, "PushImageOfAgentImageProposal", ctx, chainId, agentCollectionAddress, proposalId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PushImageOfAgentImageProposal indicates an expected call of PushImageOfAgentImageProposal.
-func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushImageOfAgentImageProposal(chainId, agentCollectionAddress, proposalId any) *gomock.Call {
+func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushImageOfAgentImageProposal(ctx, chainId, agentCollectionAddress, proposalId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushImageOfAgentImageProposal", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushImageOfAgentImageProposal), chainId, agentCollectionAddress, proposalId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushImageOfAgentImageProposal", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushImageOfAgentImageProposal), ctx, chainId, agentCollectionAddress, proposalId)
 }
 
 // PushImagesOfMintProposal mocks base method.
-func (m *MockPushAgentImageCidToPinataInterface) PushImagesOfMintProposal(chainId uint64, agentCollectionAddress common.Address, proposalId big.Int) error {
+func (m *MockPushAgentImageCidToPinataInterface) PushImagesOfMintProposal(ctx context.Context, chainId uint64, agentCollectionAddress common.Address, proposalId big.Int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PushImagesOfMintProposal", chainId, agentCollectionAddress, proposalId)
+	ret := m.ctrl.Call(m, "PushImagesOfMintProposal", ctx, chainId, agentCollectionAddress, proposalId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PushImagesOfMintProposal indicates an expected call of PushImagesOfMintProposal.
-func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushImagesOfMintProposal(chainId, agentCollectionAddress, proposalId any) *gomock.Call {
+func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushImagesOfMintProposal(ctx, chainId, agentCollectionAddress, proposalId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushImagesOfMintProposal", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushImagesOfMintProposal), chainId, agentCollectionAddress, proposalId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushImagesOfMintProposal", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushImagesOfMintProposal), ctx, chainId, agentCollectionAddress, proposalId)
 }
 
 // PushMissingImageCids mocks base method.
-func (m *MockPushAgentImageCidToPinataInterface) PushMissingImageCids() error {
+func (m *MockPushAgentImageCidToPinataInterface) PushMissingImageCids(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PushMissingImageCids")
+	ret := m.ctrl.Call(m, "PushMissingImageCids", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PushMissingImageCids indicates an expected call of PushMissingImageCids.
-func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushMissingImageCids() *gomock.Call {
+func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushMissingImageCids(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushMissingImageCids", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushMissingImageCids))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushMissingImageCids", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushMissingImageCids), ctx)
 }
 
 // PushMissingImagesOfAgent mocks base method.
-func (m *MockPushAgentImageCidToPinataInterface) PushMissingImagesOfAgent(chainId uint64, agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error {
+func (m *MockPushAgentImageCidToPinataInterface) PushMissingImagesOfAgent(ctx context.Context, chainId uint64, agentCollectionAddress common.Address, agentCollectionTokenId big.Int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PushMissingImagesOfAgent", chainId, agentCollectionAddress, agentCollectionTokenId)
+	ret := m.ctrl.Call(m, "PushMissingImagesOfAgent", ctx, chainId, agentCollectionAddress, agentCollectionTokenId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PushMissingImagesOfAgent indicates an expected call of PushMissingImagesOfAgent.
-func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushMissingImagesOfAgent(chainId, agentCollectionAddress, agentCollectionTokenId any) *gomock.Call {
+func (mr *MockPushAgentImageCidToPinataInterfaceMockRecorder) PushMissingImagesOfAgent(ctx, chainId, agentCollectionAddress, agentCollectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushMissingImagesOfAgent", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushMissingImagesOfAgent), chainId, agentCollectionAddress, agentCollectionTokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushMissingImagesOfAgent", reflect.TypeOf((*MockPushAgentImageCidToPinataInterface)(nil).PushMissingImagesOfAgent), ctx, chainId, agentCollectionAddress, agentCollectionTokenId)
 }

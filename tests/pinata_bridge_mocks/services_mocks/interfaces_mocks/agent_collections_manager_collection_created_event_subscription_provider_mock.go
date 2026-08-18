@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	abi "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
@@ -42,9 +43,9 @@ func (m *MockAgentCollectionsManagerCollectionCreatedEventSubscriptionProviderIn
 }
 
 // StartCollectionCreatedSubscription mocks base method.
-func (m *MockAgentCollectionsManagerCollectionCreatedEventSubscriptionProviderInterface) StartCollectionCreatedSubscription(chainId uint64) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
+func (m *MockAgentCollectionsManagerCollectionCreatedEventSubscriptionProviderInterface) StartCollectionCreatedSubscription(ctx context.Context, chainId uint64) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartCollectionCreatedSubscription", chainId)
+	ret := m.ctrl.Call(m, "StartCollectionCreatedSubscription", ctx, chainId)
 	ret0, _ := ret[0].(<-chan *abi.AgentCollectionsManagerCollectionCreated)
 	ret1, _ := ret[1].(ethereum.Subscription)
 	ret2, _ := ret[2].(error)
@@ -52,7 +53,7 @@ func (m *MockAgentCollectionsManagerCollectionCreatedEventSubscriptionProviderIn
 }
 
 // StartCollectionCreatedSubscription indicates an expected call of StartCollectionCreatedSubscription.
-func (mr *MockAgentCollectionsManagerCollectionCreatedEventSubscriptionProviderInterfaceMockRecorder) StartCollectionCreatedSubscription(chainId any) *gomock.Call {
+func (mr *MockAgentCollectionsManagerCollectionCreatedEventSubscriptionProviderInterfaceMockRecorder) StartCollectionCreatedSubscription(ctx, chainId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartCollectionCreatedSubscription", reflect.TypeOf((*MockAgentCollectionsManagerCollectionCreatedEventSubscriptionProviderInterface)(nil).StartCollectionCreatedSubscription), chainId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartCollectionCreatedSubscription", reflect.TypeOf((*MockAgentCollectionsManagerCollectionCreatedEventSubscriptionProviderInterface)(nil).StartCollectionCreatedSubscription), ctx, chainId)
 }

@@ -1,6 +1,10 @@
 package services
 
-import "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/clients"
+import (
+	"context"
+
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/clients"
+)
 
 type IpfsCheckRequester struct {
 	ipfsCheckClient clients.IpfsCheckClientInterface
@@ -12,8 +16,8 @@ func NewIpfsCheckRequester(ipfsCheckClient clients.IpfsCheckClientInterface) *Ip
 	}
 }
 
-func (r *IpfsCheckRequester) GetMultiAddresses(cid string) ([]string, error) {
-	checkResponses, err := r.ipfsCheckClient.Check(cid)
+func (r *IpfsCheckRequester) GetMultiAddresses(ctx context.Context, cid string) ([]string, error) {
+	checkResponses, err := r.ipfsCheckClient.Check(ctx, cid)
 	if err != nil {
 		return nil, err
 	}

@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	abi "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
@@ -41,15 +42,15 @@ func (m *MockMintedEventHandlerInterface) EXPECT() *MockMintedEventHandlerInterf
 }
 
 // Handle mocks base method.
-func (m *MockMintedEventHandlerInterface) Handle(chainId uint64, event *abi.AgentCollectionV1Minted) error {
+func (m *MockMintedEventHandlerInterface) Handle(ctx context.Context, chainId uint64, event *abi.AgentCollectionV1Minted) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Handle", chainId, event)
+	ret := m.ctrl.Call(m, "Handle", ctx, chainId, event)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Handle indicates an expected call of Handle.
-func (mr *MockMintedEventHandlerInterfaceMockRecorder) Handle(chainId, event any) *gomock.Call {
+func (mr *MockMintedEventHandlerInterfaceMockRecorder) Handle(ctx, chainId, event any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockMintedEventHandlerInterface)(nil).Handle), chainId, event)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockMintedEventHandlerInterface)(nil).Handle), ctx, chainId, event)
 }

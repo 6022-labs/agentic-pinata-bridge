@@ -1,9 +1,12 @@
 package services
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 )
@@ -23,7 +26,7 @@ func NewAgentCollectionMintedEventSubscriptionProvider(
 	}
 }
 
-func (s *AgentCollectionMintedEventSubscriptionProvider) StartMintedSubscription(chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
+func (s *AgentCollectionMintedEventSubscriptionProvider) StartMintedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
 	client, err := s.ethClientFactory.Ws(chainId)
 	if err != nil {
 		return nil, nil, err
@@ -35,7 +38,7 @@ func (s *AgentCollectionMintedEventSubscriptionProvider) StartMintedSubscription
 	}
 
 	logs := make(chan *abi.AgentCollectionV1Minted, 64)
-	sub, err := agentCollection.WatchMinted(nil, logs, nil)
+	sub, err := agentCollection.WatchMinted(&bind.WatchOpts{Context: ctx}, logs, nil)
 	if err != nil {
 		return nil, nil, err
 	}

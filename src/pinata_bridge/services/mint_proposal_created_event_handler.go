@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 )
@@ -15,6 +17,6 @@ func NewMintProposalCreatedEventHandler(pushAgentImageCidToPinata interfaces.Pus
 	}
 }
 
-func (h *MintProposalCreatedEventHandler) Handle(chainId uint64, event *abi.AgentCollectionV1MintProposalCreated) error {
-	return h.pushAgentImageCidToPinata.PushImagesOfMintProposal(chainId, event.Raw.Address, *event.ProposalId)
+func (h *MintProposalCreatedEventHandler) Handle(ctx context.Context, chainId uint64, event *abi.AgentCollectionV1MintProposalCreated) error {
+	return h.pushAgentImageCidToPinata.PushImagesOfMintProposal(ctx, chainId, event.Raw.Address, *event.ProposalId)
 }

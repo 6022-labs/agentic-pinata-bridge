@@ -1,6 +1,8 @@
 package clients
 
 import (
+	"context"
+
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -17,7 +19,7 @@ const (
 )
 
 type IpfsCheckClientInterface interface {
-	Check(cid string) ([]models.ExternalCheckResponse, error)
+	Check(ctx context.Context, cid string) ([]models.ExternalCheckResponse, error)
 }
 
 type IpfsCheckClient struct {
@@ -38,14 +40,14 @@ func NewIpfsCheckClient(
 	}
 }
 
-func (client *IpfsCheckClient) Check(cid string) ([]models.ExternalCheckResponse, error) {
+func (client *IpfsCheckClient) Check(ctx context.Context, cid string) ([]models.ExternalCheckResponse, error) {
 	client.logger.Info("Starting Check method", zap.String("cid", cid))
 
 	url := fmt.Sprintf("%s%s?cid=%s", client.ipfsCheckSettings.BaseUrl, CHECK_ENDPOINT, cid)
 	client.logger.Debug("Constructed URL", zap.String("url", url))
 
 	// Create a new POST request
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(nil))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(nil))
 	if err != nil {
 		client.logger.Error("Failed to create request", zap.Error(err))
 		return nil, fmt.Errorf("failed to create request: %w", err)

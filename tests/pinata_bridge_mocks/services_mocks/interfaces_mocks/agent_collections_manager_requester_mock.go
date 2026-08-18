@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	common "github.com/ethereum/go-ethereum/common"
@@ -41,16 +42,16 @@ func (m *MockAgentCollectionsManagerRequesterInterface) EXPECT() *MockAgentColle
 }
 
 // GetAllCollectionAddresses mocks base method.
-func (m *MockAgentCollectionsManagerRequesterInterface) GetAllCollectionAddresses(chainId uint64) ([]common.Address, error) {
+func (m *MockAgentCollectionsManagerRequesterInterface) GetAllCollectionAddresses(ctx context.Context, chainId uint64) ([]common.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllCollectionAddresses", chainId)
+	ret := m.ctrl.Call(m, "GetAllCollectionAddresses", ctx, chainId)
 	ret0, _ := ret[0].([]common.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllCollectionAddresses indicates an expected call of GetAllCollectionAddresses.
-func (mr *MockAgentCollectionsManagerRequesterInterfaceMockRecorder) GetAllCollectionAddresses(chainId any) *gomock.Call {
+func (mr *MockAgentCollectionsManagerRequesterInterfaceMockRecorder) GetAllCollectionAddresses(ctx, chainId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCollectionAddresses", reflect.TypeOf((*MockAgentCollectionsManagerRequesterInterface)(nil).GetAllCollectionAddresses), chainId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCollectionAddresses", reflect.TypeOf((*MockAgentCollectionsManagerRequesterInterface)(nil).GetAllCollectionAddresses), ctx, chainId)
 }

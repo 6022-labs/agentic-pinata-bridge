@@ -1,6 +1,8 @@
 package interfaces
 
+import "context"
+
 type PinataRequesterInterface interface {
-	PinCid(cid string, hostNodes []string) error
-	IsCidUploaded(cid string) (*bool, error)
+	PinCid(ctx context.Context, cid string, hostNodes []string) error
+	IsCidUploaded(ctx context.Context, cid string) (*bool, error)
 }

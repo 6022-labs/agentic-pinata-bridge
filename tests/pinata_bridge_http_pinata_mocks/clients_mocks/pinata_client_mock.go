@@ -10,6 +10,7 @@
 package clients_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/models"
@@ -41,31 +42,31 @@ func (m *MockPinataClientInterface) EXPECT() *MockPinataClientInterfaceMockRecor
 }
 
 // PinByHash mocks base method.
-func (m *MockPinataClientInterface) PinByHash(request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error) {
+func (m *MockPinataClientInterface) PinByHash(ctx context.Context, request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PinByHash", request)
+	ret := m.ctrl.Call(m, "PinByHash", ctx, request)
 	ret0, _ := ret[0].(*models.ExternalPinByHashResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PinByHash indicates an expected call of PinByHash.
-func (mr *MockPinataClientInterfaceMockRecorder) PinByHash(request any) *gomock.Call {
+func (mr *MockPinataClientInterfaceMockRecorder) PinByHash(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PinByHash", reflect.TypeOf((*MockPinataClientInterface)(nil).PinByHash), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PinByHash", reflect.TypeOf((*MockPinataClientInterface)(nil).PinByHash), ctx, request)
 }
 
 // QueryFileByCid mocks base method.
-func (m *MockPinataClientInterface) QueryFileByCid(cid string) (*models.ExternalQueryFilesResponse, error) {
+func (m *MockPinataClientInterface) QueryFileByCid(ctx context.Context, cid string) (*models.ExternalQueryFilesResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueryFileByCid", cid)
+	ret := m.ctrl.Call(m, "QueryFileByCid", ctx, cid)
 	ret0, _ := ret[0].(*models.ExternalQueryFilesResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QueryFileByCid indicates an expected call of QueryFileByCid.
-func (mr *MockPinataClientInterfaceMockRecorder) QueryFileByCid(cid any) *gomock.Call {
+func (mr *MockPinataClientInterfaceMockRecorder) QueryFileByCid(ctx, cid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryFileByCid", reflect.TypeOf((*MockPinataClientInterface)(nil).QueryFileByCid), cid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryFileByCid", reflect.TypeOf((*MockPinataClientInterface)(nil).QueryFileByCid), ctx, cid)
 }

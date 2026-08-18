@@ -1,6 +1,8 @@
 package configurations
 
 import (
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
@@ -8,6 +10,14 @@ import (
 )
 
 func AddPinataBridgeConfiguration(container *dig.Container) {
+	// Metrics
+	if err := container.Provide(
+		metrics.NewPinMetrics,
+		dig.As(new(metrics_interfaces.PinMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	// Settings
 	err := container.Provide(settings.NewChainsSettings)
 	if err != nil {

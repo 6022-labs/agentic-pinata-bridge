@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -48,7 +49,7 @@ func TestWhenCheckingCidIsUploaded(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenCheckingCidIsUploadedTestingSuite) {
-			suite.client.EXPECT().QueryFileByCid("QmHash").Return(queryFilesResponseWith(t, 1), nil)
+			suite.client.EXPECT().QueryFileByCid(gomock.Any(), "QmHash").Return(queryFilesResponseWith(t, 1), nil)
 		}
 
 		t.Run("Should report the cid as uploaded", func(t *testing.T) {
@@ -57,7 +58,7 @@ func TestWhenCheckingCidIsUploaded(t *testing.T) {
 			suite := WhenCheckingCidIsUploadedBeforeEach(t)
 			initSuite(suite)
 
-			uploaded, err := suite.sut.IsCidUploaded("QmHash")
+			uploaded, err := suite.sut.IsCidUploaded(context.Background(), "QmHash")
 
 			assert.NoError(t, err)
 			assert.NotNil(t, uploaded)
@@ -69,7 +70,7 @@ func TestWhenCheckingCidIsUploaded(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenCheckingCidIsUploadedTestingSuite) {
-			suite.client.EXPECT().QueryFileByCid("QmHash").Return(queryFilesResponseWith(t, 0), nil)
+			suite.client.EXPECT().QueryFileByCid(gomock.Any(), "QmHash").Return(queryFilesResponseWith(t, 0), nil)
 		}
 
 		t.Run("Should report the cid as not uploaded", func(t *testing.T) {
@@ -78,7 +79,7 @@ func TestWhenCheckingCidIsUploaded(t *testing.T) {
 			suite := WhenCheckingCidIsUploadedBeforeEach(t)
 			initSuite(suite)
 
-			uploaded, err := suite.sut.IsCidUploaded("QmHash")
+			uploaded, err := suite.sut.IsCidUploaded(context.Background(), "QmHash")
 
 			assert.NoError(t, err)
 			assert.NotNil(t, uploaded)
@@ -90,7 +91,7 @@ func TestWhenCheckingCidIsUploaded(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenCheckingCidIsUploadedTestingSuite) {
-			suite.client.EXPECT().QueryFileByCid("QmHash").Return(queryFilesResponseWith(t, 2), nil)
+			suite.client.EXPECT().QueryFileByCid(gomock.Any(), "QmHash").Return(queryFilesResponseWith(t, 2), nil)
 		}
 
 		t.Run("Should report the cid as not uploaded", func(t *testing.T) {
@@ -99,7 +100,7 @@ func TestWhenCheckingCidIsUploaded(t *testing.T) {
 			suite := WhenCheckingCidIsUploadedBeforeEach(t)
 			initSuite(suite)
 
-			uploaded, err := suite.sut.IsCidUploaded("QmHash")
+			uploaded, err := suite.sut.IsCidUploaded(context.Background(), "QmHash")
 
 			assert.NoError(t, err)
 			assert.NotNil(t, uploaded)
@@ -111,7 +112,7 @@ func TestWhenCheckingCidIsUploaded(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenCheckingCidIsUploadedTestingSuite) {
-			suite.client.EXPECT().QueryFileByCid("QmHash").Return(nil, assert.AnError)
+			suite.client.EXPECT().QueryFileByCid(gomock.Any(), "QmHash").Return(nil, assert.AnError)
 		}
 
 		t.Run("Should propagate the error", func(t *testing.T) {
@@ -120,7 +121,7 @@ func TestWhenCheckingCidIsUploaded(t *testing.T) {
 			suite := WhenCheckingCidIsUploadedBeforeEach(t)
 			initSuite(suite)
 
-			uploaded, err := suite.sut.IsCidUploaded("QmHash")
+			uploaded, err := suite.sut.IsCidUploaded(context.Background(), "QmHash")
 
 			assert.ErrorIs(t, err, assert.AnError)
 			assert.Nil(t, uploaded)

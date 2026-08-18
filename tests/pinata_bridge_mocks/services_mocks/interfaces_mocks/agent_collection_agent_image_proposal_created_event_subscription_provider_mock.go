@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	abi "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
@@ -43,9 +44,9 @@ func (m *MockAgentCollectionAgentImageProposalCreatedEventSubscriptionProviderIn
 }
 
 // StartAgentImageProposalCreatedSubscription mocks base method.
-func (m *MockAgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterface) StartAgentImageProposalCreatedSubscription(chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1AgentImageProposalCreated, ethereum.Subscription, error) {
+func (m *MockAgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterface) StartAgentImageProposalCreatedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1AgentImageProposalCreated, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartAgentImageProposalCreatedSubscription", chainId, agentCollectionAddress)
+	ret := m.ctrl.Call(m, "StartAgentImageProposalCreatedSubscription", ctx, chainId, agentCollectionAddress)
 	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1AgentImageProposalCreated)
 	ret1, _ := ret[1].(ethereum.Subscription)
 	ret2, _ := ret[2].(error)
@@ -53,7 +54,7 @@ func (m *MockAgentCollectionAgentImageProposalCreatedEventSubscriptionProviderIn
 }
 
 // StartAgentImageProposalCreatedSubscription indicates an expected call of StartAgentImageProposalCreatedSubscription.
-func (mr *MockAgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterfaceMockRecorder) StartAgentImageProposalCreatedSubscription(chainId, agentCollectionAddress any) *gomock.Call {
+func (mr *MockAgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterfaceMockRecorder) StartAgentImageProposalCreatedSubscription(ctx, chainId, agentCollectionAddress any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentImageProposalCreatedSubscription", reflect.TypeOf((*MockAgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterface)(nil).StartAgentImageProposalCreatedSubscription), chainId, agentCollectionAddress)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentImageProposalCreatedSubscription", reflect.TypeOf((*MockAgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterface)(nil).StartAgentImageProposalCreatedSubscription), ctx, chainId, agentCollectionAddress)
 }

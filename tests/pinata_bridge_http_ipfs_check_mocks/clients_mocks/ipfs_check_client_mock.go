@@ -10,6 +10,7 @@
 package clients_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/models"
@@ -41,16 +42,16 @@ func (m *MockIpfsCheckClientInterface) EXPECT() *MockIpfsCheckClientInterfaceMoc
 }
 
 // Check mocks base method.
-func (m *MockIpfsCheckClientInterface) Check(cid string) ([]models.ExternalCheckResponse, error) {
+func (m *MockIpfsCheckClientInterface) Check(ctx context.Context, cid string) ([]models.ExternalCheckResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Check", cid)
+	ret := m.ctrl.Call(m, "Check", ctx, cid)
 	ret0, _ := ret[0].([]models.ExternalCheckResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Check indicates an expected call of Check.
-func (mr *MockIpfsCheckClientInterfaceMockRecorder) Check(cid any) *gomock.Call {
+func (mr *MockIpfsCheckClientInterfaceMockRecorder) Check(ctx, cid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Check", reflect.TypeOf((*MockIpfsCheckClientInterface)(nil).Check), cid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Check", reflect.TypeOf((*MockIpfsCheckClientInterface)(nil).Check), ctx, cid)
 }

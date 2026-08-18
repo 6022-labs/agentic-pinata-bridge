@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/models"
@@ -32,8 +33,8 @@ func TestWhenPinningCid(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPinningCidTestingSuite) {
-			suite.client.EXPECT().PinByHash(gomock.Any()).DoAndReturn(
-				func(request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error) {
+			suite.client.EXPECT().PinByHash(gomock.Any(), gomock.Any()).DoAndReturn(
+				func(_ context.Context, request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error) {
 					assert.Equal(t, "QmHash", request.HashToPin)
 					assert.NotNil(t, request.PinataOptions)
 					assert.Equal(t, []string{"/ip4/127.0.0.1/tcp/4001"}, request.PinataOptions.HostNodes)
@@ -48,7 +49,7 @@ func TestWhenPinningCid(t *testing.T) {
 			suite := WhenPinningCidBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.PinCid("QmHash", []string{"/ip4/127.0.0.1/tcp/4001"})
+			err := suite.sut.PinCid(context.Background(), "QmHash", []string{"/ip4/127.0.0.1/tcp/4001"})
 
 			assert.NoError(t, err)
 		})
@@ -58,8 +59,8 @@ func TestWhenPinningCid(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPinningCidTestingSuite) {
-			suite.client.EXPECT().PinByHash(gomock.Any()).DoAndReturn(
-				func(request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error) {
+			suite.client.EXPECT().PinByHash(gomock.Any(), gomock.Any()).DoAndReturn(
+				func(_ context.Context, request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error) {
 					assert.Equal(t, "QmHash", request.HashToPin)
 					assert.Nil(t, request.PinataOptions)
 					return &models.ExternalPinByHashResponse{}, nil
@@ -73,7 +74,7 @@ func TestWhenPinningCid(t *testing.T) {
 			suite := WhenPinningCidBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.PinCid("QmHash", nil)
+			err := suite.sut.PinCid(context.Background(), "QmHash", nil)
 
 			assert.NoError(t, err)
 		})
@@ -83,7 +84,7 @@ func TestWhenPinningCid(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPinningCidTestingSuite) {
-			suite.client.EXPECT().PinByHash(gomock.Any()).Return(nil, assert.AnError)
+			suite.client.EXPECT().PinByHash(gomock.Any(), gomock.Any()).Return(nil, assert.AnError)
 		}
 
 		t.Run("Should propagate the error", func(t *testing.T) {
@@ -92,7 +93,7 @@ func TestWhenPinningCid(t *testing.T) {
 			suite := WhenPinningCidBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.PinCid("QmHash", nil)
+			err := suite.sut.PinCid(context.Background(), "QmHash", nil)
 
 			assert.ErrorIs(t, err, assert.AnError)
 		})

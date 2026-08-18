@@ -1,6 +1,8 @@
 package clients
 
 import (
+	"context"
+
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -13,8 +15,8 @@ import (
 )
 
 type PinataClientInterface interface {
-	PinByHash(request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error)
-	QueryFileByCid(cid string) (*models.ExternalQueryFilesResponse, error)
+	PinByHash(ctx context.Context, request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error)
+	QueryFileByCid(ctx context.Context, cid string) (*models.ExternalQueryFilesResponse, error)
 }
 
 const (
@@ -39,7 +41,7 @@ func NewPinataClient(
 	}
 }
 
-func (p *PinataClient) PinByHash(request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error) {
+func (p *PinataClient) PinByHash(ctx context.Context, request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error) {
 	// Construct the URL
 	url := fmt.Sprintf("%s%s", p.pinataSettings.BaseUrl, PinByCidEndpoint)
 
@@ -50,7 +52,7 @@ func (p *PinataClient) PinByHash(request *models.ExternalPinByHashRequest) (*mod
 	}
 
 	// Create the HTTP request
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(bodyBytes))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		p.logger.Error("Failed to create HTTP request", zap.Error(err))
 		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
@@ -94,12 +96,12 @@ func (p *PinataClient) PinByHash(request *models.ExternalPinByHashRequest) (*mod
 	return &result, nil
 }
 
-func (p *PinataClient) QueryFileByCid(cid string) (*models.ExternalQueryFilesResponse, error) {
+func (p *PinataClient) QueryFileByCid(ctx context.Context, cid string) (*models.ExternalQueryFilesResponse, error) {
 	// Construct the URL
 	url := fmt.Sprintf("%s%s?cid=%s", p.pinataSettings.BaseUrl, QueryFilesEndpoint, cid)
 
 	// Create the HTTP request
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		p.logger.Error("Failed to create HTTP request", zap.Error(err))
 		return nil, fmt.Errorf("failed to create HTTP request: %w", err)

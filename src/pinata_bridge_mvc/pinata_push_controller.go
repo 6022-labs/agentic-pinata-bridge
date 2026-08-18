@@ -35,7 +35,7 @@ func (controller *PinataPushController) InitRoutes(c fiber.Router) {
 }
 
 func (controller *PinataPushController) PushMissingImageCids(c *fiber.Ctx) error {
-	return controller.pushAgentImageCidToPinata.PushMissingImageCids()
+	return controller.pushAgentImageCidToPinata.PushMissingImageCids(c.UserContext())
 }
 
 func (controller *PinataPushController) PushMissingImagesOfAgent(c *fiber.Ctx) error {
@@ -70,7 +70,7 @@ func (controller *PinataPushController) PushMissingImagesOfAgent(c *fiber.Ctx) e
 		return fiber.NewError(fiber.StatusBadRequest, "agentCollectionTokenId is invalid")
 	}
 
-	return controller.pushAgentImageCidToPinata.PushMissingImagesOfAgent(chainId, agentCollectionAddress, *tokenId)
+	return controller.pushAgentImageCidToPinata.PushMissingImagesOfAgent(c.UserContext(), chainId, agentCollectionAddress, *tokenId)
 }
 
 func (controller *PinataPushController) PushImagesOfMintProposal(c *fiber.Ctx) error {
@@ -105,7 +105,7 @@ func (controller *PinataPushController) PushImagesOfMintProposal(c *fiber.Ctx) e
 		return fiber.NewError(fiber.StatusBadRequest, "mintProposalId is invalid")
 	}
 
-	return controller.pushAgentImageCidToPinata.PushImagesOfMintProposal(
+	return controller.pushAgentImageCidToPinata.PushImagesOfMintProposal(c.UserContext(),
 		chainId,
 		agentCollectionAddress,
 		*mintProposalId,

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/clients"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/models"
 )
@@ -15,7 +17,7 @@ func NewPinataRequester(client clients.PinataClientInterface) *PinataRequester {
 	}
 }
 
-func (pr *PinataRequester) PinCid(cid string, hostNodes []string) error {
+func (pr *PinataRequester) PinCid(ctx context.Context, cid string, hostNodes []string) error {
 	request := &models.ExternalPinByHashRequest{
 		HashToPin: cid,
 	}
@@ -26,7 +28,7 @@ func (pr *PinataRequester) PinCid(cid string, hostNodes []string) error {
 		}
 	}
 
-	_, err := pr.client.PinByHash(request)
+	_, err := pr.client.PinByHash(ctx, request)
 	if err != nil {
 		return err
 	}
@@ -34,8 +36,8 @@ func (pr *PinataRequester) PinCid(cid string, hostNodes []string) error {
 	return nil
 }
 
-func (pr *PinataRequester) IsCidUploaded(cid string) (*bool, error) {
-	response, err := pr.client.QueryFileByCid(cid)
+func (pr *PinataRequester) IsCidUploaded(ctx context.Context, cid string) (*bool, error) {
+	response, err := pr.client.QueryFileByCid(ctx, cid)
 	if err != nil {
 		return nil, err
 	}

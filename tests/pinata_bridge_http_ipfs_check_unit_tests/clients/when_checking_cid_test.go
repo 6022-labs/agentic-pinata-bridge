@@ -1,6 +1,7 @@
 package clients_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -68,7 +69,7 @@ func TestWhenCheckingCid(t *testing.T) {
 			defer WhenCheckingCidAfterEach(suite)
 			initSuite(suite)
 
-			resp, err := suite.sut.Check("QmHash")
+			resp, err := suite.sut.Check(context.Background(), "QmHash")
 
 			assert.NoError(t, err)
 			assert.Len(t, resp, 1)
@@ -99,7 +100,7 @@ func TestWhenCheckingCid(t *testing.T) {
 			defer WhenCheckingCidAfterEach(suite)
 			initSuite(suite)
 
-			resp, err := suite.sut.Check("QmHash")
+			resp, err := suite.sut.Check(context.Background(), "QmHash")
 
 			assert.Error(t, err)
 			assert.Nil(t, resp)
@@ -123,7 +124,7 @@ func TestWhenCheckingCid(t *testing.T) {
 			defer WhenCheckingCidAfterEach(suite)
 			initSuite(suite)
 
-			resp, err := suite.sut.Check("QmHash")
+			resp, err := suite.sut.Check(context.Background(), "QmHash")
 
 			assert.Error(t, err)
 			assert.Nil(t, resp)
