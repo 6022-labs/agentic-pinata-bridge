@@ -36,7 +36,9 @@ func WhenPushingImageOfAgentImageProposalBeforeEach(t *testing.T) *WhenPushingIm
 
 	pinMetrics := metrics_mocks.NewMockPinMetricsInterface(mockController)
 
-	cidPinner := services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics)
+	pinTracer := newNoopPinTracer(mockController)
+
+	cidPinner := services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics, pinTracer)
 
 	sut := use_cases.NewPushImageOfAgentImageProposal(
 		zap.NewNop(),

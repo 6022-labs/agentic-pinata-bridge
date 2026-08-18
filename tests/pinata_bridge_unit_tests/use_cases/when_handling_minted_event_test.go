@@ -34,9 +34,11 @@ func WhenHandlingMintedEventBeforeEach(t *testing.T) *WhenHandlingMintedEventTes
 	pinMetrics := metrics_mocks.NewMockPinMetricsInterface(mockController)
 
 	// The push use case runs for real so the event's chain id and token id are asserted where they land.
+	pinTracer := newNoopPinTracer(mockController)
+
 	pushMissingImagesOfAgent := use_cases.NewPushMissingImagesOfAgent(
 		zap.NewNop(),
-		services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics),
+		services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics, pinTracer),
 		agentCollectionRequester,
 		pinataRequester,
 		pinMetrics,

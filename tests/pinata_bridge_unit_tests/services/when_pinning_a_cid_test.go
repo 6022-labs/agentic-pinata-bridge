@@ -34,6 +34,7 @@ func WhenPinningACidBeforeEach(t *testing.T) *WhenPinningACidTestSuite {
 		pinataRequester,
 		ipfsCheckRequester,
 		pinMetrics,
+		newNoopPinTracer(mockController),
 	)
 	return &WhenPinningACidTestSuite{
 		sut: sut,

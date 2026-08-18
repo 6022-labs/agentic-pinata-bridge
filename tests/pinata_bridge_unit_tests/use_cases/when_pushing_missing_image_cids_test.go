@@ -45,7 +45,9 @@ func WhenPushingMissingImageCidsBeforeEach(t *testing.T) *WhenPushingMissingImag
 
 	pinMetrics := metrics_mocks.NewMockPinMetricsInterface(mockController)
 
-	cidPinner := services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics)
+	pinTracer := newNoopPinTracer(mockController)
+
+	cidPinner := services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics, pinTracer)
 
 	pushMissingImagesOfAgent := use_cases.NewPushMissingImagesOfAgent(
 		zap.NewNop(),
@@ -63,6 +65,7 @@ func WhenPushingMissingImageCidsBeforeEach(t *testing.T) *WhenPushingMissingImag
 		settings.NewChainsSettingsFromChainIds([]uint64{testChainId}),
 		agentCollectionsManagerRequester,
 		pushMissingImagesOfAgent,
+		pinTracer,
 	)
 	return &WhenPushingMissingImageCidsTestingSuite{
 		sut: sut,

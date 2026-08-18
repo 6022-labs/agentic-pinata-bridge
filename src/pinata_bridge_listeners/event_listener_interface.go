@@ -1,16 +1,10 @@
 package pinata_bridge_listeners
 
-import (
-	"context"
+import "context"
 
-	"github.com/ethereum/go-ethereum/common"
-)
-
+// EventListenerInterface is one chain-event listener the host starts and runs.
 type EventListenerInterface interface {
+	// SubscribeAll opens a subscription per configured chain before Listen is called.
 	SubscribeAll(ctx context.Context) error
 	Listen(ctx context.Context) error
-}
-
-type CollectionEventSubscriberInterface interface {
-	Subscribe(ctx context.Context, chainId uint64, collectionAddress common.Address) error
 }

@@ -36,7 +36,9 @@ func WhenPushingMissingImagesOfAgentBeforeEach(t *testing.T) *WhenPushingMissing
 
 	pinMetrics := metrics_mocks.NewMockPinMetricsInterface(mockController)
 
-	cidPinner := services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics)
+	pinTracer := newNoopPinTracer(mockController)
+
+	cidPinner := services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics, pinTracer)
 
 	sut := use_cases.NewPushMissingImagesOfAgent(
 		zap.NewNop(),

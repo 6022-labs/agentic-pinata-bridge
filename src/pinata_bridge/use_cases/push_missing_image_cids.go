@@ -6,6 +6,7 @@ import (
 
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
+	traces_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases/responses"
 	"go.uber.org/zap"
@@ -18,6 +19,7 @@ type PushMissingImageCids struct {
 	chainsSettings                   *settings.ChainsSettings
 	agentCollectionsManagerRequester interfaces.AgentCollectionsManagerRequesterInterface
 	pushMissingImagesOfAgent         *PushMissingImagesOfAgent
+	pinTracer                        traces_interfaces.PinTracerInterface
 }
 
 func NewPushMissingImageCids(
@@ -28,16 +30,26 @@ func NewPushMissingImageCids(
 	chainsSettings *settings.ChainsSettings,
 	agentCollectionsManagerRequester interfaces.AgentCollectionsManagerRequesterInterface,
 	pushMissingImagesOfAgent *PushMissingImagesOfAgent,
+	pinTracer traces_interfaces.PinTracerInterface,
 ) *PushMissingImageCids {
 	return &PushMissingImageCids{
 		AbstractPushUseCase:              NewAbstractPushUseCase(logger, cidPinner, agentCollectionRequester, pinMetrics),
 		chainsSettings:                   chainsSettings,
 		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
 		pushMissingImagesOfAgent:         pushMissingImagesOfAgent,
+		pinTracer:                        pinTracer,
 	}
 }
 
 func (u *PushMissingImageCids) Execute(ctx context.Context) (response *responses.PushResponse, err error) {
+	ctx, span := u.pinTracer.StartSweep(ctx, metrics_interfaces.SweepKindAll)
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.Fail(err)
+		}
+	}()
+
 	defer u.recordSweep(ctx, metrics_interfaces.SweepKindAll, time.Now(), &err)
 
 	for _, chainId := range u.chainsSettings.ChainIds() {

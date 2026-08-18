@@ -6,6 +6,7 @@ import (
 
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
+	traces_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/traces/interfaces"
 	"go.uber.org/zap"
 )
 
@@ -17,6 +18,7 @@ type CidPinner struct {
 	pinataRequester    interfaces.PinataRequesterInterface
 	ipfsCheckRequester interfaces.IpfsCheckRequesterInterface
 	pinMetrics         metrics_interfaces.PinMetricsInterface
+	pinTracer          traces_interfaces.PinTracerInterface
 }
 
 func NewCidPinner(
@@ -24,16 +26,26 @@ func NewCidPinner(
 	pinataRequester interfaces.PinataRequesterInterface,
 	ipfsCheckRequester interfaces.IpfsCheckRequesterInterface,
 	pinMetrics metrics_interfaces.PinMetricsInterface,
+	pinTracer traces_interfaces.PinTracerInterface,
 ) *CidPinner {
 	return &CidPinner{
 		logger:             logger,
 		pinataRequester:    pinataRequester,
 		ipfsCheckRequester: ipfsCheckRequester,
 		pinMetrics:         pinMetrics,
+		pinTracer:          pinTracer,
 	}
 }
 
-func (s *CidPinner) Pin(ctx context.Context, cid string) error {
+func (s *CidPinner) Pin(ctx context.Context, cid string) (err error) {
+	ctx, span := s.pinTracer.StartPin(ctx, cid)
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.Fail(err)
+		}
+	}()
+
 	addresses, err := s.getCidHostAddresses(ctx, cid)
 	if err != nil {
 		s.logger.Warn("Failed to get host addresses for cid", zap.String("cid", cid), zap.Error(err))

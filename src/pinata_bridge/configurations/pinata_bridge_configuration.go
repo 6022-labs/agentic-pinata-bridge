@@ -6,6 +6,8 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/traces"
+	traces_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"go.uber.org/dig"
 )
@@ -21,6 +23,14 @@ func AddPinataBridgeConfiguration(container *dig.Container) {
 
 	// Settings
 	if err := container.Provide(settings.NewChainsSettings); err != nil {
+		panic(err)
+	}
+
+	// Traces
+	if err := container.Provide(
+		traces.NewPinTracer,
+		dig.As(new(traces_interfaces.PinTracerInterface)),
+	); err != nil {
 		panic(err)
 	}
 
