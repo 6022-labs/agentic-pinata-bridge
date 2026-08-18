@@ -1,4 +1,4 @@
-package services_test
+package use_cases_test
 
 import (
 	"context"
@@ -7,17 +7,17 @@ import (
 
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases/requests"
 	metrics_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks/interfaces_mocks"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
 type WhenPushingMissingImagesOfAgentTestingSuite struct {
-	sut *services.PushAgentImageCidToPinata
+	sut *use_cases.PushMissingImagesOfAgent
 
 	pinataRequester                  *interfaces_mocks.MockPinataRequesterInterface
 	ipfsCheckRequester               *interfaces_mocks.MockIpfsCheckRequesterInterface
@@ -36,13 +36,13 @@ func WhenPushingMissingImagesOfAgentBeforeEach(t *testing.T) *WhenPushingMissing
 
 	pinMetrics := metrics_mocks.NewMockPinMetricsInterface(mockController)
 
-	sut := services.NewPushAgentImageCidToPinata(
+	cidPinner := services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics)
+
+	sut := use_cases.NewPushMissingImagesOfAgent(
 		zap.NewNop(),
-		settings.NewChainsSettingsFromChainIds([]uint64{testChainId}),
-		pinataRequester,
-		ipfsCheckRequester,
+		cidPinner,
 		agentCollectionRequester,
-		agentCollectionsManagerRequester,
+		pinataRequester,
 		pinMetrics,
 	)
 
@@ -71,7 +71,13 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), true)
 
-			err := suite.sut.PushMissingImagesOfAgent(context.Background(), testChainId, common.HexToAddress(""), *big.NewInt(123))
+			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
+				CollectionRequest: requests.CollectionRequest{
+					ChainId:                testChainIdString,
+					AgentCollectionAddress: testCollectionAddress,
+				},
+				AgentCollectionTokenId: big.NewInt(123).String(),
+			})
 
 			assert.NotNil(t, err)
 		})
@@ -92,7 +98,13 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), true)
 
 			tokenId := big.NewInt(123)
-			err := suite.sut.PushMissingImagesOfAgent(context.Background(), testChainId, common.HexToAddress(""), *tokenId)
+			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
+				CollectionRequest: requests.CollectionRequest{
+					ChainId:                testChainIdString,
+					AgentCollectionAddress: testCollectionAddress,
+				},
+				AgentCollectionTokenId: tokenId.String(),
+			})
 
 			assert.NotNil(t, err)
 		})
@@ -120,7 +132,13 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), true)
 
 			tokenId := big.NewInt(123)
-			err := suite.sut.PushMissingImagesOfAgent(context.Background(), testChainId, common.HexToAddress(""), *tokenId)
+			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
+				CollectionRequest: requests.CollectionRequest{
+					ChainId:                testChainIdString,
+					AgentCollectionAddress: testCollectionAddress,
+				},
+				AgentCollectionTokenId: tokenId.String(),
+			})
 
 			assert.NotNil(t, err)
 		})
@@ -143,7 +161,13 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), false)
 
 			tokenId := big.NewInt(123)
-			err := suite.sut.PushMissingImagesOfAgent(context.Background(), testChainId, common.HexToAddress(""), *tokenId)
+			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
+				CollectionRequest: requests.CollectionRequest{
+					ChainId:                testChainIdString,
+					AgentCollectionAddress: testCollectionAddress,
+				},
+				AgentCollectionTokenId: tokenId.String(),
+			})
 
 			assert.Nil(t, err)
 		})
@@ -169,7 +193,13 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 			suite.pinMetrics.EXPECT().RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomePinned)
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), false)
 
-			err := suite.sut.PushMissingImagesOfAgent(context.Background(), testChainId, common.HexToAddress(""), *big.NewInt(123))
+			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
+				CollectionRequest: requests.CollectionRequest{
+					ChainId:                testChainIdString,
+					AgentCollectionAddress: testCollectionAddress,
+				},
+				AgentCollectionTokenId: big.NewInt(123).String(),
+			})
 
 			assert.Nil(t, err)
 		})

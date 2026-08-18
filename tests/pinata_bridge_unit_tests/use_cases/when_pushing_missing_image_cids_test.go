@@ -1,4 +1,4 @@
-package services_test
+package use_cases_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	metrics_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks/interfaces_mocks"
@@ -18,8 +19,14 @@ import (
 
 const testChainId uint64 = 80002
 
+const (
+	testChainIdString    = "80002"
+	testCollectionAddress = "0x0000000000000000000000000000000000000000"
+)
+
+
 type WhenPushingMissingImageCidsTestingSuite struct {
-	sut *services.PushAgentImageCidToPinata
+	sut *use_cases.PushMissingImageCids
 
 	pinataRequester                  *interfaces_mocks.MockPinataRequesterInterface
 	ipfsCheckRequester               *interfaces_mocks.MockIpfsCheckRequesterInterface
@@ -38,14 +45,24 @@ func WhenPushingMissingImageCidsBeforeEach(t *testing.T) *WhenPushingMissingImag
 
 	pinMetrics := metrics_mocks.NewMockPinMetricsInterface(mockController)
 
-	sut := services.NewPushAgentImageCidToPinata(
+	cidPinner := services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics)
+
+	pushMissingImagesOfAgent := use_cases.NewPushMissingImagesOfAgent(
 		zap.NewNop(),
-		settings.NewChainsSettingsFromChainIds([]uint64{testChainId}),
-		pinataRequester,
-		ipfsCheckRequester,
+		cidPinner,
 		agentCollectionRequester,
-		agentCollectionsManagerRequester,
+		pinataRequester,
 		pinMetrics,
+	)
+
+	sut := use_cases.NewPushMissingImageCids(
+		zap.NewNop(),
+		cidPinner,
+		agentCollectionRequester,
+		pinMetrics,
+		settings.NewChainsSettingsFromChainIds([]uint64{testChainId}),
+		agentCollectionsManagerRequester,
+		pushMissingImagesOfAgent,
 	)
 	return &WhenPushingMissingImageCidsTestingSuite{
 		sut: sut,
@@ -72,7 +89,7 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAll, gomock.Any(), true)
 
-			err := suite.sut.PushMissingImageCids(context.Background())
+			_, err := suite.sut.Execute(context.Background())
 			assert.Equal(t, err, assert.AnError)
 		})
 	})
@@ -95,7 +112,7 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAll, gomock.Any(), true)
 
-			err := suite.sut.PushMissingImageCids(context.Background())
+			_, err := suite.sut.Execute(context.Background())
 			assert.Equal(t, err, assert.AnError)
 		})
 	})
@@ -139,7 +156,7 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), false).Times(len(tokenIds))
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAll, gomock.Any(), false)
 
-			err := suite.sut.PushMissingImageCids(context.Background())
+			_, err := suite.sut.Execute(context.Background())
 			assert.NoError(t, err)
 		})
 	})

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/common/host_configurations"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/configurations"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
 	"github.com/gofiber/fiber/v2"
@@ -44,9 +44,10 @@ func main() {
 		panic(err)
 	}
 
-	err = container.Invoke(func(logger *zap.Logger, pushAgentImageCidToPinata interfaces.PushAgentImageCidToPinataInterface) error {
+	err = container.Invoke(func(logger *zap.Logger, pushMissingImageCids *use_cases.PushMissingImageCids) error {
 		logger.Info("Pushing missing image cids...")
-		return pushAgentImageCidToPinata.PushMissingImageCids(context.Background())
+		_, err := pushMissingImageCids.Execute(context.Background())
+		return err
 	})
 	if err != nil {
 		panic(err)
