@@ -8,11 +8,10 @@ import (
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/abi"
+	"github.com/6022-labs/agentic-pinata-bridge/tests/common_tests/model_builders"
 	metrics_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -79,12 +78,7 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 			suite.pinMetrics.EXPECT().
 				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), false)
 
-			err := suite.sut.Execute(context.Background(), 80002, &abi.AgentCollectionV1Minted{
-				Raw: types.Log{
-					Address: common.HexToAddress("0x1234567890123456789012345678901234567890"),
-				},
-				TokenId: big.NewInt(123),
-			})
+			err := suite.sut.Execute(context.Background(), 80002, model_builders.NewMintedEventBuilder().Build())
 
 			assert.NoError(t, err)
 		})
