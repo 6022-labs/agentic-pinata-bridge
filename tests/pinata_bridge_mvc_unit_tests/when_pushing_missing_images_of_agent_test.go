@@ -2,6 +2,7 @@ package pinata_bridge_mvc_unit_tests_test
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -92,6 +93,11 @@ func TestWhenPushingMissingImagesOfAgent(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			// These routes have always answered with an empty body; fiber's SendStatus would add "OK".
+			body, readErr := io.ReadAll(resp.Body)
+			assert.NoError(t, readErr)
+			assert.Empty(t, body)
 		})
 	})
 
