@@ -11,6 +11,7 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/common/host_configurations"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/configurations"
+	common_settings "github.com/6022-labs/agentic-pinata-bridge/src/common/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -20,19 +21,19 @@ import (
 func main() {
 	_ = godotenv.Load(".env")
 
-	config, err := configurations.LoadKoanfConfig()
+	config, err := host_configurations.LoadKoanfConfig()
 	if err != nil {
 		panic(err)
 	}
 
 	container := configurations.ConfigureDI(config)
-	configurations.ConfigureLogging(container)
+	host_configurations.ConfigureLogging(container)
 
 	shutdownTelemetry := host_configurations.ConfigureTelemetry(container, configurations.AppName)
 
 	configurations.ConfigureServer(container)
 
-	err = container.Invoke(func(logger *zap.Logger, hostSettings *settings.HostSettings) {
+	err = container.Invoke(func(logger *zap.Logger, hostSettings *settings.HostFeaturesSettings) {
 		logger.Info("Starting Pinata Bridge Host")
 
 		if !hostSettings.UseApi && !hostSettings.UseListeners {
@@ -53,7 +54,12 @@ func main() {
 		panic(err)
 	}
 
-	err = container.Invoke(func(app *fiber.App, logger *zap.Logger, hostSettings *settings.HostSettings) error {
+	err = container.Invoke(func(
+		app *fiber.App,
+		logger *zap.Logger,
+		hostSettings *settings.HostFeaturesSettings,
+		commonHostSettings *common_settings.HostSettings,
+	) error {
 		if !hostSettings.UseApi && !hostSettings.UseListeners {
 			return nil
 		}
@@ -64,7 +70,7 @@ func main() {
 		// Listener-only mode has no server to wait on; the signal is the only thing that ends the process.
 		serverErrCh := make(chan error, 1)
 		if hostSettings.UseApi {
-			bind := fmt.Sprintf(":%d", hostSettings.ApiPort)
+			bind := fmt.Sprintf("%s:%d", commonHostSettings.ListenAddress, commonHostSettings.ApiPort)
 			logger.Info("Starting server", zap.String("bind", bind))
 
 			go func() {

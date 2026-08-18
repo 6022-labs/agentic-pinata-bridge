@@ -3,6 +3,7 @@ package configurations_test
 import (
 	"testing"
 
+	"github.com/6022-labs/agentic-pinata-bridge/src/common/host_configurations"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/configurations"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
 	"github.com/knadh/koanf/providers/confmap"
@@ -22,7 +23,7 @@ func TestDISmoke(t *testing.T) {
 	}, "."), nil)
 
 	container := configurations.ConfigureDI(k)
-	configurations.ConfigureLogging(container)
+	host_configurations.ConfigureLogging(container)
 
 	type params struct {
 		dig.In

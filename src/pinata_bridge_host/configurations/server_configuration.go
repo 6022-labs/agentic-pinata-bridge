@@ -7,6 +7,7 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
 	mvc_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/interfaces"
+	common_settings "github.com/6022-labs/agentic-pinata-bridge/src/common/settings"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
@@ -31,20 +32,24 @@ func ConfigureServer(container *dig.Container) {
 	}
 }
 
-func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
+func newHttpServer(
+	hostSettings *settings.HostFeaturesSettings,
+	commonHostSettings *common_settings.HostSettings,
+) *fiber.App {
 	if !hostSettings.UseApi {
 		return nil
 	}
 
 	return fiber.New(fiber.Config{
-		AppName: AppName,
+		AppName:   AppName,
+		BodyLimit: commonHostSettings.BodyLimitBytes,
 	})
 }
 
 type useListenersParams struct {
 	dig.In
 
-	HostSettings   *settings.HostSettings
+	HostSettings   *settings.HostFeaturesSettings
 	EventListeners []pinata_bridge_listeners.EventListenerInterface `group:"event_listeners"`
 }
 
@@ -72,7 +77,7 @@ func useListeners(p useListenersParams) {
 type useRestApiParams struct {
 	dig.In
 
-	HostSettings   *settings.HostSettings
+	HostSettings   *settings.HostFeaturesSettings
 	App            *fiber.App
 	Logger         *zap.Logger
 	RequestMetrics *mvc_middlewares.ApiRequestMetricsMiddleware
