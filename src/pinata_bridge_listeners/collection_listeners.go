@@ -22,7 +22,7 @@ func NewAgentCollectionMintedListener(
 	chainsSettings *settings.ChainsSettings,
 	listCollectionAddresses *use_cases.ListCollectionAddresses,
 	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface,
-	subscriptionProvider interfaces.AgentCollectionMintedEventSubscriptionProviderInterface,
+	subscriptionProvider interfaces.MintedSubscriptionProviderInterface,
 	handleMintedEvent *use_cases.HandleMintedEvent,
 ) *AgentCollectionMintedListener {
 	return NewChainEventListener(
@@ -41,7 +41,7 @@ func NewAgentCollectionMintProposalCreatedListener(
 	chainsSettings *settings.ChainsSettings,
 	listCollectionAddresses *use_cases.ListCollectionAddresses,
 	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface,
-	subscriptionProvider interfaces.AgentCollectionMintProposalCreatedEventSubscriptionProviderInterface,
+	subscriptionProvider interfaces.MintProposalCreatedSubscriptionProviderInterface,
 	handleMintProposalCreatedEvent *use_cases.HandleMintProposalCreatedEvent,
 ) *AgentCollectionMintProposalCreatedListener {
 	return NewChainEventListener(
@@ -60,7 +60,7 @@ func NewAgentCollectionAgentImageProposalCreatedListener(
 	chainsSettings *settings.ChainsSettings,
 	listCollectionAddresses *use_cases.ListCollectionAddresses,
 	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface,
-	subscriptionProvider interfaces.AgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterface,
+	subscriptionProvider interfaces.AgentImageProposalCreatedSubscriptionProviderInterface,
 	handleAgentImageProposalCreatedEvent *use_cases.HandleAgentImageProposalCreatedEvent,
 ) *AgentCollectionAgentImageProposalCreatedListener {
 	return NewChainEventListener(

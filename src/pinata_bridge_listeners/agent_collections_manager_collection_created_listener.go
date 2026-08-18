@@ -18,7 +18,7 @@ type AgentCollectionsManagerCollectionCreatedListener struct {
 	chainsSettings                                                    *settings.ChainsSettings
 	collectionEventSubscribers                                        []CollectionEventSubscriberInterface
 	chainEventMetrics                                                 metrics_interfaces.ChainEventMetricsInterface
-	agentCollectionsManagerCollectionCreatedEventSubscriptionProvider interfaces.AgentCollectionsManagerCollectionCreatedEventSubscriptionProviderInterface
+	collectionCreatedSubscriptionProvider interfaces.CollectionCreatedSubscriptionProviderInterface
 
 	errorChannel  chan ChainSubscriptionError
 	eventChannel  chan ChainEvent[abi.AgentCollectionsManagerCollectionCreated]
@@ -32,7 +32,7 @@ type newAgentCollectionsManagerCollectionCreatedListenerParams struct {
 	ChainsSettings                                                    *settings.ChainsSettings
 	CollectionEventSubscribers                                        []CollectionEventSubscriberInterface `group:"collection_event_subscribers"`
 	ChainEventMetrics                                                 metrics_interfaces.ChainEventMetricsInterface
-	AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider interfaces.AgentCollectionsManagerCollectionCreatedEventSubscriptionProviderInterface
+	CollectionCreatedSubscriptionProvider interfaces.CollectionCreatedSubscriptionProviderInterface
 }
 
 func NewAgentCollectionsManagerCollectionCreatedListener(
@@ -43,7 +43,7 @@ func NewAgentCollectionsManagerCollectionCreatedListener(
 		chainsSettings:             params.ChainsSettings,
 		collectionEventSubscribers: params.CollectionEventSubscribers,
 		chainEventMetrics:          params.ChainEventMetrics,
-		agentCollectionsManagerCollectionCreatedEventSubscriptionProvider: params.AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider,
+		collectionCreatedSubscriptionProvider: params.CollectionCreatedSubscriptionProvider,
 
 		subscriptions: []ethereum.Subscription{},
 		errorChannel:  make(chan ChainSubscriptionError),
@@ -91,7 +91,7 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) Listen(ctx con
 func (listener *AgentCollectionsManagerCollectionCreatedListener) subscribe(ctx context.Context, chainId uint64) error {
 	listener.logger.Debug("Subscribing to AgentCollectionsManager.CollectionCreated events", zap.Uint64("chainId", chainId))
 
-	rawEvents, subscription, err := listener.agentCollectionsManagerCollectionCreatedEventSubscriptionProvider.StartCollectionCreatedSubscription(ctx, chainId)
+	rawEvents, subscription, err := listener.collectionCreatedSubscriptionProvider.StartCollectionCreatedSubscription(ctx, chainId)
 	if err != nil {
 		return err
 	}

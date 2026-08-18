@@ -8,6 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type AgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterface interface {
+type AgentImageProposalCreatedSubscriptionProviderInterface interface {
 	StartAgentImageProposalCreatedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1AgentImageProposalCreated, ethereum.Subscription, error)
 }

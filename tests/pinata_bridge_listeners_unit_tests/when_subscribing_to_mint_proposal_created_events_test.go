@@ -24,7 +24,7 @@ type WhenSubscribingToMintProposalCreatedEventsTestingSuite struct {
 	sut *pinata_bridge_listeners.AgentCollectionMintProposalCreatedListener
 
 	agentCollectionsManagerRequester *interfaces_mocks.MockAgentCollectionsManagerRequesterInterface
-	subscriptionProvider             *interfaces_mocks.MockAgentCollectionMintProposalCreatedEventSubscriptionProviderInterface
+	subscriptionProvider             *interfaces_mocks.MockMintProposalCreatedSubscriptionProviderInterface
 	chainEventMetrics                *metrics_mocks.MockChainEventMetricsInterface
 }
 
@@ -32,7 +32,7 @@ func WhenSubscribingToMintProposalCreatedEventsBeforeEach(t *testing.T) *WhenSub
 	mockController := gomock.NewController(t)
 
 	agentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(mockController)
-	subscriptionProvider := interfaces_mocks.NewMockAgentCollectionMintProposalCreatedEventSubscriptionProviderInterface(mockController)
+	subscriptionProvider := interfaces_mocks.NewMockMintProposalCreatedSubscriptionProviderInterface(mockController)
 	chainEventMetrics := metrics_mocks.NewMockChainEventMetricsInterface(mockController)
 
 	// No event reaches the handler in these subscription tests; it only has to be wired.
