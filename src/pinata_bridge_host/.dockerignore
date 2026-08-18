@@ -1,6 +1,31 @@
-.github
-.vscode
+# Build context lives at repo root (Dockerfile copies ./go.mod etc), so this
+# file applies when the build context is the repo root.
+
+# VCS + IDE
 .git
 .gitignore
+.vscode
+.idea
+.devcontainer
+
+# Local secrets / configs (use env or mount real config)
 .env
-.env.example
+**/.env
+**/appsettings.json
+
+# Tests + mocks (not needed in the runtime image)
+tests/
+
+# Build / module artifacts
+bin/
+*.test
+*.out
+coverage.*
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Compose / runtime state
+docker-compose.override.yml
+*.pid

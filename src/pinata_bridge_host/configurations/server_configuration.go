@@ -3,11 +3,11 @@ package configurations
 import (
 	"context"
 
+	mvc_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/interfaces"
 	mvc_middlewares "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/middlewares"
+	common_settings "github.com/6022-labs/agentic-pinata-bridge/src/common/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
-	mvc_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/interfaces"
-	common_settings "github.com/6022-labs/agentic-pinata-bridge/src/common/settings"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"

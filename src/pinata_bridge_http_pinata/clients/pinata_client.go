@@ -41,7 +41,10 @@ func NewPinataClient(
 	}
 }
 
-func (p *PinataClient) PinByHash(ctx context.Context, request *models.ExternalPinByHashRequest) (*models.ExternalPinByHashResponse, error) {
+func (p *PinataClient) PinByHash(
+	ctx context.Context,
+	request *models.ExternalPinByHashRequest,
+) (*models.ExternalPinByHashResponse, error) {
 	// Construct the URL
 	url := fmt.Sprintf("%s%s", p.pinataSettings.BaseUrl, PinByCidEndpoint)
 

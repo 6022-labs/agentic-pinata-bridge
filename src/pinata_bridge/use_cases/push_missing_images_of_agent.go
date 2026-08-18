@@ -75,7 +75,11 @@ func (u *PushMissingImagesOfAgent) push(
 		}
 
 		if *isUploaded {
-			u.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomeAlreadyPinned)
+			u.pinMetrics.RecordSweepImage(
+				ctx,
+				metrics_interfaces.SweepKindAgent,
+				metrics_interfaces.PinOutcomeAlreadyPinned,
+			)
 			u.logger.Debug("CID already uploaded to pinata, skipping", zap.String("cid", cid))
 			continue
 		}

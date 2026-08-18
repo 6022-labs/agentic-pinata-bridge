@@ -6,8 +6,8 @@ import (
 
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
-	traces_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
+	traces_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases/responses"
 	"go.uber.org/zap"
 )
@@ -33,7 +33,12 @@ func NewPushMissingImageCids(
 	pinTracer traces_interfaces.PinTracerInterface,
 ) *PushMissingImageCids {
 	return &PushMissingImageCids{
-		AbstractPushUseCase:              NewAbstractPushUseCase(logger, cidPinner, agentCollectionRequester, pinMetrics),
+		AbstractPushUseCase: NewAbstractPushUseCase(
+			logger,
+			cidPinner,
+			agentCollectionRequester,
+			pinMetrics,
+		),
 		chainsSettings:                   chainsSettings,
 		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
 		pushMissingImagesOfAgent:         pushMissingImagesOfAgent,

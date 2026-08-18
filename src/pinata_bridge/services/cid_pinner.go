@@ -111,4 +111,3 @@ func (s *CidPinner) getCidHostAddresses(ctx context.Context, cid string) ([]stri
 
 	return nil, err
 }
-

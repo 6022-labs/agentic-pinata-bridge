@@ -9,5 +9,9 @@ import (
 )
 
 type MintedSubscriptionProviderInterface interface {
-	StartMintedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error)
+	StartMintedSubscription(
+		ctx context.Context,
+		chainId uint64,
+		agentCollectionAddress common.Address,
+	) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error)
 }

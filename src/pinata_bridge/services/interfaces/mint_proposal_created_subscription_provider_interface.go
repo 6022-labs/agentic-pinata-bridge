@@ -9,5 +9,9 @@ import (
 )
 
 type MintProposalCreatedSubscriptionProviderInterface interface {
-	StartMintProposalCreatedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error)
+	StartMintProposalCreatedSubscription(
+		ctx context.Context,
+		chainId uint64,
+		agentCollectionAddress common.Address,
+	) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error)
 }

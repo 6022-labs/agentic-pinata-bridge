@@ -31,7 +31,10 @@ func NewAgentCollectionsManagerRequester(
 	}
 }
 
-func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses(ctx context.Context, chainId uint64) ([]common.Address, error) {
+func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses(
+	ctx context.Context,
+	chainId uint64,
+) ([]common.Address, error) {
 	client, err := a.ethClientFactory.Http(chainId)
 	if err != nil {
 		return nil, err
@@ -42,7 +45,9 @@ func (a *AgentCollectionsManagerRequester) GetAllCollectionAddresses(ctx context
 		return nil, fmt.Errorf("no agent collections manager configured for chain %d", chainId)
 	}
 
-	agentABI, err := abi.JSON(strings.NewReader(pinata_bridge_abi.AgentCollectionsManagerABI)) // You must expose raw ABI string
+	agentABI, err := abi.JSON(
+		strings.NewReader(pinata_bridge_abi.AgentCollectionsManagerABI),
+	) // You must expose raw ABI string
 	if err != nil {
 		return nil, err
 	}

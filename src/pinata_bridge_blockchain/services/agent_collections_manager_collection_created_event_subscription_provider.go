@@ -31,7 +31,10 @@ func NewCollectionCreatedSubscriptionProvider(
 	}
 }
 
-func (s *CollectionCreatedSubscriptionProvider) StartCollectionCreatedSubscription(ctx context.Context, chainId uint64) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
+func (s *CollectionCreatedSubscriptionProvider) StartCollectionCreatedSubscription(
+	ctx context.Context,
+	chainId uint64,
+) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
 	client, err := s.ethClientFactory.Ws(chainId)
 	if err != nil {
 		return nil, nil, err

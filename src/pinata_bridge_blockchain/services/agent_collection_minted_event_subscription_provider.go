@@ -26,7 +26,11 @@ func NewAgentCollectionMintedEventSubscriptionProvider(
 	}
 }
 
-func (s *AgentCollectionMintedEventSubscriptionProvider) StartMintedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
+func (s *AgentCollectionMintedEventSubscriptionProvider) StartMintedSubscription(
+	ctx context.Context,
+	chainId uint64,
+	agentCollectionAddress common.Address,
+) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
 	client, err := s.ethClientFactory.Ws(chainId)
 	if err != nil {
 		return nil, nil, err

@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/common/host_configurations"
+	common_settings "github.com/6022-labs/agentic-pinata-bridge/src/common/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/configurations"
-	common_settings "github.com/6022-labs/agentic-pinata-bridge/src/common/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -37,7 +37,9 @@ func main() {
 		logger.Info("Starting Pinata Bridge Host")
 
 		if !hostSettings.UseApi && !hostSettings.UseListeners {
-			logger.Info("Both API and listeners are disabled. Waiting for 10 seconds before exiting to avoid too much requests to RPC nodes due to HTTP synchronization.")
+			logger.Info(
+				"Both API and listeners are disabled. Waiting 10 seconds before exiting to spare the RPC nodes.",
+			)
 			time.Sleep(10 * time.Second)
 		}
 	})

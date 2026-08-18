@@ -14,12 +14,12 @@ import (
 func TestDISmoke(t *testing.T) {
 	k := koanf.New(".")
 	_ = k.Load(confmap.Provider(map[string]any{
-		"host.api_port":                 3000,
-		"chains.80002.rpc_http_url":     "http://localhost:8545",
-		"chains.80002.rpc_ws_url":       "ws://localhost:8546",
-		"pinata.api_key":                "key",
-		"pinata.base_url":               "https://api.pinata.cloud",
-		"ipfs_check.base_url":           "https://ipfs-check.example",
+		"host.api_port":             3000,
+		"chains.80002.rpc_http_url": "http://localhost:8545",
+		"chains.80002.rpc_ws_url":   "ws://localhost:8546",
+		"pinata.api_key":            "key",
+		"pinata.base_url":           "https://api.pinata.cloud",
+		"ipfs_check.base_url":       "https://ipfs-check.example",
 	}, "."), nil)
 
 	container := configurations.ConfigureDI(k)
@@ -27,7 +27,7 @@ func TestDISmoke(t *testing.T) {
 
 	type params struct {
 		dig.In
-		Listeners []pinata_bridge_listeners.EventListenerInterface `group:"event_listeners"`
+		Listeners []pinata_bridge_listeners.EventListenerInterface             `group:"event_listeners"`
 		Subs      []pinata_bridge_listeners.CollectionEventSubscriberInterface `group:"collection_event_subscribers"`
 	}
 	if err := container.Invoke(func(p params) {

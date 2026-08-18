@@ -1,7 +1,6 @@
 package pinata_bridge_listeners
 
 import (
-
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
@@ -73,4 +72,3 @@ func NewAgentCollectionAgentImageProposalCreatedListener(
 		handleAgentImageProposalCreatedEvent.Execute,
 	)
 }
-

@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	PushMissingImageCidsEndpoint    = "/push_missing_image_cids"
-	PushMissingImagesOfAgentEndpoint = "/push_missing_images_of_agent/:chainId/:agentCollectionAddress/:agentCollectionTokenId"
+	PushMissingImageCidsEndpoint     = "/push_missing_image_cids"
+	PushMissingImagesOfAgentEndpoint = "/push_missing_images_of_agent" +
+		"/:chainId/:agentCollectionAddress/:agentCollectionTokenId"
 	PushImagesOfMintProposalEndpoint = "/push_images_of_mint_proposal/:chainId/:agentCollectionAddress/:mintProposalId"
 )
 

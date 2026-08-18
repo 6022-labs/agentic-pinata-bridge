@@ -11,10 +11,16 @@ type HandleAgentImageProposalCreatedEvent struct {
 	pushImageOfAgentImageProposal *PushImageOfAgentImageProposal
 }
 
-func NewHandleAgentImageProposalCreatedEvent(pushImageOfAgentImageProposal *PushImageOfAgentImageProposal) *HandleAgentImageProposalCreatedEvent {
+func NewHandleAgentImageProposalCreatedEvent(
+	pushImageOfAgentImageProposal *PushImageOfAgentImageProposal,
+) *HandleAgentImageProposalCreatedEvent {
 	return &HandleAgentImageProposalCreatedEvent{pushImageOfAgentImageProposal: pushImageOfAgentImageProposal}
 }
 
-func (u *HandleAgentImageProposalCreatedEvent) Execute(ctx context.Context, chainId uint64, event *abi.AgentCollectionV1AgentImageProposalCreated) error {
+func (u *HandleAgentImageProposalCreatedEvent) Execute(
+	ctx context.Context,
+	chainId uint64,
+	event *abi.AgentCollectionV1AgentImageProposalCreated,
+) error {
 	return u.pushImageOfAgentImageProposal.push(ctx, chainId, event.Raw.Address, *event.ProposalId)
 }

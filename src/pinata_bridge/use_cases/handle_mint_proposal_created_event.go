@@ -11,10 +11,16 @@ type HandleMintProposalCreatedEvent struct {
 	pushImagesOfMintProposal *PushImagesOfMintProposal
 }
 
-func NewHandleMintProposalCreatedEvent(pushImagesOfMintProposal *PushImagesOfMintProposal) *HandleMintProposalCreatedEvent {
+func NewHandleMintProposalCreatedEvent(
+	pushImagesOfMintProposal *PushImagesOfMintProposal,
+) *HandleMintProposalCreatedEvent {
 	return &HandleMintProposalCreatedEvent{pushImagesOfMintProposal: pushImagesOfMintProposal}
 }
 
-func (u *HandleMintProposalCreatedEvent) Execute(ctx context.Context, chainId uint64, event *abi.AgentCollectionV1MintProposalCreated) error {
+func (u *HandleMintProposalCreatedEvent) Execute(
+	ctx context.Context,
+	chainId uint64,
+	event *abi.AgentCollectionV1MintProposalCreated,
+) error {
 	return u.pushImagesOfMintProposal.push(ctx, chainId, event.Raw.Address, *event.ProposalId)
 }

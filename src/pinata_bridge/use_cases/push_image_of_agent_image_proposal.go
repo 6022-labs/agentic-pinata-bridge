@@ -70,7 +70,11 @@ func (u *PushImageOfAgentImageProposal) push(
 	)
 
 	if err := u.cidPinner.Pin(ctx, *cid); err != nil {
-		u.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindImageProposal, metrics_interfaces.PinOutcomeFailed)
+		u.pinMetrics.RecordSweepImage(
+			ctx,
+			metrics_interfaces.SweepKindImageProposal,
+			metrics_interfaces.PinOutcomeFailed,
+		)
 		u.logger.Error("Failed to push agent image proposal cid to pinata", zap.String("cid", *cid), zap.Error(err))
 		return err
 	}

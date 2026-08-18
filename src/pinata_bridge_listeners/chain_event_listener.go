@@ -101,7 +101,13 @@ func (listener *ChainEventListener[T]) Listen(ctx context.Context) error {
 				)
 				outcome = metrics_interfaces.ChainEventOutcomeFailed
 			}
-			listener.chainEventMetrics.RecordEvent(ctx, listener.eventName, received.chainId, outcome, time.Since(start))
+			listener.chainEventMetrics.RecordEvent(
+				ctx,
+				listener.eventName,
+				received.chainId,
+				outcome,
+				time.Since(start),
+			)
 		case received := <-listener.errorChannel:
 			listener.chainEventMetrics.RecordSubscriptionError(ctx, listener.eventName, received.chainId)
 			listener.logger.Error("Subscription error",

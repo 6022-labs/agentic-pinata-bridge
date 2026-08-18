@@ -32,7 +32,9 @@ func WhenPushingMissingImagesOfAgentBeforeEach(t *testing.T) *WhenPushingMissing
 	pinataRequester := interfaces_mocks.NewMockPinataRequesterInterface(mockController)
 	ipfsCheckRequester := interfaces_mocks.NewMockIpfsCheckRequesterInterface(mockController)
 	agentCollectionRequester := interfaces_mocks.NewMockAgentCollectionRequesterInterface(mockController)
-	agentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(mockController)
+	agentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(
+		mockController,
+	)
 	pinMetrics := metrics_mocks.NewMockPinMetricsInterface(mockController)
 	pinTracer := newNoopPinTracer(mockController)
 

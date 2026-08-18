@@ -26,7 +26,11 @@ func NewAgentCollectionAgentImageProposalCreatedEventSubscriptionProvider(
 	}
 }
 
-func (s *AgentCollectionAgentImageProposalCreatedEventSubscriptionProvider) StartAgentImageProposalCreatedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1AgentImageProposalCreated, ethereum.Subscription, error) {
+func (s *AgentCollectionAgentImageProposalCreatedEventSubscriptionProvider) StartAgentImageProposalCreatedSubscription(
+	ctx context.Context,
+	chainId uint64,
+	agentCollectionAddress common.Address,
+) (<-chan *abi.AgentCollectionV1AgentImageProposalCreated, ethereum.Subscription, error) {
 	client, err := s.ethClientFactory.Ws(chainId)
 	if err != nil {
 		return nil, nil, err

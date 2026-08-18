@@ -16,9 +16,9 @@ import (
 type WhenPinningACidTestSuite struct {
 	sut *services.CidPinner
 
-	pinataRequester                  *interfaces_mocks.MockPinataRequesterInterface
-	ipfsCheckRequester               *interfaces_mocks.MockIpfsCheckRequesterInterface
-	pinMetrics                       *metrics_mocks.MockPinMetricsInterface
+	pinataRequester    *interfaces_mocks.MockPinataRequesterInterface
+	ipfsCheckRequester *interfaces_mocks.MockIpfsCheckRequesterInterface
+	pinMetrics         *metrics_mocks.MockPinMetricsInterface
 }
 
 func WhenPinningACidBeforeEach(t *testing.T) *WhenPinningACidTestSuite {
@@ -39,9 +39,9 @@ func WhenPinningACidBeforeEach(t *testing.T) *WhenPinningACidTestSuite {
 	return &WhenPinningACidTestSuite{
 		sut: sut,
 
-		pinataRequester:                  pinataRequester,
-		ipfsCheckRequester:               ipfsCheckRequester,
-		pinMetrics:                       pinMetrics,
+		pinataRequester:    pinataRequester,
+		ipfsCheckRequester: ipfsCheckRequester,
+		pinMetrics:         pinMetrics,
 	}
 }
 
@@ -56,8 +56,14 @@ func TestWhenPinningACid(t *testing.T) {
 
 			suite := WhenPinningACidBeforeEach(t)
 			// First call returns error, second call returns error as well
-			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(assert.AnError).Times(2)
-			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any(), gomock.Any()).Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).AnyTimes()
+			suite.pinataRequester.EXPECT().
+				PinCid(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(assert.AnError).
+				Times(2)
+			suite.ipfsCheckRequester.EXPECT().
+				GetMultiAddresses(gomock.Any(), gomock.Any()).
+				Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).
+				AnyTimes()
 
 			suite.pinMetrics.EXPECT().RecordHostLookup(
 				gomock.Any(), metrics_interfaces.HostLookupOutcomeFound, int64(1))
@@ -81,7 +87,10 @@ func TestWhenPinningACid(t *testing.T) {
 			suite := WhenPinningACidBeforeEach(t)
 			// Only one call, returns nil
 			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any(), gomock.Any()).Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).AnyTimes()
+			suite.ipfsCheckRequester.EXPECT().
+				GetMultiAddresses(gomock.Any(), gomock.Any()).
+				Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).
+				AnyTimes()
 
 			suite.pinMetrics.EXPECT().RecordHostLookup(
 				gomock.Any(), metrics_interfaces.HostLookupOutcomeFound, int64(1))
@@ -101,7 +110,10 @@ func TestWhenPinningACid(t *testing.T) {
 
 			suite := WhenPinningACidBeforeEach(t)
 			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(assert.AnError).Times(1)
+			suite.pinataRequester.EXPECT().
+				PinCid(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(assert.AnError).
+				Times(1)
 
 			suite.pinMetrics.EXPECT().RecordHostLookup(
 				gomock.Any(), metrics_interfaces.HostLookupOutcomeEmpty, int64(3))

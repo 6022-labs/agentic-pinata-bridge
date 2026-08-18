@@ -78,7 +78,10 @@ func TestWhenPinningByHash(t *testing.T) {
 			defer WhenPinningByHashAfterEach(suite)
 			initSuite(suite)
 
-			resp, err := suite.sut.PinByHash(context.Background(), &models.ExternalPinByHashRequest{HashToPin: "QmHash"})
+			resp, err := suite.sut.PinByHash(
+				context.Background(),
+				&models.ExternalPinByHashRequest{HashToPin: "QmHash"},
+			)
 
 			assert.NoError(t, err)
 			assert.NotNil(t, resp)
@@ -110,7 +113,10 @@ func TestWhenPinningByHash(t *testing.T) {
 			defer WhenPinningByHashAfterEach(suite)
 			initSuite(suite)
 
-			resp, err := suite.sut.PinByHash(context.Background(), &models.ExternalPinByHashRequest{HashToPin: "QmHash"})
+			resp, err := suite.sut.PinByHash(
+				context.Background(),
+				&models.ExternalPinByHashRequest{HashToPin: "QmHash"},
+			)
 
 			assert.Error(t, err)
 			assert.Nil(t, resp)
@@ -134,7 +140,10 @@ func TestWhenPinningByHash(t *testing.T) {
 			defer WhenPinningByHashAfterEach(suite)
 			initSuite(suite)
 
-			resp, err := suite.sut.PinByHash(context.Background(), &models.ExternalPinByHashRequest{HashToPin: "QmHash"})
+			resp, err := suite.sut.PinByHash(
+				context.Background(),
+				&models.ExternalPinByHashRequest{HashToPin: "QmHash"},
+			)
 
 			assert.Error(t, err)
 			assert.Nil(t, resp)

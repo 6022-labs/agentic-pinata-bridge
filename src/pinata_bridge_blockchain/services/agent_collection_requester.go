@@ -29,7 +29,11 @@ func NewAgentCollectionRequester(
 	}
 }
 
-func (a *AgentCollectionRequester) GetAllTokenIds(ctx context.Context, chainId uint64, collectionAddress common.Address) ([]big.Int, error) {
+func (a *AgentCollectionRequester) GetAllTokenIds(
+	ctx context.Context,
+	chainId uint64,
+	collectionAddress common.Address,
+) ([]big.Int, error) {
 	client, err := a.ethClientFactory.Http(chainId)
 	if err != nil {
 		return nil, err
@@ -61,7 +65,12 @@ func (a *AgentCollectionRequester) GetAllTokenIds(ctx context.Context, chainId u
 	return tokenIds, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentImages(ctx context.Context, chainId uint64, collectionAddress common.Address, agentTokenId big.Int) ([]string, error) {
+func (a *AgentCollectionRequester) GetAgentImages(
+	ctx context.Context,
+	chainId uint64,
+	collectionAddress common.Address,
+	agentTokenId big.Int,
+) ([]string, error) {
 	client, err := a.ethClientFactory.Http(chainId)
 	if err != nil {
 		return nil, err
@@ -83,7 +92,11 @@ func (a *AgentCollectionRequester) GetAgentImages(ctx context.Context, chainId u
 	imagesKeyValues := make([]pinata_bridge_abi.KeyValue, imageCount.Uint64())
 
 	for i := uint64(0); i < imageCount.Uint64(); i++ {
-		imageKeyValue, err := agentCollection.ImageOfByIndex(&bind.CallOpts{Context: ctx}, &agentTokenId, big.NewInt(int64(i)))
+		imageKeyValue, err := agentCollection.ImageOfByIndex(
+			&bind.CallOpts{Context: ctx},
+			&agentTokenId,
+			big.NewInt(int64(i)),
+		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get agent image at index %d: %w", i, err)
 		}
@@ -98,7 +111,12 @@ func (a *AgentCollectionRequester) GetAgentImages(ctx context.Context, chainId u
 	return images, nil
 }
 
-func (a *AgentCollectionRequester) GetMintProposalImages(ctx context.Context, chainId uint64, collectionAddress common.Address, proposalId big.Int) ([]string, error) {
+func (a *AgentCollectionRequester) GetMintProposalImages(
+	ctx context.Context,
+	chainId uint64,
+	collectionAddress common.Address,
+	proposalId big.Int,
+) ([]string, error) {
 	client, err := a.ethClientFactory.Http(chainId)
 	if err != nil {
 		return nil, err
@@ -125,10 +143,19 @@ func (a *AgentCollectionRequester) GetMintProposalImages(ctx context.Context, ch
 		}
 	}
 
-	return nil, fmt.Errorf("mint proposal with ID %s not found in collection %s", proposalId.String(), collectionAddress.Hex())
+	return nil, fmt.Errorf(
+		"mint proposal with ID %s not found in collection %s",
+		proposalId.String(),
+		collectionAddress.Hex(),
+	)
 }
 
-func (a *AgentCollectionRequester) GetAgentImageProposalImage(ctx context.Context, chainId uint64, collectionAddress common.Address, proposalId big.Int) (*string, error) {
+func (a *AgentCollectionRequester) GetAgentImageProposalImage(
+	ctx context.Context,
+	chainId uint64,
+	collectionAddress common.Address,
+	proposalId big.Int,
+) (*string, error) {
 	client, err := a.ethClientFactory.Http(chainId)
 	if err != nil {
 		return nil, err
@@ -142,7 +169,12 @@ func (a *AgentCollectionRequester) GetAgentImageProposalImage(ctx context.Contex
 		return nil, fmt.Errorf("failed to create agent collection: %w", err)
 	}
 
-	addOrUpdateAgentImageProposals, err := a.getAddOrUpdateAgentImageProposals(ctx, client, agentCollection, collectionAddress)
+	addOrUpdateAgentImageProposals, err := a.getAddOrUpdateAgentImageProposals(
+		ctx,
+		client,
+		agentCollection,
+		collectionAddress,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get add or update agent image proposals: %w", err)
 	}
@@ -153,16 +185,27 @@ func (a *AgentCollectionRequester) GetAgentImageProposalImage(ctx context.Contex
 		}
 	}
 
-	return nil, fmt.Errorf("add or update agent image proposal with ID %s not found in collection %s", proposalId.String(), collectionAddress.Hex())
+	return nil, fmt.Errorf(
+		"add or update agent image proposal with ID %s not found in collection %s",
+		proposalId.String(),
+		collectionAddress.Hex(),
+	)
 }
 
-func (a *AgentCollectionRequester) getMintProposals(ctx context.Context, client *ethclient.Client, agentCollection *pinata_bridge_abi.AgentCollectionV1, agentCollectionAddress common.Address) ([]pinata_bridge_abi.MintProposal, error) {
+func (a *AgentCollectionRequester) getMintProposals(
+	ctx context.Context,
+	client *ethclient.Client,
+	agentCollection *pinata_bridge_abi.AgentCollectionV1,
+	agentCollectionAddress common.Address,
+) ([]pinata_bridge_abi.MintProposal, error) {
 	mintProposalLength, err := agentCollection.MintProposalsLength(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mint proposal length: %w", err)
 	}
 
-	agentCollectionABI, err := abi.JSON(strings.NewReader(pinata_bridge_abi.AgentCollectionV1ABI)) // You must expose raw ABI string
+	agentCollectionABI, err := abi.JSON(
+		strings.NewReader(pinata_bridge_abi.AgentCollectionV1ABI),
+	) // You must expose raw ABI string
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse agent collection ABI: %w", err)
 	}
@@ -210,13 +253,22 @@ func (a *AgentCollectionRequester) getMintProposals(ctx context.Context, client 
 	return mintProposals, nil
 }
 
-func (a *AgentCollectionRequester) getAddOrUpdateAgentImageProposals(ctx context.Context, client *ethclient.Client, agentCollection *pinata_bridge_abi.AgentCollectionV1, agentCollectionAddress common.Address) ([]pinata_bridge_abi.AddOrUpdateAgentImageProposal, error) {
-	addOrUpdateAgentImageProposalsLength, err := agentCollection.AddOrUpdateAgentImageProposalsLength(&bind.CallOpts{Context: ctx})
+func (a *AgentCollectionRequester) getAddOrUpdateAgentImageProposals(
+	ctx context.Context,
+	client *ethclient.Client,
+	agentCollection *pinata_bridge_abi.AgentCollectionV1,
+	agentCollectionAddress common.Address,
+) ([]pinata_bridge_abi.AddOrUpdateAgentImageProposal, error) {
+	addOrUpdateAgentImageProposalsLength, err := agentCollection.AddOrUpdateAgentImageProposalsLength(
+		&bind.CallOpts{Context: ctx},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get add or update image proposal length: %w", err)
 	}
 
-	agentCollectionABI, err := abi.JSON(strings.NewReader(pinata_bridge_abi.AgentCollectionV1ABI)) // You must expose raw ABI string
+	agentCollectionABI, err := abi.JSON(
+		strings.NewReader(pinata_bridge_abi.AgentCollectionV1ABI),
+	) // You must expose raw ABI string
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse agent collection ABI: %w", err)
 	}
@@ -246,7 +298,11 @@ func (a *AgentCollectionRequester) getAddOrUpdateAgentImageProposals(ctx context
 		return nil, fmt.Errorf("failed to batch call add or update agent image proposals: %w", err)
 	}
 
-	addOrUpdateAgentImageProposals := make([]pinata_bridge_abi.AddOrUpdateAgentImageProposal, 0, addOrUpdateAgentImageProposalsLength.Int64())
+	addOrUpdateAgentImageProposals := make(
+		[]pinata_bridge_abi.AddOrUpdateAgentImageProposal,
+		0,
+		addOrUpdateAgentImageProposalsLength.Int64(),
+	)
 
 	for _, result := range results {
 		if result == nil {
@@ -257,7 +313,10 @@ func (a *AgentCollectionRequester) getAddOrUpdateAgentImageProposals(ctx context
 		if err != nil {
 			return nil, fmt.Errorf("failed to unpack addOrUpdateAgentImageProposal result: %w", err)
 		}
-		addOrUpdateAgentImageProposal := *abi.ConvertType(unpacked[0], new(pinata_bridge_abi.AddOrUpdateAgentImageProposal)).(*pinata_bridge_abi.AddOrUpdateAgentImageProposal)
+		addOrUpdateAgentImageProposal := *abi.ConvertType(
+			unpacked[0],
+			new(pinata_bridge_abi.AddOrUpdateAgentImageProposal),
+		).(*pinata_bridge_abi.AddOrUpdateAgentImageProposal)
 
 		addOrUpdateAgentImageProposals = append(addOrUpdateAgentImageProposals, addOrUpdateAgentImageProposal)
 	}

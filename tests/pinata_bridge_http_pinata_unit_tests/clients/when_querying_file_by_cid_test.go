@@ -61,7 +61,9 @@ func TestWhenQueryingFileByCid(t *testing.T) {
 				seenAuth = r.Header.Get("Authorization")
 
 				w.Header().Set("Content-Type", "application/json")
-				_, _ = w.Write([]byte(`{"data":{"files":[{"cid":"QmHash","name":"file","size":10}],"next_page_token":null}}`))
+				_, _ = w.Write(
+					[]byte(`{"data":{"files":[{"cid":"QmHash","name":"file","size":10}],"next_page_token":null}}`),
+				)
 			}
 		}
 
