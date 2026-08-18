@@ -118,7 +118,7 @@ func TestWhenSubscribingToMintedEvents(t *testing.T) {
 	t.Run("Given a subscription that unsubscribes cleanly", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should stop tracking it once its watcher stops", func(t *testing.T) {
+		t.Run("Should record the subscription as closed once its watcher stops", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSubscribingToMintedEventsBeforeEach(t)
@@ -139,13 +139,13 @@ func TestWhenSubscribingToMintedEvents(t *testing.T) {
 			err := suite.sut.Subscribe(context.Background(), testChainId, collectionAddress)
 			assert.NoError(t, err)
 
-			// A nil error is a clean unsubscribe, the path that previously left the subscription tracked forever.
+			// A nil error is a clean unsubscribe; the watcher must still report the subscription closed.
 			subscription.errors <- nil
 
 			select {
 			case <-stoppedTracking:
 			case <-time.After(time.Second):
-				assert.Fail(t, "the subscription was still tracked after its watcher stopped")
+				assert.Fail(t, "the watcher stopped without recording the subscription as closed")
 			}
 		})
 	})

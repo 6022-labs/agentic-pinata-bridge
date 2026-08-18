@@ -19,7 +19,9 @@ import (
 const AppName = "6022-PinataBridge"
 
 func ConfigureServer(container *dig.Container) {
-	container.Provide(newHttpServer)
+	if err := container.Provide(newHttpServer); err != nil {
+		panic(err)
+	}
 
 	err := container.Invoke(useRestApi)
 	if err != nil {
@@ -53,7 +55,7 @@ type useListenersParams struct {
 	EventListeners []pinata_bridge_listeners.EventListenerInterface `group:"event_listeners"`
 }
 
-// RegisterListeners
+// useListeners
 func useListeners(p useListenersParams) {
 	if !p.HostSettings.UseListeners {
 		return
@@ -84,7 +86,7 @@ type useRestApiParams struct {
 	Controllers    []mvc_interfaces.ControllerInterface `group:"controllers"`
 }
 
-// UseRestApi hooks up the routes and uses Fx to create new controller instances per request
+// UseRestApi hooks up the routes and
 func useRestApi(p useRestApiParams) {
 	if !p.HostSettings.UseApi {
 		return

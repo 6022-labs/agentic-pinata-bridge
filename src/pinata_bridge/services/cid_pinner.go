@@ -64,7 +64,7 @@ func (s *CidPinner) Pin(ctx context.Context, cid string) (err error) {
 	}
 	s.pinMetrics.RecordPin(ctx, metrics_interfaces.PinOutcomeFailed, withHostAddresses, time.Since(start))
 
-	// Retrying is only worth it when the failed attempt actually carried host addresses to dros.
+	// Retrying is only worth it when the failed attempt actually carried host addresses to drop.
 	if !withHostAddresses {
 		return err
 	}

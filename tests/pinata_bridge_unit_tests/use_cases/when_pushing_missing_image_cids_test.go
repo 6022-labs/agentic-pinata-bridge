@@ -60,7 +60,6 @@ func WhenPushingMissingImageCidsBeforeEach(t *testing.T) *WhenPushingMissingImag
 
 	sut := use_cases.NewPushMissingImageCids(
 		zap.NewNop(),
-		cidPinner,
 		agentCollectionRequester,
 		pinMetrics,
 		settings.NewChainsSettingsFromChainIds([]uint64{testChainId}),

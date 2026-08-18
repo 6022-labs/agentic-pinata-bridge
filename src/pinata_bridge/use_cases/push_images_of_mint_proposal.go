@@ -16,6 +16,8 @@ import (
 // PushImagesOfMintProposal pins every image carried by one mint proposal.
 type PushImagesOfMintProposal struct {
 	*AbstractPushUseCase
+
+	cidPinner interfaces.CidPinnerInterface
 }
 
 func NewPushImagesOfMintProposal(
@@ -25,7 +27,8 @@ func NewPushImagesOfMintProposal(
 	pinMetrics metrics_interfaces.PinMetricsInterface,
 ) *PushImagesOfMintProposal {
 	return &PushImagesOfMintProposal{
-		AbstractPushUseCase: NewAbstractPushUseCase(logger, cidPinner, agentCollectionRequester, pinMetrics),
+		AbstractPushUseCase: NewAbstractPushUseCase(logger, agentCollectionRequester, pinMetrics),
+		cidPinner:           cidPinner,
 	}
 }
 

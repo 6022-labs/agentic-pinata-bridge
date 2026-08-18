@@ -17,6 +17,7 @@ import (
 type PushMissingImagesOfAgent struct {
 	*AbstractPushUseCase
 
+	cidPinner       interfaces.CidPinnerInterface
 	pinataRequester interfaces.PinataRequesterInterface
 }
 
@@ -28,7 +29,8 @@ func NewPushMissingImagesOfAgent(
 	pinMetrics metrics_interfaces.PinMetricsInterface,
 ) *PushMissingImagesOfAgent {
 	return &PushMissingImagesOfAgent{
-		AbstractPushUseCase: NewAbstractPushUseCase(logger, cidPinner, agentCollectionRequester, pinMetrics),
+		AbstractPushUseCase: NewAbstractPushUseCase(logger, agentCollectionRequester, pinMetrics),
+		cidPinner:           cidPinner,
 		pinataRequester:     pinataRequester,
 	}
 }

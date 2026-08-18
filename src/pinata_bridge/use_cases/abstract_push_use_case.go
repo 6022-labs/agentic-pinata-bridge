@@ -12,20 +12,17 @@ import (
 // AbstractPushUseCase carries the collaborators every push use case shares.
 type AbstractPushUseCase struct {
 	logger                   *zap.Logger
-	cidPinner                interfaces.CidPinnerInterface
 	agentCollectionRequester interfaces.AgentCollectionRequesterInterface
 	pinMetrics               metrics_interfaces.PinMetricsInterface
 }
 
 func NewAbstractPushUseCase(
 	logger *zap.Logger,
-	cidPinner interfaces.CidPinnerInterface,
 	agentCollectionRequester interfaces.AgentCollectionRequesterInterface,
 	pinMetrics metrics_interfaces.PinMetricsInterface,
 ) *AbstractPushUseCase {
 	return &AbstractPushUseCase{
 		logger:                   logger,
-		cidPinner:                cidPinner,
 		agentCollectionRequester: agentCollectionRequester,
 		pinMetrics:               pinMetrics,
 	}

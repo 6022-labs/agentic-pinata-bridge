@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc"
 	metrics_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/metrics_mocks/interfaces_mocks"
@@ -48,8 +49,9 @@ func WhenPushingMissingImagesOfAgentBeforeEach(t *testing.T) *WhenPushingMissing
 		zap.NewNop(), cidPinner, agentCollectionRequester, pinMetrics,
 	)
 	pushMissingImageCids := use_cases.NewPushMissingImageCids(
-		zap.NewNop(), cidPinner, agentCollectionRequester, pinMetrics,
-		nil, agentCollectionsManagerRequester, pushMissingImagesOfAgent, pinTracer,
+		zap.NewNop(), agentCollectionRequester, pinMetrics,
+		settings.NewChainsSettingsFromChainIds(nil),
+		agentCollectionsManagerRequester, pushMissingImagesOfAgent, pinTracer,
 	)
 
 	controller := pinata_bridge_mvc.NewPinataPushController(

@@ -24,7 +24,6 @@ type PushMissingImageCids struct {
 
 func NewPushMissingImageCids(
 	logger *zap.Logger,
-	cidPinner interfaces.CidPinnerInterface,
 	agentCollectionRequester interfaces.AgentCollectionRequesterInterface,
 	pinMetrics metrics_interfaces.PinMetricsInterface,
 	chainsSettings *settings.ChainsSettings,
@@ -33,12 +32,7 @@ func NewPushMissingImageCids(
 	pinTracer traces_interfaces.PinTracerInterface,
 ) *PushMissingImageCids {
 	return &PushMissingImageCids{
-		AbstractPushUseCase: NewAbstractPushUseCase(
-			logger,
-			cidPinner,
-			agentCollectionRequester,
-			pinMetrics,
-		),
+		AbstractPushUseCase:              NewAbstractPushUseCase(logger, agentCollectionRequester, pinMetrics),
 		chainsSettings:                   chainsSettings,
 		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
 		pushMissingImagesOfAgent:         pushMissingImagesOfAgent,

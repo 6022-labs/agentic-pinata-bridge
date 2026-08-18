@@ -16,6 +16,8 @@ import (
 // PushImageOfAgentImageProposal pins the single image carried by one agent-image proposal.
 type PushImageOfAgentImageProposal struct {
 	*AbstractPushUseCase
+
+	cidPinner interfaces.CidPinnerInterface
 }
 
 func NewPushImageOfAgentImageProposal(
@@ -25,7 +27,8 @@ func NewPushImageOfAgentImageProposal(
 	pinMetrics metrics_interfaces.PinMetricsInterface,
 ) *PushImageOfAgentImageProposal {
 	return &PushImageOfAgentImageProposal{
-		AbstractPushUseCase: NewAbstractPushUseCase(logger, cidPinner, agentCollectionRequester, pinMetrics),
+		AbstractPushUseCase: NewAbstractPushUseCase(logger, agentCollectionRequester, pinMetrics),
+		cidPinner:           cidPinner,
 	}
 }
 
