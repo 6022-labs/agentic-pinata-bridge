@@ -28,7 +28,7 @@ func NewPinataPushController(
 	}
 }
 
-func (controller *PinataPushController) InitRoutes(c fiber.Router) {
+func (controller *PinataPushController) RegisterRoutes(c fiber.Router) {
 	c.Post(PUSH_MISSING_IMAGE_CIDS, controller.PushMissingImageCids)
 	c.Post(PUSH_MISSING_IMAGES_OF_AGENT, controller.PushMissingImagesOfAgent)
 	c.Post(PUSH_IMAGES_OF_MINT_PROPOSAL, controller.PushImagesOfMintProposal)

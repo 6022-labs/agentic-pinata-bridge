@@ -6,7 +6,7 @@ import (
 	mvc_middlewares "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/middlewares"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc"
+	mvc_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/interfaces"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
@@ -76,7 +76,7 @@ type useRestApiParams struct {
 	App            *fiber.App
 	Logger         *zap.Logger
 	RequestMetrics *mvc_middlewares.ApiRequestMetricsMiddleware
-	Controllers    []pinata_bridge_mvc.ControllerInterface `group:"controllers"`
+	Controllers    []mvc_interfaces.ControllerInterface `group:"controllers"`
 }
 
 // UseRestApi hooks up the routes and uses Fx to create new controller instances per request
@@ -99,6 +99,6 @@ func useRestApi(p useRestApiParams) {
 	}))
 
 	for _, controller := range p.Controllers {
-		controller.InitRoutes(p.App)
+		controller.RegisterRoutes(p.App)
 	}
 }
