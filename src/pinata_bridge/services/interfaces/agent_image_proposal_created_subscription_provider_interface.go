@@ -12,6 +12,6 @@ type AgentImageProposalCreatedSubscriptionProviderInterface interface {
 	StartAgentImageProposalCreatedSubscription(
 		ctx context.Context,
 		chainId uint64,
-		agentCollectionAddress common.Address,
+		agentCollectionAddresses []common.Address,
 	) (<-chan *abi.AgentCollectionV1AgentImageProposalCreated, ethereum.Subscription, error)
 }

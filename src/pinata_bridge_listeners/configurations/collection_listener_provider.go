@@ -7,7 +7,7 @@ import (
 
 // provideCollectionListener registers one listener three times: concrete, as a run-loop
 // listener, and as a subscriber the collection-created listener notifies about new collections.
-func provideCollectionListener[T any](container *dig.Container, constructor any) {
+func provideCollectionListener[T pinata_bridge_listeners.ChainEvent](container *dig.Container, constructor any) {
 	if err := container.Provide(constructor); err != nil {
 		panic(err)
 	}

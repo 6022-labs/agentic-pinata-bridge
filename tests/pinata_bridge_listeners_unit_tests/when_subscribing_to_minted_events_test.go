@@ -83,7 +83,7 @@ func TestWhenSubscribingToMintedEvents(t *testing.T) {
 				GetAllCollectionAddresses(gomock.Any(), testChainId).
 				Return([]common.Address{collectionAddress}, nil)
 			suite.subscriptionProvider.EXPECT().
-				StartMintedSubscription(gomock.Any(), testChainId, collectionAddress).
+				StartMintedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
 				Return(make(chan *abi.AgentCollectionV1Minted), newStubSubscription(), nil)
 
 			suite.chainEventMetrics.EXPECT().
@@ -125,7 +125,7 @@ func TestWhenSubscribingToMintedEvents(t *testing.T) {
 
 			subscription := newStubSubscription()
 			suite.subscriptionProvider.EXPECT().
-				StartMintedSubscription(gomock.Any(), testChainId, collectionAddress).
+				StartMintedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
 				Return(make(chan *abi.AgentCollectionV1Minted), subscription, nil)
 
 			suite.chainEventMetrics.EXPECT().

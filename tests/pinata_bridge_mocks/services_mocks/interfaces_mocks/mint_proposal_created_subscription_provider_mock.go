@@ -44,9 +44,9 @@ func (m *MockMintProposalCreatedSubscriptionProviderInterface) EXPECT() *MockMin
 }
 
 // StartMintProposalCreatedSubscription mocks base method.
-func (m *MockMintProposalCreatedSubscriptionProviderInterface) StartMintProposalCreatedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error) {
+func (m *MockMintProposalCreatedSubscriptionProviderInterface) StartMintProposalCreatedSubscription(ctx context.Context, chainId uint64, agentCollectionAddresses []common.Address) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartMintProposalCreatedSubscription", ctx, chainId, agentCollectionAddress)
+	ret := m.ctrl.Call(m, "StartMintProposalCreatedSubscription", ctx, chainId, agentCollectionAddresses)
 	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1MintProposalCreated)
 	ret1, _ := ret[1].(ethereum.Subscription)
 	ret2, _ := ret[2].(error)
@@ -54,7 +54,7 @@ func (m *MockMintProposalCreatedSubscriptionProviderInterface) StartMintProposal
 }
 
 // StartMintProposalCreatedSubscription indicates an expected call of StartMintProposalCreatedSubscription.
-func (mr *MockMintProposalCreatedSubscriptionProviderInterfaceMockRecorder) StartMintProposalCreatedSubscription(ctx, chainId, agentCollectionAddress any) *gomock.Call {
+func (mr *MockMintProposalCreatedSubscriptionProviderInterfaceMockRecorder) StartMintProposalCreatedSubscription(ctx, chainId, agentCollectionAddresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintProposalCreatedSubscription", reflect.TypeOf((*MockMintProposalCreatedSubscriptionProviderInterface)(nil).StartMintProposalCreatedSubscription), ctx, chainId, agentCollectionAddress)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintProposalCreatedSubscription", reflect.TypeOf((*MockMintProposalCreatedSubscriptionProviderInterface)(nil).StartMintProposalCreatedSubscription), ctx, chainId, agentCollectionAddresses)
 }

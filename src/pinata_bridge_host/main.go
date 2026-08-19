@@ -31,7 +31,11 @@ func main() {
 
 	shutdownTelemetry := host_configurations.ConfigureTelemetry(container, configurations.AppName)
 
-	configurations.ConfigureServer(container)
+	// Cancelling this context unsubscribes every chain listener before the process exits.
+	listenersContext, stopListeners := context.WithCancel(context.Background())
+	defer stopListeners()
+
+	configurations.ConfigureServer(container, listenersContext)
 
 	err = container.Invoke(func(logger *zap.Logger, hostSettings *settings.HostFeaturesSettings) {
 		logger.Info("Starting Pinata Bridge Host")
@@ -85,6 +89,8 @@ func main() {
 		select {
 		case sig := <-sigCh:
 			logger.Info("Shutdown signal received", zap.String("signal", sig.String()))
+
+			stopListeners()
 
 			if hostSettings.UseApi {
 				if err := app.Shutdown(); err != nil {

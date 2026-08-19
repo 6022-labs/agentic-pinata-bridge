@@ -18,8 +18,13 @@ import (
 
 const AppName = "6022-PinataBridge"
 
-func ConfigureServer(container *dig.Container) {
+// ConfigureServer wires the API and the listeners; listenersContext stops the listeners on shutdown.
+func ConfigureServer(container *dig.Container, listenersContext context.Context) {
 	if err := container.Provide(newHttpServer); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(func() context.Context { return listenersContext }); err != nil {
 		panic(err)
 	}
 
@@ -51,6 +56,8 @@ func newHttpServer(
 type useListenersParams struct {
 	dig.In
 
+	ListenersContext context.Context
+
 	HostSettings   *settings.HostFeaturesSettings
 	EventListeners []pinata_bridge_listeners.EventListenerInterface `group:"event_listeners"`
 }
@@ -61,7 +68,7 @@ func useListeners(p useListenersParams) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx := p.ListenersContext
 
 	for _, listener := range p.EventListeners {
 		if err := listener.SubscribeAll(ctx); err != nil {

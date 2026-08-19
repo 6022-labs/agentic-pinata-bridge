@@ -84,7 +84,7 @@ func TestWhenSubscribingToAgentImageProposalCreatedEvents(t *testing.T) {
 				GetAllCollectionAddresses(gomock.Any(), testChainId).
 				Return([]common.Address{collectionAddress}, nil)
 			suite.subscriptionProvider.EXPECT().
-				StartAgentImageProposalCreatedSubscription(gomock.Any(), testChainId, collectionAddress).
+				StartAgentImageProposalCreatedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
 				Return(make(chan *abi.AgentCollectionV1AgentImageProposalCreated), newStubSubscription(), nil)
 
 			suite.chainEventMetrics.EXPECT().
@@ -126,7 +126,7 @@ func TestWhenSubscribingToAgentImageProposalCreatedEvents(t *testing.T) {
 
 			subscription := newStubSubscription()
 			suite.subscriptionProvider.EXPECT().
-				StartAgentImageProposalCreatedSubscription(gomock.Any(), testChainId, collectionAddress).
+				StartAgentImageProposalCreatedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
 				Return(make(chan *abi.AgentCollectionV1AgentImageProposalCreated), subscription, nil)
 
 			suite.chainEventMetrics.EXPECT().

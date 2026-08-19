@@ -2,7 +2,7 @@ package pinata_bridge_listeners
 
 import (
 	"context"
-	"sync"
+	"slices"
 	"time"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
@@ -10,22 +10,30 @@ import (
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners/metrics/interfaces"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"go.uber.org/zap"
 )
 
-// StartCollectionSubscription opens one chain+collection subscription in the blockchain adapter.
+// ChainEvent is any decoded contract event; RawLog is generated onto every abi event struct.
+type ChainEvent interface {
+	RawLog() types.Log
+}
+
+// StartCollectionSubscription opens one subscription covering every watched collection on a chain.
 type StartCollectionSubscription[T any] func(
 	ctx context.Context,
 	chainId uint64,
-	collectionAddress common.Address,
+	agentCollectionAddresses []common.Address,
 ) (<-chan *T, ethereum.Subscription, error)
 
 // HandleChainEvent hands one decoded event to the use case that owns it.
 type HandleChainEvent[T any] func(ctx context.Context, chainId uint64, event *T) error
 
-// ChainEventListener is the transport shared by every per-collection event listener: it opens
-// subscriptions, pumps raw events onto one channel and hands each to a single use case.
-type ChainEventListener[T any] struct {
+// ChainEventListener is transport only: it keeps one subscription per chain covering every known
+// collection, and hands each decoded event to a single use case.
+type ChainEventListener[T ChainEvent] struct {
+	*AbstractUpdatableSubscriptionListener
+
 	logger                  *zap.Logger
 	eventName               string
 	chainsSettings          *settings.ChainsSettings
@@ -34,15 +42,12 @@ type ChainEventListener[T any] struct {
 	startSubscription       StartCollectionSubscription[T]
 	handleChainEvent        HandleChainEvent[T]
 
-	errorChannel chan ChainSubscriptionError
-	eventChannel chan ChainEvent[T]
-
-	// Subscribe is called from the collection-created listener's goroutine as well as SubscribeAll.
-	subscriptionsMutex sync.Mutex
-	subscriptions      []ethereum.Subscription
+	// Guarded by the embedded listener's mutex.
+	trackedAddresses map[uint64][]common.Address
+	subscribeContext context.Context
 }
 
-func NewChainEventListener[T any](
+func NewChainEventListener[T ChainEvent](
 	logger *zap.Logger,
 	eventName string,
 	chainsSettings *settings.ChainsSettings,
@@ -51,7 +56,7 @@ func NewChainEventListener[T any](
 	startSubscription StartCollectionSubscription[T],
 	handleChainEvent HandleChainEvent[T],
 ) *ChainEventListener[T] {
-	return &ChainEventListener[T]{
+	listener := &ChainEventListener[T]{
 		logger:                  logger,
 		eventName:               eventName,
 		chainsSettings:          chainsSettings,
@@ -59,108 +64,163 @@ func NewChainEventListener[T any](
 		chainEventMetrics:       chainEventMetrics,
 		startSubscription:       startSubscription,
 		handleChainEvent:        handleChainEvent,
-
-		subscriptions: []ethereum.Subscription{},
-		errorChannel:  make(chan ChainSubscriptionError),
-		eventChannel:  make(chan ChainEvent[T]),
+		trackedAddresses:        map[uint64][]common.Address{},
+		subscribeContext:        context.Background(),
 	}
+	listener.AbstractUpdatableSubscriptionListener = NewAbstractUpdatableSubscriptionListener(
+		listener.rebuildSubscription,
+	)
+
+	return listener
 }
 
 func (listener *ChainEventListener[T]) SubscribeAll(ctx context.Context) error {
+	listener.mutex.Lock()
+	listener.subscribeContext = ctx
+	listener.mutex.Unlock()
+
 	for _, chainId := range listener.chainsSettings.ChainIds() {
 		collections, err := listener.listCollectionAddresses.Execute(ctx, chainId)
 		if err != nil {
 			return err
 		}
 
-		for _, collection := range collections {
-			if err := listener.Subscribe(ctx, chainId, collection); err != nil {
-				return err
-			}
+		if len(collections) == 0 {
+			listener.logger.Info("No collection to watch yet",
+				zap.String("event", listener.eventName),
+				zap.Uint64("chainId", chainId),
+			)
+			continue
+		}
+
+		listener.mutex.Lock()
+		listener.trackedAddresses[chainId] = slices.Clone(collections)
+		listener.mutex.Unlock()
+
+		if err := listener.rebuildSubscription(chainId); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-func (listener *ChainEventListener[T]) Listen(ctx context.Context) error {
-	for {
-		select {
-		case received := <-listener.eventChannel:
-			listener.logger.Info("Received "+listener.eventName+" event",
-				zap.Uint64("chainId", received.chainId),
-				zap.Any("event", received.event),
-			)
-
-			start := time.Now()
-			outcome := metrics_interfaces.ChainEventOutcomeHandled
-			if err := listener.handleChainEvent(ctx, received.chainId, received.event); err != nil {
-				listener.logger.Error("Failed to handle "+listener.eventName+" event",
-					zap.Any("event", received.event),
-					zap.Error(err),
-				)
-				outcome = metrics_interfaces.ChainEventOutcomeFailed
-			}
-			listener.chainEventMetrics.RecordEvent(
-				ctx,
-				listener.eventName,
-				received.chainId,
-				outcome,
-				time.Since(start),
-			)
-		case received := <-listener.errorChannel:
-			listener.chainEventMetrics.RecordSubscriptionError(ctx, listener.eventName, received.chainId)
-			listener.logger.Error("Subscription error",
-				zap.Uint64("chainId", received.chainId),
-				zap.Error(received.err),
-			)
-
-			return received.err
-		}
-	}
-}
-
+// Subscribe starts watching a collection discovered after start-up; the chain's single
+// subscription is rebuilt to cover it.
 func (listener *ChainEventListener[T]) Subscribe(
 	ctx context.Context,
 	chainId uint64,
 	collectionAddress common.Address,
 ) error {
-	listener.logger.Debug("Subscribing to "+listener.eventName+" events",
-		zap.Uint64("chainId", chainId),
-		zap.String("collectionAddress", collectionAddress.Hex()),
-	)
+	listener.mutex.Lock()
+	if slices.Contains(listener.trackedAddresses[chainId], collectionAddress) {
+		listener.mutex.Unlock()
+		return nil
+	}
+	listener.trackedAddresses[chainId] = append(listener.trackedAddresses[chainId], collectionAddress)
+	listener.subscribeContext = ctx
+	listener.mutex.Unlock()
 
-	rawEvents, subscription, err := listener.startSubscription(ctx, chainId, collectionAddress)
+	listener.markNeedsRebuild(chainId)
+
+	return listener.rebuildSubscription(chainId)
+}
+
+func (listener *ChainEventListener[T]) Listen(ctx context.Context) error {
+	var err error
+
+	select {
+	case err = <-listener.errorChannel:
+		listener.chainEventMetrics.RecordSubscriptionError(ctx, listener.eventName, 0)
+		listener.logger.Error("Subscription error", zap.String("event", listener.eventName), zap.Error(err))
+	case <-ctx.Done():
+	}
+
+	listener.stop()
+
+	return err
+}
+
+func (listener *ChainEventListener[T]) rebuildSubscription(chainId uint64) error {
+	listener.mutex.Lock()
+	addresses := slices.Clone(listener.trackedAddresses[chainId])
+	ctx := listener.subscribeContext
+	listener.needsRebuild[chainId] = false
+	listener.mutex.Unlock()
+
+	if len(addresses) == 0 {
+		return nil
+	}
+
+	rawEvents, subscription, err := listener.startSubscription(ctx, chainId, addresses)
 	if err != nil {
 		return err
 	}
 
+	listener.replaceSubscription(chainId, subscription)
 	listener.chainEventMetrics.RecordSubscriptionOpened(ctx, listener.eventName, chainId)
+	listener.startWatcher(ctx, chainId, rawEvents, subscription)
+
+	listener.logger.Info("Watching collections",
+		zap.String("event", listener.eventName),
+		zap.Uint64("chainId", chainId),
+		zap.Int("collectionCount", len(addresses)),
+	)
+
+	return nil
+}
+
+func (listener *ChainEventListener[T]) startWatcher(
+	ctx context.Context,
+	chainId uint64,
+	rawEvents <-chan *T,
+	subscription ethereum.Subscription,
+) {
+	listener.waitGroup.Add(1)
 
 	go func() {
+		defer listener.waitGroup.Done()
 		defer listener.chainEventMetrics.RecordSubscriptionClosed(ctx, listener.eventName, chainId)
 
 		for {
 			select {
-			case event := <-rawEvents:
-				listener.eventChannel <- ChainEvent[T]{chainId: chainId, event: event}
-			case err := <-subscription.Err():
-				if err != nil {
-					listener.errorChannel <- ChainSubscriptionError{chainId: chainId, err: err}
+			case event, open := <-rawEvents:
+				if !open {
+					return
 				}
+				if event == nil {
+					continue
+				}
+
+				listener.dispatch(ctx, chainId, event)
+			case err := <-subscription.Err():
+				if err == nil {
+					return
+				}
+				listener.reportError(err)
+
 				return
 			}
 		}
 	}()
+}
 
-	listener.logger.Info("Listening for "+listener.eventName+" events",
+func (listener *ChainEventListener[T]) dispatch(ctx context.Context, chainId uint64, event *T) {
+	listener.logger.Info("Received "+listener.eventName+" event",
 		zap.Uint64("chainId", chainId),
-		zap.String("collectionAddress", collectionAddress.Hex()),
+		zap.Any("event", event),
 	)
 
-	listener.subscriptionsMutex.Lock()
-	listener.subscriptions = append(listener.subscriptions, subscription)
-	listener.subscriptionsMutex.Unlock()
+	start := time.Now()
+	outcome := metrics_interfaces.ChainEventOutcomeHandled
+	if err := listener.handleChainEvent(ctx, chainId, event); err != nil {
+		listener.logger.Error("Failed to handle "+listener.eventName+" event",
+			zap.Any("event", event),
+			zap.Error(err),
+		)
+		outcome = metrics_interfaces.ChainEventOutcomeFailed
+	}
+	listener.chainEventMetrics.RecordEvent(ctx, listener.eventName, chainId, outcome, time.Since(start))
 
-	return nil
+	listener.onBlockSeen(chainId, (*event).RawLog().BlockNumber)
 }

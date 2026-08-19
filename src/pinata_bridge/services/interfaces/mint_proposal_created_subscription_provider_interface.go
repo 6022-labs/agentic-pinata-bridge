@@ -12,6 +12,6 @@ type MintProposalCreatedSubscriptionProviderInterface interface {
 	StartMintProposalCreatedSubscription(
 		ctx context.Context,
 		chainId uint64,
-		agentCollectionAddress common.Address,
+		agentCollectionAddresses []common.Address,
 	) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error)
 }

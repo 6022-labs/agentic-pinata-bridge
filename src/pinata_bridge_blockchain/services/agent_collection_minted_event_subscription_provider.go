@@ -6,8 +6,8 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"go.uber.org/zap"
 )
 
@@ -29,28 +29,42 @@ func NewAgentCollectionMintedEventSubscriptionProvider(
 func (s *AgentCollectionMintedEventSubscriptionProvider) StartMintedSubscription(
 	ctx context.Context,
 	chainId uint64,
-	agentCollectionAddress common.Address,
+	agentCollectionAddresses []common.Address,
 ) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
 	client, err := s.ethClientFactory.Ws(chainId)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	agentCollection, err := abi.NewAgentCollectionV1(agentCollectionAddress, client)
+	contractAbi, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	logs := make(chan *abi.AgentCollectionV1Minted, 64)
-	sub, err := agentCollection.WatchMinted(&bind.WatchOpts{Context: ctx}, logs, nil)
+	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, client)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	logs, subscription, err := subscribeToCollectionEvent(
+		ctx,
+		client,
+		contractAbi,
+		"Minted",
+		agentCollectionAddresses,
+		func(rawLog types.Log) (*abi.AgentCollectionV1Minted, error) {
+			return filterer.ParseMinted(rawLog)
+		},
+	)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	s.logger.Info(
 		"Subscribed to AgentCollection.Minted events",
-		zap.String("address", agentCollectionAddress.Hex()),
+		zap.Uint64("chainId", chainId),
+		zap.Int("collectionCount", len(agentCollectionAddresses)),
 	)
 
-	return logs, sub, nil
+	return logs, subscription, nil
 }

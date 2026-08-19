@@ -44,9 +44,9 @@ func (m *MockMintedSubscriptionProviderInterface) EXPECT() *MockMintedSubscripti
 }
 
 // StartMintedSubscription mocks base method.
-func (m *MockMintedSubscriptionProviderInterface) StartMintedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
+func (m *MockMintedSubscriptionProviderInterface) StartMintedSubscription(ctx context.Context, chainId uint64, agentCollectionAddresses []common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartMintedSubscription", ctx, chainId, agentCollectionAddress)
+	ret := m.ctrl.Call(m, "StartMintedSubscription", ctx, chainId, agentCollectionAddresses)
 	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1Minted)
 	ret1, _ := ret[1].(ethereum.Subscription)
 	ret2, _ := ret[2].(error)
@@ -54,7 +54,7 @@ func (m *MockMintedSubscriptionProviderInterface) StartMintedSubscription(ctx co
 }
 
 // StartMintedSubscription indicates an expected call of StartMintedSubscription.
-func (mr *MockMintedSubscriptionProviderInterfaceMockRecorder) StartMintedSubscription(ctx, chainId, agentCollectionAddress any) *gomock.Call {
+func (mr *MockMintedSubscriptionProviderInterfaceMockRecorder) StartMintedSubscription(ctx, chainId, agentCollectionAddresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintedSubscription", reflect.TypeOf((*MockMintedSubscriptionProviderInterface)(nil).StartMintedSubscription), ctx, chainId, agentCollectionAddress)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintedSubscription", reflect.TypeOf((*MockMintedSubscriptionProviderInterface)(nil).StartMintedSubscription), ctx, chainId, agentCollectionAddresses)
 }
