@@ -23,6 +23,56 @@ import (
 
 const otherChainId uint64 = 137
 
+type WhenRetiringAReplacedSubscriptionTestingSuite struct {
+	sut *pinata_bridge_listeners.AgentCollectionMintedListener
+
+	agentCollectionsManagerRequester *interfaces_mocks.MockAgentCollectionsManagerRequesterInterface
+	subscriptionProvider             *interfaces_mocks.MockMintedSubscriptionProviderInterface
+	chainEventMetrics                *metrics_mocks.MockChainEventMetricsInterface
+	pinMetrics                       *metrics_mocks_pin.MockPinMetricsInterface
+}
+
+func WhenRetiringAReplacedSubscriptionBeforeEach(t *testing.T) *WhenRetiringAReplacedSubscriptionTestingSuite {
+	mockController := gomock.NewController(t)
+
+	agentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(
+		mockController,
+	)
+	subscriptionProvider := interfaces_mocks.NewMockMintedSubscriptionProviderInterface(mockController)
+	chainEventMetrics := metrics_mocks.NewMockChainEventMetricsInterface(mockController)
+	pinMetrics := metrics_mocks_pin.NewMockPinMetricsInterface(mockController)
+
+	agentCollectionRequester := interfaces_mocks.NewMockAgentCollectionRequesterInterface(mockController)
+	agentCollectionRequester.EXPECT().
+		GetAgentImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, nil).AnyTimes()
+
+	handleMintedEvent := use_cases.NewHandleMintedEvent(use_cases.NewPushMissingImagesOfAgent(
+		zap.NewNop(),
+		interfaces_mocks.NewMockCidPinnerInterface(mockController),
+		agentCollectionRequester,
+		interfaces_mocks.NewMockPinataRequesterInterface(mockController),
+		pinMetrics,
+	))
+
+	sut := pinata_bridge_listeners.NewAgentCollectionMintedListener(
+		zap.NewNop(),
+		settings.NewChainsSettingsFromChainIds([]uint64{testChainId, otherChainId}),
+		use_cases.NewListCollectionAddresses(agentCollectionsManagerRequester),
+		chainEventMetrics,
+		subscriptionProvider,
+		handleMintedEvent,
+	)
+
+	return &WhenRetiringAReplacedSubscriptionTestingSuite{
+		sut:                              sut,
+		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
+		subscriptionProvider:             subscriptionProvider,
+		chainEventMetrics:                chainEventMetrics,
+		pinMetrics:                       pinMetrics,
+	}
+}
+
 // A replaced subscription must survive until its own chain proves the replacement is live.
 func TestWhenRetiringAReplacedSubscription(t *testing.T) {
 	t.Parallel()
@@ -33,75 +83,54 @@ func TestWhenRetiringAReplacedSubscription(t *testing.T) {
 	t.Run("Given two chains and a rebuild on one of them", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should retire only this chain's parked subscription", func(t *testing.T) {
-			t.Parallel()
+		otherChainParkedSubscription := newStubSubscription()
+		testChainEvents := make(chan *abi.AgentCollectionV1Minted, 1)
+		handled := make(chan struct{}, 1)
 
-			mockController := gomock.NewController(t)
-
-			agentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(
-				mockController,
-			)
-			subscriptionProvider := interfaces_mocks.NewMockMintedSubscriptionProviderInterface(mockController)
-			chainEventMetrics := metrics_mocks.NewMockChainEventMetricsInterface(mockController)
-			pinMetrics := metrics_mocks_pin.NewMockPinMetricsInterface(mockController)
-
-			agentCollectionRequester := interfaces_mocks.NewMockAgentCollectionRequesterInterface(mockController)
-			agentCollectionRequester.EXPECT().
-				GetAgentImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(nil, nil).AnyTimes()
-
-			handleMintedEvent := use_cases.NewHandleMintedEvent(use_cases.NewPushMissingImagesOfAgent(
-				zap.NewNop(),
-				interfaces_mocks.NewMockCidPinnerInterface(mockController),
-				agentCollectionRequester,
-				interfaces_mocks.NewMockPinataRequesterInterface(mockController),
-				pinMetrics,
-			))
-
-			sut := pinata_bridge_listeners.NewAgentCollectionMintedListener(
-				zap.NewNop(),
-				settings.NewChainsSettingsFromChainIds([]uint64{testChainId, otherChainId}),
-				use_cases.NewListCollectionAddresses(agentCollectionsManagerRequester),
-				chainEventMetrics,
-				subscriptionProvider,
-				handleMintedEvent,
-			)
-
-			agentCollectionsManagerRequester.EXPECT().
+		initSuite := func(suite *WhenRetiringAReplacedSubscriptionTestingSuite) {
+			suite.agentCollectionsManagerRequester.EXPECT().
 				GetAllCollectionAddresses(gomock.Any(), gomock.Any()).
 				Return([]common.Address{collection}, nil).Times(2)
 
 			// Both chains rebuild, so each parks its first subscription. The other chain's parked
 			// subscription is the one that must survive an event on this chain.
-			otherChainParkedSubscription := newStubSubscription()
-			testChainEvents := make(chan *abi.AgentCollectionV1Minted, 1)
 
-			subscriptionProvider.EXPECT().
+			suite.subscriptionProvider.EXPECT().
 				StartMintedSubscription(gomock.Any(), otherChainId, []common.Address{collection}).
 				Return(make(chan *abi.AgentCollectionV1Minted), otherChainParkedSubscription, nil)
-			subscriptionProvider.EXPECT().
+			suite.subscriptionProvider.EXPECT().
 				StartMintedSubscription(gomock.Any(), testChainId, []common.Address{collection}).
 				Return(make(chan *abi.AgentCollectionV1Minted), newStubSubscription(), nil)
 
-			subscriptionProvider.EXPECT().
+			suite.subscriptionProvider.EXPECT().
 				StartMintedSubscription(gomock.Any(), otherChainId, []common.Address{collection, newCollection}).
 				Return(make(chan *abi.AgentCollectionV1Minted), newStubSubscription(), nil)
-			subscriptionProvider.EXPECT().
+			suite.subscriptionProvider.EXPECT().
 				StartMintedSubscription(gomock.Any(), testChainId, []common.Address{collection, newCollection}).
 				Return(testChainEvents, newStubSubscription(), nil)
 
-			chainEventMetrics.EXPECT().RecordSubscriptionOpened(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-			chainEventMetrics.EXPECT().RecordSubscriptionClosed(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+			suite.chainEventMetrics.EXPECT().
+				RecordSubscriptionOpened(gomock.Any(), gomock.Any(), gomock.Any()).
+				AnyTimes()
+			suite.chainEventMetrics.EXPECT().
+				RecordSubscriptionClosed(gomock.Any(), gomock.Any(), gomock.Any()).
+				AnyTimes()
 
-			handled := make(chan struct{}, 1)
-			chainEventMetrics.EXPECT().
+			suite.chainEventMetrics.EXPECT().
 				RecordEvent(gomock.Any(), mintedEventName, testChainId, gomock.Any(), gomock.Any()).
 				Do(func(context.Context, string, uint64, string, time.Duration) { handled <- struct{}{} })
-			pinMetrics.EXPECT().RecordSweep(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+		}
 
-			assert.NoError(t, sut.SubscribeAll(context.Background()))
-			assert.NoError(t, sut.Subscribe(context.Background(), otherChainId, newCollection))
-			assert.NoError(t, sut.Subscribe(context.Background(), testChainId, newCollection))
+		t.Run("Should retire only this chain's parked subscription", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRetiringAReplacedSubscriptionBeforeEach(t)
+			initSuite(suite)
+
+			assert.NoError(t, suite.sut.SubscribeAll(context.Background()))
+			assert.NoError(t, suite.sut.Subscribe(context.Background(), otherChainId, newCollection))
+			assert.NoError(t, suite.sut.Subscribe(context.Background(), testChainId, newCollection))
 
 			// An event on testChainId must only retire testChainId's parked subscription.
 			testChainEvents <- &abi.AgentCollectionV1Minted{TokenId: big.NewInt(1), Raw: types.Log{BlockNumber: 100}}

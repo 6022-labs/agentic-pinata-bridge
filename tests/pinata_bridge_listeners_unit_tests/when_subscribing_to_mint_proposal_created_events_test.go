@@ -73,17 +73,21 @@ func TestWhenSubscribingToMintProposalCreatedEvents(t *testing.T) {
 	t.Run("Given the chain has one collection", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should subscribe to it", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenSubscribingToMintProposalCreatedEventsBeforeEach(t)
-
+		initSuite := func(suite *WhenSubscribingToMintProposalCreatedEventsTestingSuite) {
 			suite.agentCollectionsManagerRequester.EXPECT().
 				GetAllCollectionAddresses(gomock.Any(), testChainId).
 				Return([]common.Address{collectionAddress}, nil)
 			suite.subscriptionProvider.EXPECT().
 				StartMintProposalCreatedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
 				Return(make(chan *abi.AgentCollectionV1MintProposalCreated), newStubSubscription(), nil)
+		}
+
+		t.Run("Should subscribe to it", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSubscribingToMintProposalCreatedEventsBeforeEach(t)
+
+			initSuite(suite)
 
 			suite.chainEventMetrics.EXPECT().
 				RecordSubscriptionOpened(gomock.Any(), mintProposalCreatedEventName, testChainId)
@@ -99,14 +103,18 @@ func TestWhenSubscribingToMintProposalCreatedEvents(t *testing.T) {
 	t.Run("Given the collection cannot be listed", func(t *testing.T) {
 		t.Parallel()
 
+		initSuite := func(suite *WhenSubscribingToMintProposalCreatedEventsTestingSuite) {
+			suite.agentCollectionsManagerRequester.EXPECT().
+				GetAllCollectionAddresses(gomock.Any(), testChainId).
+				Return(nil, assert.AnError)
+		}
+
 		t.Run("Should return the error without subscribing", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSubscribingToMintProposalCreatedEventsBeforeEach(t)
 
-			suite.agentCollectionsManagerRequester.EXPECT().
-				GetAllCollectionAddresses(gomock.Any(), testChainId).
-				Return(nil, assert.AnError)
+			initSuite(suite)
 
 			err := suite.sut.SubscribeAll(context.Background())
 
@@ -117,12 +125,10 @@ func TestWhenSubscribingToMintProposalCreatedEvents(t *testing.T) {
 	t.Run("Given a subscription that unsubscribes cleanly", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should record the subscription as closed once its watcher stops", func(t *testing.T) {
-			t.Parallel()
+		subscription := newStubSubscription()
+		stoppedTracking := make(chan struct{})
 
-			suite := WhenSubscribingToMintProposalCreatedEventsBeforeEach(t)
-
-			subscription := newStubSubscription()
+		initSuite := func(suite *WhenSubscribingToMintProposalCreatedEventsTestingSuite) {
 			suite.subscriptionProvider.EXPECT().
 				StartMintProposalCreatedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
 				Return(make(chan *abi.AgentCollectionV1MintProposalCreated), subscription, nil)
@@ -130,10 +136,16 @@ func TestWhenSubscribingToMintProposalCreatedEvents(t *testing.T) {
 			suite.chainEventMetrics.EXPECT().
 				RecordSubscriptionOpened(gomock.Any(), mintProposalCreatedEventName, testChainId)
 
-			stoppedTracking := make(chan struct{})
 			suite.chainEventMetrics.EXPECT().
 				RecordSubscriptionClosed(gomock.Any(), mintProposalCreatedEventName, testChainId).
 				Do(func(context.Context, string, uint64) { close(stoppedTracking) })
+		}
+
+		t.Run("Should record the subscription as closed once its watcher stops", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSubscribingToMintProposalCreatedEventsBeforeEach(t)
+			initSuite(suite)
 
 			err := suite.sut.Subscribe(context.Background(), testChainId, collectionAddress)
 			assert.NoError(t, err)

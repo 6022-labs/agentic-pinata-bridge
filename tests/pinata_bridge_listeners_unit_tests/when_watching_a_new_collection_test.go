@@ -20,11 +20,7 @@ func TestWhenWatchingANewCollection(t *testing.T) {
 	t.Run("Given a collection is created after start-up", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should rebuild the chain subscription to cover both collections", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenSubscribingToMintedEventsBeforeEach(t)
-
+		initSuite := func(suite *WhenSubscribingToMintedEventsTestingSuite) {
 			suite.agentCollectionsManagerRequester.EXPECT().
 				GetAllCollectionAddresses(gomock.Any(), testChainId).
 				Return([]common.Address{firstCollection}, nil)
@@ -45,6 +41,13 @@ func TestWhenWatchingANewCollection(t *testing.T) {
 				RecordSubscriptionOpened(gomock.Any(), mintedEventName, testChainId).Times(2)
 			suite.chainEventMetrics.EXPECT().
 				RecordSubscriptionClosed(gomock.Any(), mintedEventName, testChainId).AnyTimes()
+		}
+
+		t.Run("Should rebuild the chain subscription to cover both collections", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSubscribingToMintedEventsBeforeEach(t)
+			initSuite(suite)
 
 			assert.NoError(t, suite.sut.SubscribeAll(context.Background()))
 			assert.NoError(t, suite.sut.Subscribe(context.Background(), testChainId, secondCollection))
@@ -54,11 +57,7 @@ func TestWhenWatchingANewCollection(t *testing.T) {
 	t.Run("Given the same collection is announced twice", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should not open a second subscription for it", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenSubscribingToMintedEventsBeforeEach(t)
-
+		initSuite := func(suite *WhenSubscribingToMintedEventsTestingSuite) {
 			suite.agentCollectionsManagerRequester.EXPECT().
 				GetAllCollectionAddresses(gomock.Any(), testChainId).
 				Return([]common.Address{firstCollection}, nil)
@@ -71,6 +70,13 @@ func TestWhenWatchingANewCollection(t *testing.T) {
 				RecordSubscriptionOpened(gomock.Any(), mintedEventName, testChainId)
 			suite.chainEventMetrics.EXPECT().
 				RecordSubscriptionClosed(gomock.Any(), mintedEventName, testChainId).AnyTimes()
+		}
+
+		t.Run("Should not open a second subscription for it", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSubscribingToMintedEventsBeforeEach(t)
+			initSuite(suite)
 
 			assert.NoError(t, suite.sut.SubscribeAll(context.Background()))
 
@@ -82,12 +88,9 @@ func TestWhenWatchingANewCollection(t *testing.T) {
 	t.Run("Given the listening context is cancelled", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should unsubscribe every subscription it opened", func(t *testing.T) {
-			t.Parallel()
+		subscription := newStubSubscription()
 
-			suite := WhenSubscribingToMintedEventsBeforeEach(t)
-			subscription := newStubSubscription()
-
+		initSuite := func(suite *WhenSubscribingToMintedEventsTestingSuite) {
 			suite.agentCollectionsManagerRequester.EXPECT().
 				GetAllCollectionAddresses(gomock.Any(), testChainId).
 				Return([]common.Address{firstCollection}, nil)
@@ -98,6 +101,13 @@ func TestWhenWatchingANewCollection(t *testing.T) {
 				RecordSubscriptionOpened(gomock.Any(), mintedEventName, testChainId)
 			suite.chainEventMetrics.EXPECT().
 				RecordSubscriptionClosed(gomock.Any(), mintedEventName, testChainId).AnyTimes()
+		}
+
+		t.Run("Should unsubscribe every subscription it opened", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSubscribingToMintedEventsBeforeEach(t)
+			initSuite(suite)
 
 			assert.NoError(t, suite.sut.SubscribeAll(context.Background()))
 
