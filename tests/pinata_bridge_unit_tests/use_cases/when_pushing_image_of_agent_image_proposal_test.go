@@ -96,11 +96,9 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 	t.Run("Given error occurs while pushing to pinata", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
+		testCid := "test-cid"
 
-			suite := WhenPushingImageOfAgentImageProposalBeforeEach(t)
-			testCid := "test-cid"
+		initSuite := func(suite *WhenPushingImageOfAgentImageProposalTestSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetAgentImageProposalImage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(&testCid, nil)
@@ -121,6 +119,13 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindImageProposal, metrics_interfaces.PinOutcomeFailed)
 			suite.pinMetrics.EXPECT().
 				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindImageProposal, gomock.Any(), true)
+		}
+
+		t.Run("Should return error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingImageOfAgentImageProposalBeforeEach(t)
+			initSuite(suite)
 
 			_, err := suite.sut.Execute(context.Background(), &requests.PushImageOfAgentImageProposalRequest{
 				ProposalRequest: requests.ProposalRequest{
@@ -139,12 +144,9 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 	t.Run("Given no error occurs", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return no error", func(t *testing.T) {
-			t.Parallel()
+		testCid := "test-cid"
 
-			suite := WhenPushingImageOfAgentImageProposalBeforeEach(t)
-
-			testCid := "test-cid"
+		initSuite := func(suite *WhenPushingImageOfAgentImageProposalTestSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetAgentImageProposalImage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(&testCid, nil)
@@ -161,6 +163,13 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindImageProposal, metrics_interfaces.PinOutcomePinned)
 			suite.pinMetrics.EXPECT().
 				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindImageProposal, gomock.Any(), false)
+		}
+
+		t.Run("Should return no error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingImageOfAgentImageProposalBeforeEach(t)
+			initSuite(suite)
 
 			_, err := suite.sut.Execute(context.Background(), &requests.PushImageOfAgentImageProposalRequest{
 				ProposalRequest: requests.ProposalRequest{
