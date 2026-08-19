@@ -16,12 +16,15 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 	t.Run("Given no chain is configured", func(t *testing.T) {
 		t.Parallel()
 
+		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
+			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), gomock.Any(), gomock.Any(), false)
+		}
+
 		t.Run("Should sweep nothing and answer an empty 200", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
-
-			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), gomock.Any(), gomock.Any(), false)
+			initSuite(suite)
 
 			req := httptest.NewRequest(http.MethodPost, "/push_missing_image_cids", nil)
 			resp, err := suite.app.Test(req)

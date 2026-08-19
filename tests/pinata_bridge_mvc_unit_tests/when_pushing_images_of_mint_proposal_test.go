@@ -16,15 +16,18 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 	t.Run("Given a valid chain, collection and proposal id", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should reach the use case and return 200", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
-
+		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetMintProposalImages(gomock.Any(), uint64(80002), gomock.Any(), gomock.Any()).
 				Return(nil, nil)
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), gomock.Any(), gomock.Any(), false)
+		}
+
+		t.Run("Should reach the use case and return 200", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
+			initSuite(suite)
 
 			req := httptest.NewRequest(
 				http.MethodPost,
