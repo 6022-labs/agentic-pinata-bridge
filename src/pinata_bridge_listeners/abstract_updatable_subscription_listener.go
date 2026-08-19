@@ -6,6 +6,12 @@ import (
 	"github.com/ethereum/go-ethereum"
 )
 
+// chainSubscriptionError names the chain whose subscription failed, so the metric is not attributed to chain 0.
+type chainSubscriptionError struct {
+	chainId uint64
+	err     error
+}
+
 // AbstractUpdatableSubscriptionListener owns the subscription lifecycle shared by every listener:
 // one live subscription per chain, rebuilt when the watched set changes, retired once the
 // replacement has caught up, and unsubscribed on shutdown.
@@ -16,10 +22,9 @@ type AbstractUpdatableSubscriptionListener struct {
 	subscriptions    map[uint64]ethereum.Subscription
 	oldSubscriptions map[uint64][]ethereum.Subscription
 	lastBlockSeen    map[uint64]uint64
-	needsRebuild     map[uint64]bool
 
 	// Buffered so a failing subscription never blocks its own watcher goroutine.
-	errorChannel chan error
+	errorChannel chan chainSubscriptionError
 	waitGroup    sync.WaitGroup
 }
 
@@ -31,8 +36,7 @@ func NewAbstractUpdatableSubscriptionListener(
 		subscriptions:       map[uint64]ethereum.Subscription{},
 		oldSubscriptions:    map[uint64][]ethereum.Subscription{},
 		lastBlockSeen:       map[uint64]uint64{},
-		needsRebuild:        map[uint64]bool{},
-		errorChannel:        make(chan error, 8),
+		errorChannel:        make(chan chainSubscriptionError, 8),
 	}
 }
 
@@ -52,13 +56,6 @@ func (l *AbstractUpdatableSubscriptionListener) stop() {
 	l.mutex.Unlock()
 
 	l.waitGroup.Wait()
-}
-
-func (l *AbstractUpdatableSubscriptionListener) markNeedsRebuild(chainId uint64) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
-
-	l.needsRebuild[chainId] = true
 }
 
 // onBlockSeen advances the chain's high-water mark and retires subscriptions the
@@ -97,9 +94,9 @@ func (l *AbstractUpdatableSubscriptionListener) replaceSubscription(
 	l.subscriptions[chainId] = subscription
 }
 
-func (l *AbstractUpdatableSubscriptionListener) reportError(err error) {
+func (l *AbstractUpdatableSubscriptionListener) reportError(chainId uint64, err error) {
 	select {
-	case l.errorChannel <- err:
+	case l.errorChannel <- chainSubscriptionError{chainId: chainId, err: err}:
 	default:
 	}
 }

@@ -20,9 +20,9 @@ func ConfigureLogging(container *dig.Container) {
 	switch logLevel {
 	case "debug":
 		zapConfig.Level.SetLevel(zap.DebugLevel)
-	case "info":
+	case "info", "information":
 		zapConfig.Level.SetLevel(zap.InfoLevel)
-	case "warn":
+	case "warn", "warning":
 		zapConfig.Level.SetLevel(zap.WarnLevel)
 	case "error":
 		zapConfig.Level.SetLevel(zap.ErrorLevel)
@@ -49,6 +49,6 @@ func ConfigureLogging(container *dig.Container) {
 		return logger
 	})
 	if err != nil {
-		logger.Fatal("Failed to provide logger", zap.Error(err))
+		logger.Fatal("failed to provide logger", zap.Error(err))
 	}
 }

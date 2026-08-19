@@ -121,8 +121,6 @@ func (listener *ChainEventListener[T]) Subscribe(
 	listener.subscribeContext = ctx
 	listener.mutex.Unlock()
 
-	listener.markNeedsRebuild(chainId)
-
 	return listener.rebuildSubscription(chainId)
 }
 
@@ -130,9 +128,14 @@ func (listener *ChainEventListener[T]) Listen(ctx context.Context) error {
 	var err error
 
 	select {
-	case err = <-listener.errorChannel:
-		listener.chainEventMetrics.RecordSubscriptionError(ctx, listener.eventName, 0)
-		listener.logger.Error("Subscription error", zap.String("event", listener.eventName), zap.Error(err))
+	case received := <-listener.errorChannel:
+		err = received.err
+		listener.chainEventMetrics.RecordSubscriptionError(ctx, listener.eventName, received.chainId)
+		listener.logger.Error("Subscription error",
+			zap.String("event", listener.eventName),
+			zap.Uint64("chainId", received.chainId),
+			zap.Error(err),
+		)
 	case <-ctx.Done():
 	}
 
@@ -145,7 +148,6 @@ func (listener *ChainEventListener[T]) rebuildSubscription(chainId uint64) error
 	listener.mutex.Lock()
 	addresses := slices.Clone(listener.trackedAddresses[chainId])
 	ctx := listener.subscribeContext
-	listener.needsRebuild[chainId] = false
 	listener.mutex.Unlock()
 
 	if len(addresses) == 0 {
@@ -197,7 +199,7 @@ func (listener *ChainEventListener[T]) startWatcher(
 				if err == nil {
 					return
 				}
-				listener.reportError(err)
+				listener.reportError(chainId, err)
 
 				return
 			}

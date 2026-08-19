@@ -75,9 +75,13 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) Listen(ctx con
 	var err error
 
 	select {
-	case err = <-listener.errorChannel:
-		listener.chainEventMetrics.RecordSubscriptionError(ctx, collectionCreatedEventName, 0)
-		listener.logger.Error("Subscription error", zap.Error(err))
+	case received := <-listener.errorChannel:
+		err = received.err
+		listener.chainEventMetrics.RecordSubscriptionError(ctx, collectionCreatedEventName, received.chainId)
+		listener.logger.Error("Subscription error",
+			zap.Uint64("chainId", received.chainId),
+			zap.Error(err),
+		)
 	case <-ctx.Done():
 	}
 
@@ -89,7 +93,6 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) Listen(ctx con
 func (listener *AgentCollectionsManagerCollectionCreatedListener) rebuildSubscription(chainId uint64) error {
 	listener.mutex.Lock()
 	ctx := listener.subscribeContext
-	listener.needsRebuild[chainId] = false
 	listener.mutex.Unlock()
 
 	rawEvents, subscription, err := listener.collectionCreatedSubscriptionProvider.StartCollectionCreatedSubscription(
@@ -136,7 +139,7 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) startWatcher(
 				if err == nil {
 					return
 				}
-				listener.reportError(err)
+				listener.reportError(chainId, err)
 
 				return
 			}
