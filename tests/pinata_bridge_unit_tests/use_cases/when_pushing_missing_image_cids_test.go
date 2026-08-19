@@ -106,14 +106,11 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 	t.Run("Given error occurs while getting all token ids", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
+		collectionAddress := []common.Address{
+			common.HexToAddress("0x1234567890123456789012345678901234567890"),
+		}
 
-			collectionAddress := []common.Address{
-				common.HexToAddress("0x1234567890123456789012345678901234567890"),
-			}
-
-			suite := WhenPushingMissingImageCidsBeforeEach(t)
+		initSuite := func(suite *WhenPushingMissingImageCidsTestingSuite) {
 			suite.agentCollectionsManagerRequester.EXPECT().
 				GetAllCollectionAddresses(gomock.Any(), gomock.Any()).
 				Return(collectionAddress, nil)
@@ -124,6 +121,13 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 			}
 
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAll, gomock.Any(), true)
+		}
+
+		t.Run("Should return error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImageCidsBeforeEach(t)
+			initSuite(suite)
 
 			_, err := suite.sut.Execute(context.Background())
 			assert.Equal(t, err, assert.AnError)
@@ -133,22 +137,18 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 	t.Run("Given no error occurs while getting all token ids", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return no error", func(t *testing.T) {
-			t.Parallel()
+		collectionAddress := []common.Address{
+			common.HexToAddress("0x1234567890123456789012345678901234567890"),
+		}
 
-			suite := WhenPushingMissingImageCidsBeforeEach(t)
+		tokenIds := []big.Int{
+			*big.NewInt(1),
+			*big.NewInt(2),
+		}
 
-			collectionAddress := []common.Address{
-				common.HexToAddress("0x1234567890123456789012345678901234567890"),
-			}
+		imageCid := "test-cid"
 
-			tokenIds := []big.Int{
-				*big.NewInt(1),
-				*big.NewInt(2),
-			}
-
-			imageCid := "test-cid"
-
+		initSuite := func(suite *WhenPushingMissingImageCidsTestingSuite) {
 			suite.agentCollectionsManagerRequester.EXPECT().
 				GetAllCollectionAddresses(gomock.Any(), gomock.Any()).
 				Return(collectionAddress, nil)
@@ -188,6 +188,13 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), false).
 				Times(len(tokenIds))
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAll, gomock.Any(), false)
+		}
+
+		t.Run("Should return no error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImageCidsBeforeEach(t)
+			initSuite(suite)
 
 			_, err := suite.sut.Execute(context.Background())
 			assert.NoError(t, err)
