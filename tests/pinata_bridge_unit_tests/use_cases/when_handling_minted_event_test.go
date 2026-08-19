@@ -57,11 +57,7 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 	t.Run("Given a minted event", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should push to pinata using agent token id", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenHandlingMintedEventBeforeEach(t)
-
+		initSuite := func(suite *WhenHandlingMintedEventTestSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetAgentImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				DoAndReturn(func(
@@ -77,6 +73,13 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 				})
 			suite.pinMetrics.EXPECT().
 				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), false)
+		}
+
+		t.Run("Should push to pinata using agent token id", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingMintedEventBeforeEach(t)
+			initSuite(suite)
 
 			err := suite.sut.Execute(context.Background(), 80002, model_builders.NewMintedEventBuilder().Build())
 
