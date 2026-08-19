@@ -75,10 +75,6 @@ func TestWhenLoadingRpcSettings(t *testing.T) {
 			})
 		})
 	})
-}
-
-func TestWhenDefaultingTheRpcRequestTimeout(t *testing.T) {
-	t.Parallel()
 
 	t.Run("Given a chain without an explicit request timeout", func(t *testing.T) {
 		t.Parallel()
