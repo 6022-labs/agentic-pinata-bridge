@@ -17,7 +17,9 @@ type ChainsSettings struct {
 func NewChainsSettings(logger *zap.Logger, k *koanf.Koanf) *ChainsSettings {
 	keys := k.MapKeys(ChainsSettingsKey)
 	if len(keys) == 0 {
-		logger.Fatal("chains settings is empty: configure at least one chain via appsettings.json or CHAINS__<chain_id>__* env vars")
+		logger.Fatal(
+			"chains settings is empty: configure at least one chain via appsettings.json or CHAINS__<chain_id>__* env vars",
+		)
 	}
 
 	chainIds := make([]uint64, 0, len(keys))

@@ -75,4 +75,22 @@ func TestWhenLoadingRpcSettings(t *testing.T) {
 			})
 		})
 	})
+
+	t.Run("Given a chain without an explicit request timeout", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"chains.80002.rpc_http_url": "https://amoy.example",
+			"chains.80002.rpc_ws_url":   "wss://amoy.example",
+		}, "."), nil)
+
+		t.Run("Should default it so no RPC call can hang unbounded", func(t *testing.T) {
+			t.Parallel()
+
+			result := settings.NewRpcSettings(zap.NewNop(), k)
+
+			assert.Equal(t, uint64(10), (*result)[80002].RequestTimeoutSeconds)
+		})
+	})
 }

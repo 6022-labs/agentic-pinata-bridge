@@ -9,9 +9,12 @@ import (
 
 const RpcSettingsKey = "chains"
 
+const defaultRequestTimeoutSeconds = 10
+
 type RpcConfig struct {
-	HttpUrl string `koanf:"rpc_http_url"`
-	WsUrl   string `koanf:"rpc_ws_url"`
+	HttpUrl               string `koanf:"rpc_http_url"`
+	WsUrl                 string `koanf:"rpc_ws_url"`
+	RequestTimeoutSeconds uint64 `koanf:"request_timeout_seconds"`
 }
 
 type RpcSettings map[uint64]*RpcConfig
@@ -24,16 +27,21 @@ func NewRpcSettings(logger *zap.Logger, k *koanf.Koanf) *RpcSettings {
 
 	for chainId, rpc := range settings {
 		if rpc == nil {
-			logger.Fatal("rpc entry is nil", zap.Uint64("chain_id", chainId))
+			logger.Fatal("rpc entry is nil", zap.Uint64("chainId", chainId))
 		}
 		rpc.HttpUrl = strings.TrimSpace(rpc.HttpUrl)
 		rpc.WsUrl = strings.TrimSpace(rpc.WsUrl)
 
 		if rpc.HttpUrl == "" {
-			logger.Fatal("chain rpc_http_url is required", zap.Uint64("chain_id", chainId))
+			logger.Fatal("chain rpc_http_url is required", zap.Uint64("chainId", chainId))
 		}
 		if rpc.WsUrl == "" {
-			logger.Fatal("chain rpc_ws_url is required", zap.Uint64("chain_id", chainId))
+			logger.Fatal("chain rpc_ws_url is required", zap.Uint64("chainId", chainId))
+		}
+
+		// An unbounded RPC call hangs the caller forever; the reference bounds every chain.
+		if rpc.RequestTimeoutSeconds == 0 {
+			rpc.RequestTimeoutSeconds = defaultRequestTimeoutSeconds
 		}
 	}
 

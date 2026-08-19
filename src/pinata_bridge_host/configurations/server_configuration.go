@@ -3,10 +3,11 @@ package configurations
 import (
 	"context"
 
+	mvc_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/interfaces"
 	mvc_middlewares "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/middlewares"
+	common_settings "github.com/6022-labs/agentic-pinata-bridge/src/common/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
@@ -17,8 +18,15 @@ import (
 
 const AppName = "6022-PinataBridge"
 
-func ConfigureServer(container *dig.Container) {
-	container.Provide(newHttpServer)
+// ConfigureServer wires the API and the listeners; listenersContext stops the listeners on shutdown.
+func ConfigureServer(container *dig.Container, listenersContext context.Context) {
+	if err := container.Provide(newHttpServer); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(func() context.Context { return listenersContext }); err != nil {
+		panic(err)
+	}
 
 	err := container.Invoke(useRestApi)
 	if err != nil {
@@ -31,30 +39,36 @@ func ConfigureServer(container *dig.Container) {
 	}
 }
 
-func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
+func newHttpServer(
+	hostSettings *settings.HostFeaturesSettings,
+	commonHostSettings *common_settings.HostSettings,
+) *fiber.App {
 	if !hostSettings.UseApi {
 		return nil
 	}
 
 	return fiber.New(fiber.Config{
-		AppName: AppName,
+		AppName:   AppName,
+		BodyLimit: commonHostSettings.BodyLimitBytes,
 	})
 }
 
 type useListenersParams struct {
 	dig.In
 
-	HostSettings   *settings.HostSettings
+	ListenersContext context.Context
+
+	HostSettings   *settings.HostFeaturesSettings
 	EventListeners []pinata_bridge_listeners.EventListenerInterface `group:"event_listeners"`
 }
 
-// RegisterListeners
+// useListeners
 func useListeners(p useListenersParams) {
 	if !p.HostSettings.UseListeners {
 		return
 	}
 
-	ctx := context.Background()
+	ctx := p.ListenersContext
 
 	for _, listener := range p.EventListeners {
 		if err := listener.SubscribeAll(ctx); err != nil {
@@ -72,14 +86,14 @@ func useListeners(p useListenersParams) {
 type useRestApiParams struct {
 	dig.In
 
-	HostSettings   *settings.HostSettings
+	HostSettings   *settings.HostFeaturesSettings
 	App            *fiber.App
 	Logger         *zap.Logger
 	RequestMetrics *mvc_middlewares.ApiRequestMetricsMiddleware
-	Controllers    []pinata_bridge_mvc.ControllerInterface `group:"controllers"`
+	Controllers    []mvc_interfaces.ControllerInterface `group:"controllers"`
 }
 
-// UseRestApi hooks up the routes and uses Fx to create new controller instances per request
+// UseRestApi hooks up the routes and
 func useRestApi(p useRestApiParams) {
 	if !p.HostSettings.UseApi {
 		return
@@ -99,6 +113,6 @@ func useRestApi(p useRestApiParams) {
 	}))
 
 	for _, controller := range p.Controllers {
-		controller.InitRoutes(p.App)
+		controller.RegisterRoutes(p.App)
 	}
 }

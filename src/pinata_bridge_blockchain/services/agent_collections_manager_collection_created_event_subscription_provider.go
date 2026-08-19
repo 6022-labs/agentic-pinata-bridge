@@ -13,25 +13,28 @@ import (
 	"go.uber.org/zap"
 )
 
-type AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider struct {
+type CollectionCreatedSubscriptionProvider struct {
 	logger           *zap.Logger
 	ethClientFactory *factory.EthClientFactory
 	managers         *settings.AgentCollectionsManagersSettings
 }
 
-func NewAgentCollectionsManagerCollectionCreatedEventSubscriptionProvider(
+func NewCollectionCreatedSubscriptionProvider(
 	logger *zap.Logger,
 	ethClientFactory *factory.EthClientFactory,
 	managers *settings.AgentCollectionsManagersSettings,
-) *AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider {
-	return &AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider{
+) *CollectionCreatedSubscriptionProvider {
+	return &CollectionCreatedSubscriptionProvider{
 		logger:           logger,
 		ethClientFactory: ethClientFactory,
 		managers:         managers,
 	}
 }
 
-func (s *AgentCollectionsManagerCollectionCreatedEventSubscriptionProvider) StartCollectionCreatedSubscription(ctx context.Context, chainId uint64) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
+func (s *CollectionCreatedSubscriptionProvider) StartCollectionCreatedSubscription(
+	ctx context.Context,
+	chainId uint64,
+) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
 	client, err := s.ethClientFactory.Ws(chainId)
 	if err != nil {
 		return nil, nil, err

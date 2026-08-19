@@ -6,8 +6,8 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/factory"
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"go.uber.org/zap"
 )
 
@@ -26,27 +26,45 @@ func NewAgentCollectionAgentImageProposalCreatedEventSubscriptionProvider(
 	}
 }
 
-func (s *AgentCollectionAgentImageProposalCreatedEventSubscriptionProvider) StartAgentImageProposalCreatedSubscription(ctx context.Context, chainId uint64, agentCollectionAddress common.Address) (<-chan *abi.AgentCollectionV1AgentImageProposalCreated, ethereum.Subscription, error) {
+func (s *AgentCollectionAgentImageProposalCreatedEventSubscriptionProvider) StartAgentImageProposalCreatedSubscription(
+	ctx context.Context,
+	chainId uint64,
+	agentCollectionAddresses []common.Address,
+) (<-chan *abi.AgentCollectionV1AgentImageProposalCreated, ethereum.Subscription, error) {
 	client, err := s.ethClientFactory.Ws(chainId)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	agentCollection, err := abi.NewAgentCollectionV1(agentCollectionAddress, client)
+	contractAbi, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	logs := make(chan *abi.AgentCollectionV1AgentImageProposalCreated, 64)
-	sub, err := agentCollection.WatchAgentImageProposalCreated(&bind.WatchOpts{Context: ctx}, logs, nil, nil)
+	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, client)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	logs, subscription, err := subscribeToCollectionEvent(
+		ctx,
+		client,
+		contractAbi,
+		"AgentImageProposalCreated",
+		agentCollectionAddresses,
+		func(rawLog types.Log) (*abi.AgentCollectionV1AgentImageProposalCreated, error) {
+			return filterer.ParseAgentImageProposalCreated(rawLog)
+		},
+	)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	s.logger.Info(
 		"Subscribed to AgentCollection.AgentImageProposalCreated events",
-		zap.String("address", agentCollectionAddress.Hex()),
+		zap.Uint64("chainId", chainId),
+		zap.Int("collectionCount", len(agentCollectionAddresses)),
 	)
 
-	return logs, sub, nil
+	return logs, subscription, nil
 }

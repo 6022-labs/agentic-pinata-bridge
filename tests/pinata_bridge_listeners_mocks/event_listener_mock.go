@@ -13,7 +13,6 @@ import (
 	context "context"
 	reflect "reflect"
 
-	common "github.com/ethereum/go-ethereum/common"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -67,42 +66,4 @@ func (m *MockEventListenerInterface) SubscribeAll(ctx context.Context) error {
 func (mr *MockEventListenerInterfaceMockRecorder) SubscribeAll(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeAll", reflect.TypeOf((*MockEventListenerInterface)(nil).SubscribeAll), ctx)
-}
-
-// MockCollectionEventSubscriberInterface is a mock of CollectionEventSubscriberInterface interface.
-type MockCollectionEventSubscriberInterface struct {
-	ctrl     *gomock.Controller
-	recorder *MockCollectionEventSubscriberInterfaceMockRecorder
-	isgomock struct{}
-}
-
-// MockCollectionEventSubscriberInterfaceMockRecorder is the mock recorder for MockCollectionEventSubscriberInterface.
-type MockCollectionEventSubscriberInterfaceMockRecorder struct {
-	mock *MockCollectionEventSubscriberInterface
-}
-
-// NewMockCollectionEventSubscriberInterface creates a new mock instance.
-func NewMockCollectionEventSubscriberInterface(ctrl *gomock.Controller) *MockCollectionEventSubscriberInterface {
-	mock := &MockCollectionEventSubscriberInterface{ctrl: ctrl}
-	mock.recorder = &MockCollectionEventSubscriberInterfaceMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockCollectionEventSubscriberInterface) EXPECT() *MockCollectionEventSubscriberInterfaceMockRecorder {
-	return m.recorder
-}
-
-// Subscribe mocks base method.
-func (m *MockCollectionEventSubscriberInterface) Subscribe(ctx context.Context, chainId uint64, collectionAddress common.Address) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Subscribe", ctx, chainId, collectionAddress)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Subscribe indicates an expected call of Subscribe.
-func (mr *MockCollectionEventSubscriberInterfaceMockRecorder) Subscribe(ctx, chainId, collectionAddress any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockCollectionEventSubscriberInterface)(nil).Subscribe), ctx, chainId, collectionAddress)
 }

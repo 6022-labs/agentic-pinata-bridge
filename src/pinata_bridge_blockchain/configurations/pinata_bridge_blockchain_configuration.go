@@ -39,7 +39,7 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 	// Event subscription providers
 	err = container.Provide(
 		blockchain_services.NewAgentCollectionMintedEventSubscriptionProvider,
-		dig.As(new(interfaces.AgentCollectionMintedEventSubscriptionProviderInterface)),
+		dig.As(new(interfaces.MintedSubscriptionProviderInterface)),
 	)
 	if err != nil {
 		panic(err)
@@ -47,15 +47,15 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 
 	err = container.Provide(
 		blockchain_services.NewAgentCollectionMintProposalCreatedEventSubscriptionProvider,
-		dig.As(new(interfaces.AgentCollectionMintProposalCreatedEventSubscriptionProviderInterface)),
+		dig.As(new(interfaces.MintProposalCreatedSubscriptionProviderInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		blockchain_services.NewAgentCollectionsManagerCollectionCreatedEventSubscriptionProvider,
-		dig.As(new(interfaces.AgentCollectionsManagerCollectionCreatedEventSubscriptionProviderInterface)),
+		blockchain_services.NewCollectionCreatedSubscriptionProvider,
+		dig.As(new(interfaces.CollectionCreatedSubscriptionProviderInterface)),
 	)
 	if err != nil {
 		panic(err)
@@ -63,7 +63,7 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 
 	err = container.Provide(
 		blockchain_services.NewAgentCollectionAgentImageProposalCreatedEventSubscriptionProvider,
-		dig.As(new(interfaces.AgentCollectionAgentImageProposalCreatedEventSubscriptionProviderInterface)),
+		dig.As(new(interfaces.AgentImageProposalCreatedSubscriptionProviderInterface)),
 	)
 	if err != nil {
 		panic(err)

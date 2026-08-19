@@ -1363,6 +1363,6 @@ func (_AgentCollectionsManager *AgentCollectionsManagerFilterer) ParseRoleRevoke
 
 // --- RawLog() methods added by go generate ---
 func (e AgentCollectionsManagerCollectionCreated) RawLog() types.Log { return e.Raw }
-func (e AgentCollectionsManagerRoleAdminChanged) RawLog() types.Log { return e.Raw }
-func (e AgentCollectionsManagerRoleGranted) RawLog() types.Log { return e.Raw }
-func (e AgentCollectionsManagerRoleRevoked) RawLog() types.Log { return e.Raw }
+func (e AgentCollectionsManagerRoleAdminChanged) RawLog() types.Log  { return e.Raw }
+func (e AgentCollectionsManagerRoleGranted) RawLog() types.Log       { return e.Raw }
+func (e AgentCollectionsManagerRoleRevoked) RawLog() types.Log       { return e.Raw }

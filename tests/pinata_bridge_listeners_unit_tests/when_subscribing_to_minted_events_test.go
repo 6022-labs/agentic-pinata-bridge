@@ -7,8 +7,10 @@ import (
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
 	metrics_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_listeners_mocks/metrics_mocks/interfaces_mocks"
+	metrics_mocks_pin "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/metrics_mocks/interfaces_mocks"
 	interfaces_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
@@ -24,25 +26,35 @@ type WhenSubscribingToMintedEventsTestingSuite struct {
 	sut *pinata_bridge_listeners.AgentCollectionMintedListener
 
 	agentCollectionsManagerRequester *interfaces_mocks.MockAgentCollectionsManagerRequesterInterface
-	subscriptionProvider             *interfaces_mocks.MockAgentCollectionMintedEventSubscriptionProviderInterface
+	subscriptionProvider             *interfaces_mocks.MockMintedSubscriptionProviderInterface
 	chainEventMetrics                *metrics_mocks.MockChainEventMetricsInterface
 }
 
 func WhenSubscribingToMintedEventsBeforeEach(t *testing.T) *WhenSubscribingToMintedEventsTestingSuite {
 	mockController := gomock.NewController(t)
 
-	mintedEventHandler := interfaces_mocks.NewMockMintedEventHandlerInterface(mockController)
-	agentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(mockController)
-	subscriptionProvider := interfaces_mocks.NewMockAgentCollectionMintedEventSubscriptionProviderInterface(mockController)
+	agentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(
+		mockController,
+	)
+	subscriptionProvider := interfaces_mocks.NewMockMintedSubscriptionProviderInterface(mockController)
 	chainEventMetrics := metrics_mocks.NewMockChainEventMetricsInterface(mockController)
+
+	// No event reaches the handler in these subscription tests; it only has to be wired.
+	handleMintedEvent := use_cases.NewHandleMintedEvent(use_cases.NewPushMissingImagesOfAgent(
+		zap.NewNop(),
+		interfaces_mocks.NewMockCidPinnerInterface(mockController),
+		interfaces_mocks.NewMockAgentCollectionRequesterInterface(mockController),
+		interfaces_mocks.NewMockPinataRequesterInterface(mockController),
+		metrics_mocks_pin.NewMockPinMetricsInterface(mockController),
+	))
 
 	sut := pinata_bridge_listeners.NewAgentCollectionMintedListener(
 		zap.NewNop(),
 		settings.NewChainsSettingsFromChainIds([]uint64{testChainId}),
-		mintedEventHandler,
-		agentCollectionsManagerRequester,
+		use_cases.NewListCollectionAddresses(agentCollectionsManagerRequester),
 		chainEventMetrics,
 		subscriptionProvider,
+		handleMintedEvent,
 	)
 
 	return &WhenSubscribingToMintedEventsTestingSuite{
@@ -62,17 +74,21 @@ func TestWhenSubscribingToMintedEvents(t *testing.T) {
 	t.Run("Given the chain has one collection", func(t *testing.T) {
 		t.Parallel()
 
+		initSuite := func(suite *WhenSubscribingToMintedEventsTestingSuite) {
+			suite.agentCollectionsManagerRequester.EXPECT().
+				GetAllCollectionAddresses(gomock.Any(), testChainId).
+				Return([]common.Address{collectionAddress}, nil)
+			suite.subscriptionProvider.EXPECT().
+				StartMintedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
+				Return(make(chan *abi.AgentCollectionV1Minted), newStubSubscription(), nil)
+		}
+
 		t.Run("Should subscribe to it", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSubscribingToMintedEventsBeforeEach(t)
 
-			suite.agentCollectionsManagerRequester.EXPECT().
-				GetAllCollectionAddresses(gomock.Any(), testChainId).
-				Return([]common.Address{collectionAddress}, nil)
-			suite.subscriptionProvider.EXPECT().
-				StartMintedSubscription(gomock.Any(), testChainId, collectionAddress).
-				Return(make(chan *abi.AgentCollectionV1Minted), newStubSubscription(), nil)
+			initSuite(suite)
 
 			suite.chainEventMetrics.EXPECT().
 				RecordSubscriptionOpened(gomock.Any(), mintedEventName, testChainId)
@@ -88,14 +104,18 @@ func TestWhenSubscribingToMintedEvents(t *testing.T) {
 	t.Run("Given the collection cannot be listed", func(t *testing.T) {
 		t.Parallel()
 
+		initSuite := func(suite *WhenSubscribingToMintedEventsTestingSuite) {
+			suite.agentCollectionsManagerRequester.EXPECT().
+				GetAllCollectionAddresses(gomock.Any(), testChainId).
+				Return(nil, assert.AnError)
+		}
+
 		t.Run("Should return the error without subscribing", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSubscribingToMintedEventsBeforeEach(t)
 
-			suite.agentCollectionsManagerRequester.EXPECT().
-				GetAllCollectionAddresses(gomock.Any(), testChainId).
-				Return(nil, assert.AnError)
+			initSuite(suite)
 
 			err := suite.sut.SubscribeAll(context.Background())
 
@@ -106,34 +126,38 @@ func TestWhenSubscribingToMintedEvents(t *testing.T) {
 	t.Run("Given a subscription that unsubscribes cleanly", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should stop tracking it once its watcher stops", func(t *testing.T) {
-			t.Parallel()
+		subscription := newStubSubscription()
+		stoppedTracking := make(chan struct{})
 
-			suite := WhenSubscribingToMintedEventsBeforeEach(t)
-
-			subscription := newStubSubscription()
+		initSuite := func(suite *WhenSubscribingToMintedEventsTestingSuite) {
 			suite.subscriptionProvider.EXPECT().
-				StartMintedSubscription(gomock.Any(), testChainId, collectionAddress).
+				StartMintedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
 				Return(make(chan *abi.AgentCollectionV1Minted), subscription, nil)
 
 			suite.chainEventMetrics.EXPECT().
 				RecordSubscriptionOpened(gomock.Any(), mintedEventName, testChainId)
 
-			stoppedTracking := make(chan struct{})
 			suite.chainEventMetrics.EXPECT().
 				RecordSubscriptionClosed(gomock.Any(), mintedEventName, testChainId).
 				Do(func(context.Context, string, uint64) { close(stoppedTracking) })
+		}
+
+		t.Run("Should record the subscription as closed once its watcher stops", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSubscribingToMintedEventsBeforeEach(t)
+			initSuite(suite)
 
 			err := suite.sut.Subscribe(context.Background(), testChainId, collectionAddress)
 			assert.NoError(t, err)
 
-			// A nil error is a clean unsubscribe, the path that previously left the subscription tracked forever.
+			// A nil error is a clean unsubscribe; the watcher must still report the subscription closed.
 			subscription.errors <- nil
 
 			select {
 			case <-stoppedTracking:
 			case <-time.After(time.Second):
-				assert.Fail(t, "the subscription was still tracked after its watcher stopped")
+				assert.Fail(t, "the watcher stopped without recording the subscription as closed")
 			}
 		})
 	})

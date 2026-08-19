@@ -6,6 +6,9 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/traces"
+	traces_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/traces/interfaces"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"go.uber.org/dig"
 )
 
@@ -19,42 +22,41 @@ func AddPinataBridgeConfiguration(container *dig.Container) {
 	}
 
 	// Settings
-	err := container.Provide(settings.NewChainsSettings)
-	if err != nil {
+	if err := container.Provide(settings.NewChainsSettings); err != nil {
 		panic(err)
 	}
 
-	// Event handlers
-	err = container.Provide(
-		services.NewMintedEventHandler,
-		dig.As(new(interfaces.MintedEventHandlerInterface)),
-	)
-	if err != nil {
+	// Traces
+	if err := container.Provide(
+		traces.NewPinTracer,
+		dig.As(new(traces_interfaces.PinTracerInterface)),
+	); err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(
-		services.NewMintProposalCreatedEventHandler,
-		dig.As(new(interfaces.MintProposalCreatedEventHandlerInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		services.NewAgentImageProposalCreatedEventHandler,
-		dig.As(new(interfaces.AgentImageProposalCreatedEventHandlerInterface)),
-	)
-	if err != nil {
+	// Services
+	if err := container.Provide(
+		services.NewCidPinner,
+		dig.As(new(interfaces.CidPinnerInterface)),
+	); err != nil {
 		panic(err)
 	}
 
 	// Use cases
-	err = container.Provide(
-		services.NewPushAgentImageCidToPinata,
-		dig.As(new(interfaces.PushAgentImageCidToPinataInterface)),
-	)
-	if err != nil {
-		panic(err)
+	useCaseProviders := []any{
+		use_cases.NewGetHealth,
+		use_cases.NewListCollectionAddresses,
+		use_cases.NewPushMissingImagesOfAgent,
+		use_cases.NewPushImagesOfMintProposal,
+		use_cases.NewPushImageOfAgentImageProposal,
+		use_cases.NewPushMissingImageCids,
+		use_cases.NewHandleMintedEvent,
+		use_cases.NewHandleMintProposalCreatedEvent,
+		use_cases.NewHandleAgentImageProposalCreatedEvent,
+	}
+	for _, provider := range useCaseProviders {
+		if err := container.Provide(provider); err != nil {
+			panic(err)
+		}
 	}
 }

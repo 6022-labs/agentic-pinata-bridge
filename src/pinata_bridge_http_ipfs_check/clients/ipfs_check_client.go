@@ -73,7 +73,11 @@ func (client *IpfsCheckClient) Check(ctx context.Context, cid string) ([]models.
 
 	// Check for non-200 status codes
 	if resp.StatusCode != http.StatusOK {
-		client.logger.Error("Unexpected status code", zap.Int("status", resp.StatusCode), zap.String("body", string(body)))
+		client.logger.Error(
+			"Unexpected status code",
+			zap.Int("status", resp.StatusCode),
+			zap.String("body", string(body)),
+		)
 		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 
