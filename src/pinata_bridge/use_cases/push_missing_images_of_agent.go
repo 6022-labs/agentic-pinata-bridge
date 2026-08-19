@@ -2,6 +2,7 @@ package use_cases
 
 import (
 	"context"
+	"github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
 	"time"
 
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
@@ -66,14 +67,13 @@ func (u *PushMissingImagesOfAgent) push(
 
 	cids, err := u.agentCollectionRequester.GetAgentImages(ctx, chainId, agentCollectionAddress, agentCollectionTokenId)
 	if err != nil {
-		return err
+		return errors.NewUnavailableError("agent_images_read_failed", err.Error())
 	}
 
 	for _, cid := range cids {
 		isUploaded, err := u.pinataRequester.IsCidUploaded(ctx, cid)
 		if err != nil {
-			u.logger.Error("Failed to check if cid is uploaded", zap.String("cid", cid), zap.Error(err))
-			return err
+			return errors.NewUnavailableError("pin_status_read_failed", err.Error())
 		}
 
 		if *isUploaded {
@@ -94,8 +94,8 @@ func (u *PushMissingImagesOfAgent) push(
 
 		if err := u.cidPinner.Pin(ctx, cid); err != nil {
 			u.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomeFailed)
-			u.logger.Error("Failed to push agent image cid to pinata", zap.String("cid", cid), zap.Error(err))
-			return err
+
+			return errors.NewUnavailableError("image_pin_failed", err.Error())
 		}
 
 		u.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomePinned)

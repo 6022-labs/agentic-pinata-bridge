@@ -2,6 +2,7 @@ package use_cases
 
 import (
 	"context"
+	"github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
 	"math/big"
 	"time"
 
@@ -63,7 +64,7 @@ func (u *PushImageOfAgentImageProposal) push(
 
 	cid, err := u.agentCollectionRequester.GetAgentImageProposalImage(ctx, chainId, agentCollectionAddress, proposalId)
 	if err != nil {
-		return err
+		return errors.NewUnavailableError("image_proposal_read_failed", err.Error())
 	}
 
 	u.logger.Info("Pushing agent image proposal cid to pinata",
@@ -78,8 +79,8 @@ func (u *PushImageOfAgentImageProposal) push(
 			metrics_interfaces.SweepKindImageProposal,
 			metrics_interfaces.PinOutcomeFailed,
 		)
-		u.logger.Error("Failed to push agent image proposal cid to pinata", zap.String("cid", *cid), zap.Error(err))
-		return err
+
+		return errors.NewUnavailableError("image_pin_failed", err.Error())
 	}
 
 	u.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindImageProposal, metrics_interfaces.PinOutcomePinned)

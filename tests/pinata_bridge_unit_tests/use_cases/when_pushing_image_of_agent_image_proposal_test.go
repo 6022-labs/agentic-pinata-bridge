@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"testing"
 
+	apperrors "github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
@@ -89,7 +90,9 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 				AgentImageProposalId: big.NewInt(123).String(),
 			})
 
-			assert.Equal(t, err, assert.AnError)
+			var unavailableError *apperrors.UnavailableError
+			assert.ErrorAs(t, err, &unavailableError)
+			assert.Equal(t, "image_proposal_read_failed", unavailableError.Code)
 		})
 	})
 
@@ -137,7 +140,9 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 				AgentImageProposalId: big.NewInt(123).String(),
 			})
 
-			assert.Equal(t, err, assert.AnError)
+			var unavailableError *apperrors.UnavailableError
+			assert.ErrorAs(t, err, &unavailableError)
+			assert.Equal(t, "image_pin_failed", unavailableError.Code)
 		})
 	})
 

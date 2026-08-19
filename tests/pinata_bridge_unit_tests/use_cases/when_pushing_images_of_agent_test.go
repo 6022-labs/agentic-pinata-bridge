@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"testing"
 
+	apperrors "github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
@@ -89,7 +90,9 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 				AgentCollectionTokenId: big.NewInt(123).String(),
 			})
 
-			assert.NotNil(t, err)
+			var unavailableError *apperrors.UnavailableError
+			assert.ErrorAs(t, err, &unavailableError)
+			assert.Equal(t, "agent_images_read_failed", unavailableError.Code)
 		})
 	})
 
@@ -122,7 +125,9 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 				AgentCollectionTokenId: tokenId.String(),
 			})
 
-			assert.NotNil(t, err)
+			var unavailableError *apperrors.UnavailableError
+			assert.ErrorAs(t, err, &unavailableError)
+			assert.Equal(t, "pin_status_read_failed", unavailableError.Code)
 		})
 	})
 
@@ -170,7 +175,9 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 				AgentCollectionTokenId: tokenId.String(),
 			})
 
-			assert.NotNil(t, err)
+			var unavailableError *apperrors.UnavailableError
+			assert.ErrorAs(t, err, &unavailableError)
+			assert.Equal(t, "image_pin_failed", unavailableError.Code)
 		})
 	})
 

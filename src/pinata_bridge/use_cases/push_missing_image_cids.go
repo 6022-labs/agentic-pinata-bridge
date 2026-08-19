@@ -2,6 +2,7 @@ package use_cases
 
 import (
 	"context"
+	"github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
 	"time"
 
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
@@ -56,7 +57,7 @@ func (u *PushMissingImageCids) Execute(ctx context.Context) (response *responses
 
 		allCollections, err := u.agentCollectionsManagerRequester.GetAllCollectionAddresses(ctx, chainId)
 		if err != nil {
-			return nil, err
+			return nil, errors.NewUnavailableError("collections_read_failed", err.Error())
 		}
 
 		for _, collectionAddress := range allCollections {
@@ -67,7 +68,7 @@ func (u *PushMissingImageCids) Execute(ctx context.Context) (response *responses
 
 			tokenIds, err := u.agentCollectionRequester.GetAllTokenIds(ctx, chainId, collectionAddress)
 			if err != nil {
-				return nil, err
+				return nil, errors.NewUnavailableError("token_ids_read_failed", err.Error())
 			}
 
 			for _, tokenId := range tokenIds {
