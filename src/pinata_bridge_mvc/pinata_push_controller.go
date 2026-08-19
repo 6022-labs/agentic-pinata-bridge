@@ -43,8 +43,7 @@ func (c *PinataPushController) PushMissingImageCids(ctx *fiber.Ctx) error {
 		return mvc.WriteError(ctx, err)
 	}
 
-	// Returning nil keeps the empty 200 body these routes have always answered with.
-	return nil
+	return ctx.SendStatus(fiber.StatusNoContent)
 }
 
 func (c *PinataPushController) PushMissingImagesOfAgent(ctx *fiber.Ctx) error {
@@ -58,8 +57,7 @@ func (c *PinataPushController) PushMissingImagesOfAgent(ctx *fiber.Ctx) error {
 		return mvc.WriteError(ctx, err)
 	}
 
-	// Returning nil keeps the empty 200 body these routes have always answered with.
-	return nil
+	return ctx.SendStatus(fiber.StatusNoContent)
 }
 
 func (c *PinataPushController) PushImagesOfMintProposal(ctx *fiber.Ctx) error {
@@ -73,6 +71,5 @@ func (c *PinataPushController) PushImagesOfMintProposal(ctx *fiber.Ctx) error {
 		return mvc.WriteError(ctx, err)
 	}
 
-	// Returning nil keeps the empty 200 body these routes have always answered with.
-	return nil
+	return ctx.SendStatus(fiber.StatusNoContent)
 }

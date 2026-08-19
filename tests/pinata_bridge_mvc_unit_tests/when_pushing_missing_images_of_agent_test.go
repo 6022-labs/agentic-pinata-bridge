@@ -83,7 +83,7 @@ func TestWhenPushingMissingImagesOfAgent(t *testing.T) {
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), gomock.Any(), gomock.Any(), false)
 		}
 
-		t.Run("Should reach the use case and return 200", func(t *testing.T) {
+		t.Run("Should reach the use case and return 204", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
@@ -97,9 +97,8 @@ func TestWhenPushingMissingImagesOfAgent(t *testing.T) {
 			resp, err := suite.app.Test(req)
 
 			assert.NoError(t, err)
-			assert.Equal(t, http.StatusOK, resp.StatusCode)
+			assert.Equal(t, http.StatusNoContent, resp.StatusCode)
 
-			// These routes have always answered with an empty body; fiber's SendStatus would add "OK".
 			body, readErr := io.ReadAll(resp.Body)
 			assert.NoError(t, readErr)
 			assert.Empty(t, body)

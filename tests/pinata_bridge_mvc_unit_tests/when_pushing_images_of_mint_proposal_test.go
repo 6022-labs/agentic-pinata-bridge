@@ -23,7 +23,7 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), gomock.Any(), gomock.Any(), false)
 		}
 
-		t.Run("Should reach the use case and return 200", func(t *testing.T) {
+		t.Run("Should reach the use case and return 204", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
@@ -37,7 +37,7 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 			resp, err := suite.app.Test(req)
 
 			assert.NoError(t, err)
-			assert.Equal(t, http.StatusOK, resp.StatusCode)
+			assert.Equal(t, http.StatusNoContent, resp.StatusCode)
 		})
 	})
 

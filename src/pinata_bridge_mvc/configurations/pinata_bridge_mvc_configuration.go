@@ -24,12 +24,16 @@ func AddPinataBridgeMvcConfiguration(container *dig.Container) {
 	}
 
 	// Controllers
-	err = container.Provide(
-		pinata_bridge_mvc.NewPinataPushController,
+	provideController(container, pinata_bridge_mvc.NewHealthController)
+	provideController(container, pinata_bridge_mvc.NewPinataPushController)
+}
+
+func provideController(container *dig.Container, constructor any) {
+	if err := container.Provide(
+		constructor,
 		dig.Group("controllers"),
 		dig.As(new(mvc_interfaces.ControllerInterface)),
-	)
-	if err != nil {
+	); err != nil {
 		panic(err)
 	}
 }

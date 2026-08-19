@@ -30,6 +30,8 @@ func main() {
 	host_configurations.ConfigureLogging(container)
 
 	shutdownTelemetry := host_configurations.ConfigureTelemetry(container, configurations.AppName)
+	// Every exit path must flush telemetry, not just the signal branch.
+	defer func() { _ = shutdownTelemetry(context.Background()) }()
 
 	// Cancelling this context unsubscribes every chain listener before the process exits.
 	listenersContext, stopListeners := context.WithCancel(context.Background())
@@ -102,9 +104,6 @@ func main() {
 				} else {
 					logger.Info("Server stopped")
 				}
-			}
-			if err := shutdownTelemetry(context.Background()); err != nil {
-				logger.Warn("Telemetry shutdown returned an error", zap.Error(err))
 			}
 
 			logger.Info("Shutdown complete")

@@ -44,6 +44,7 @@ func AddPinataBridgeConfiguration(container *dig.Container) {
 
 	// Use cases
 	useCaseProviders := []any{
+		use_cases.NewGetHealth,
 		use_cases.NewListCollectionAddresses,
 		use_cases.NewPushMissingImagesOfAgent,
 		use_cases.NewPushImagesOfMintProposal,
