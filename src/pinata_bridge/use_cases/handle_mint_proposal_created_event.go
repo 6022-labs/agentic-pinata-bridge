@@ -3,7 +3,7 @@ package use_cases
 import (
 	"context"
 
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/abi"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 )
 
 // HandleMintProposalCreatedEvent pins the images carried by a freshly created mint proposal.

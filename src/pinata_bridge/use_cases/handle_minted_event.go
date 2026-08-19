@@ -3,7 +3,7 @@ package use_cases
 import (
 	"context"
 
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/abi"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 )
 
 // HandleMintedEvent pins the images of an agent as soon as it is minted.

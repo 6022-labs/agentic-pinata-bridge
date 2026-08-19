@@ -3,7 +3,7 @@ package use_cases
 import (
 	"context"
 
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/abi"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 )
 
 // HandleAgentImageProposalCreatedEvent pins the image carried by a freshly created agent-image proposal.

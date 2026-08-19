@@ -1,7 +1,7 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/abi"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/abi"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners/metrics"
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners/metrics/interfaces"
