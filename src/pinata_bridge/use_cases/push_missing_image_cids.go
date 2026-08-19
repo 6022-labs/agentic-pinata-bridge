@@ -57,7 +57,7 @@ func (u *PushMissingImageCids) Execute(ctx context.Context) (response *responses
 
 		allCollections, err := u.agentCollectionsManagerRequester.GetAllCollectionAddresses(ctx, chainId)
 		if err != nil {
-			return nil, errors.NewUnavailableError("collections_read_failed", err.Error())
+			return nil, errors.NewUnavailableError("collections_read_failed", upstreamFailureMessage)
 		}
 
 		for _, collectionAddress := range allCollections {
@@ -68,7 +68,7 @@ func (u *PushMissingImageCids) Execute(ctx context.Context) (response *responses
 
 			tokenIds, err := u.agentCollectionRequester.GetAllTokenIds(ctx, chainId, collectionAddress)
 			if err != nil {
-				return nil, errors.NewUnavailableError("token_ids_read_failed", err.Error())
+				return nil, errors.NewUnavailableError("token_ids_read_failed", upstreamFailureMessage)
 			}
 
 			for _, tokenId := range tokenIds {

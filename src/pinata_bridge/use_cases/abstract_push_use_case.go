@@ -9,6 +9,9 @@ import (
 	"go.uber.org/zap"
 )
 
+// upstreamFailureMessage keeps upstream text (RPC urls carry api keys) off the wire; the log has the detail.
+const upstreamFailureMessage = "upstream request failed"
+
 // AbstractPushUseCase carries the collaborators every push use case shares.
 type AbstractPushUseCase struct {
 	logger                   *zap.Logger

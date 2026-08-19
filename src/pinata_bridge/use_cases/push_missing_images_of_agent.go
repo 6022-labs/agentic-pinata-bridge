@@ -67,13 +67,17 @@ func (u *PushMissingImagesOfAgent) push(
 
 	cids, err := u.agentCollectionRequester.GetAgentImages(ctx, chainId, agentCollectionAddress, agentCollectionTokenId)
 	if err != nil {
-		return errors.NewUnavailableError("agent_images_read_failed", err.Error())
+		u.logger.Error("Failed to read agent images", zap.Uint64("chainId", chainId), zap.Error(err))
+
+		return errors.NewUnavailableError("agent_images_read_failed", upstreamFailureMessage)
 	}
 
 	for _, cid := range cids {
 		isUploaded, err := u.pinataRequester.IsCidUploaded(ctx, cid)
 		if err != nil {
-			return errors.NewUnavailableError("pin_status_read_failed", err.Error())
+			u.logger.Error("Failed to check if cid is uploaded", zap.String("cid", cid), zap.Error(err))
+
+			return errors.NewUnavailableError("pin_status_read_failed", upstreamFailureMessage)
 		}
 
 		if *isUploaded {
@@ -94,8 +98,9 @@ func (u *PushMissingImagesOfAgent) push(
 
 		if err := u.cidPinner.Pin(ctx, cid); err != nil {
 			u.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomeFailed)
+			u.logger.Error("Failed to push agent image cid to pinata", zap.String("cid", cid), zap.Error(err))
 
-			return errors.NewUnavailableError("image_pin_failed", err.Error())
+			return errors.NewUnavailableError("image_pin_failed", upstreamFailureMessage)
 		}
 
 		u.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomePinned)

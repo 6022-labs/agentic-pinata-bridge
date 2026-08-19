@@ -64,7 +64,7 @@ func (u *PushImageOfAgentImageProposal) push(
 
 	cid, err := u.agentCollectionRequester.GetAgentImageProposalImage(ctx, chainId, agentCollectionAddress, proposalId)
 	if err != nil {
-		return errors.NewUnavailableError("image_proposal_read_failed", err.Error())
+		return errors.NewUnavailableError("image_proposal_read_failed", upstreamFailureMessage)
 	}
 
 	u.logger.Info("Pushing agent image proposal cid to pinata",
@@ -80,7 +80,9 @@ func (u *PushImageOfAgentImageProposal) push(
 			metrics_interfaces.PinOutcomeFailed,
 		)
 
-		return errors.NewUnavailableError("image_pin_failed", err.Error())
+		u.logger.Error("Failed to push agent image proposal cid to pinata", zap.String("cid", *cid), zap.Error(err))
+
+		return errors.NewUnavailableError("image_pin_failed", upstreamFailureMessage)
 	}
 
 	u.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindImageProposal, metrics_interfaces.PinOutcomePinned)
