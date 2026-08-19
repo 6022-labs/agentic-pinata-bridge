@@ -14,7 +14,7 @@ type AbstractUpdatableSubscriptionListener struct {
 
 	mutex            sync.Mutex
 	subscriptions    map[uint64]ethereum.Subscription
-	oldSubscriptions []ethereum.Subscription
+	oldSubscriptions map[uint64][]ethereum.Subscription
 	lastBlockSeen    map[uint64]uint64
 	needsRebuild     map[uint64]bool
 
@@ -29,7 +29,7 @@ func NewAbstractUpdatableSubscriptionListener(
 	return &AbstractUpdatableSubscriptionListener{
 		rebuildSubscription: rebuildSubscription,
 		subscriptions:       map[uint64]ethereum.Subscription{},
-		oldSubscriptions:    []ethereum.Subscription{},
+		oldSubscriptions:    map[uint64][]ethereum.Subscription{},
 		lastBlockSeen:       map[uint64]uint64{},
 		needsRebuild:        map[uint64]bool{},
 		errorChannel:        make(chan error, 8),
@@ -43,10 +43,12 @@ func (l *AbstractUpdatableSubscriptionListener) stop() {
 		subscription.Unsubscribe()
 		delete(l.subscriptions, chainId)
 	}
-	for _, subscription := range l.oldSubscriptions {
-		subscription.Unsubscribe()
+	for chainId, subscriptions := range l.oldSubscriptions {
+		for _, subscription := range subscriptions {
+			subscription.Unsubscribe()
+		}
+		delete(l.oldSubscriptions, chainId)
 	}
-	l.oldSubscriptions = nil
 	l.mutex.Unlock()
 
 	l.waitGroup.Wait()
@@ -70,11 +72,13 @@ func (l *AbstractUpdatableSubscriptionListener) onBlockSeen(chainId, blockNumber
 		l.lastBlockSeen[chainId] = blockNumber
 	}
 
-	if len(l.oldSubscriptions) > 0 && blockNumber >= last {
-		for _, subscription := range l.oldSubscriptions {
+	// Retire only this chain's parked subscriptions: chains advance independently, so another
+	// chain's block number says nothing about whether this chain's replacement has caught up.
+	if len(l.oldSubscriptions[chainId]) > 0 && blockNumber >= last {
+		for _, subscription := range l.oldSubscriptions[chainId] {
 			subscription.Unsubscribe()
 		}
-		l.oldSubscriptions = nil
+		delete(l.oldSubscriptions, chainId)
 	}
 }
 
@@ -88,7 +92,7 @@ func (l *AbstractUpdatableSubscriptionListener) replaceSubscription(
 	defer l.mutex.Unlock()
 
 	if previous, ok := l.subscriptions[chainId]; ok && previous != nil {
-		l.oldSubscriptions = append(l.oldSubscriptions, previous)
+		l.oldSubscriptions[chainId] = append(l.oldSubscriptions[chainId], previous)
 	}
 	l.subscriptions[chainId] = subscription
 }
