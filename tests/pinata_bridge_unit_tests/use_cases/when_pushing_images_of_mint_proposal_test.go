@@ -64,16 +64,20 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 	t.Run("Given error occurs while getting mint proposal images", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
+		initSuite := func(suite *WhenPushingImagesOfMintProposalTestSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetMintProposalImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError)
 
 			suite.pinMetrics.EXPECT().
 				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindMintProposal, gomock.Any(), true)
+		}
+
+		t.Run("Should return error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
+			initSuite(suite)
 
 			_, err := suite.sut.Execute(context.Background(), &requests.PushImagesOfMintProposalRequest{
 				ProposalRequest: requests.ProposalRequest{

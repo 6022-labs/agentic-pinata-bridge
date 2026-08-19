@@ -51,10 +51,7 @@ func TestWhenPinningACid(t *testing.T) {
 	t.Run("Given error occurs while pushing to pinata", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenPinningACidBeforeEach(t)
+		initSuite := func(suite *WhenPinningACidTestSuite) {
 			// First call returns error, second call returns error as well
 			suite.pinataRequester.EXPECT().
 				PinCid(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -72,6 +69,13 @@ func TestWhenPinningACid(t *testing.T) {
 				gomock.Any(), metrics_interfaces.PinOutcomeFailed, true, gomock.Any())
 			suite.pinMetrics.EXPECT().RecordPin(
 				gomock.Any(), metrics_interfaces.PinOutcomeFailed, false, gomock.Any())
+		}
+
+		t.Run("Should return error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPinningACidBeforeEach(t)
+			initSuite(suite)
 
 			err := suite.sut.Pin(context.Background(), "test-cid")
 			assert.Equal(t, err, assert.AnError)
@@ -81,10 +85,7 @@ func TestWhenPinningACid(t *testing.T) {
 	t.Run("Given no error occurs while pushing to pinata", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return no error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenPinningACidBeforeEach(t)
+		initSuite := func(suite *WhenPinningACidTestSuite) {
 			// Only one call, returns nil
 			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			suite.ipfsCheckRequester.EXPECT().
@@ -96,6 +97,13 @@ func TestWhenPinningACid(t *testing.T) {
 				gomock.Any(), metrics_interfaces.HostLookupOutcomeFound, int64(1))
 			suite.pinMetrics.EXPECT().RecordPin(
 				gomock.Any(), metrics_interfaces.PinOutcomePinned, true, gomock.Any())
+		}
+
+		t.Run("Should return no error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPinningACidBeforeEach(t)
+			initSuite(suite)
 
 			err := suite.sut.Pin(context.Background(), "test-cid")
 			assert.Equal(t, err, nil)
@@ -105,10 +113,7 @@ func TestWhenPinningACid(t *testing.T) {
 	t.Run("Given the host lookup found no addresses", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should pin once and not retry the identical request", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenPinningACidBeforeEach(t)
+		initSuite := func(suite *WhenPinningACidTestSuite) {
 			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 			suite.pinataRequester.EXPECT().
 				PinCid(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -119,6 +124,13 @@ func TestWhenPinningACid(t *testing.T) {
 				gomock.Any(), metrics_interfaces.HostLookupOutcomeEmpty, int64(3))
 			suite.pinMetrics.EXPECT().RecordPin(
 				gomock.Any(), metrics_interfaces.PinOutcomeFailed, false, gomock.Any())
+		}
+
+		t.Run("Should pin once and not retry the identical request", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPinningACidBeforeEach(t)
+			initSuite(suite)
 
 			err := suite.sut.Pin(context.Background(), "test-cid")
 			assert.Equal(t, err, assert.AnError)

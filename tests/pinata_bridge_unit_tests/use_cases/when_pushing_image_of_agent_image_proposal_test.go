@@ -64,16 +64,20 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 	t.Run("Given error occurs while getting agent image proposal image", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenPushingImageOfAgentImageProposalBeforeEach(t)
+		initSuite := func(suite *WhenPushingImageOfAgentImageProposalTestSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetAgentImageProposalImage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError)
 
 			suite.pinMetrics.EXPECT().
 				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindImageProposal, gomock.Any(), true)
+		}
+
+		t.Run("Should return error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingImageOfAgentImageProposalBeforeEach(t)
+			initSuite(suite)
 
 			_, err := suite.sut.Execute(context.Background(), &requests.PushImageOfAgentImageProposalRequest{
 				ProposalRequest: requests.ProposalRequest{

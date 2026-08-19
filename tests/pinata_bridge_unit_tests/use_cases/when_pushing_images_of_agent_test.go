@@ -67,15 +67,19 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 	t.Run("Given error occurs while getting agent image cid", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
+		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetAgentImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError)
 
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), true)
+		}
+
+		t.Run("Should return error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
+			initSuite(suite)
 
 			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
 				CollectionRequest: requests.CollectionRequest{
