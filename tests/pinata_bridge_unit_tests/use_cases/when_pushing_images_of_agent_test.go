@@ -96,18 +96,22 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 	t.Run("Given error occurs while checking if cid is already pinned", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return no error", func(t *testing.T) {
-			t.Parallel()
+		testCid := "test-cid"
 
-			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
-
-			testCid := "test-cid"
+		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetAgentImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return([]string{testCid}, nil)
 			suite.pinataRequester.EXPECT().IsCidUploaded(gomock.Any(), testCid).Return(nil, assert.AnError)
 
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), true)
+		}
+
+		t.Run("Should return no error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
+			initSuite(suite)
 
 			tokenId := big.NewInt(123)
 			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
@@ -125,13 +129,10 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 	t.Run("Given error occurs while pushing to pinata", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
+		testCid := "test-cid"
+		isCidUploaded := false
 
-			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
-
-			testCid := "test-cid"
-			isCidUploaded := false
+		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetAgentImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return([]string{testCid}, nil)
@@ -152,6 +153,13 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 			suite.pinMetrics.EXPECT().
 				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomeFailed)
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), true)
+		}
+
+		t.Run("Should return error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
+			initSuite(suite)
 
 			tokenId := big.NewInt(123)
 			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
@@ -169,13 +177,10 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 	t.Run("Given image cid is already pinned", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return no error", func(t *testing.T) {
-			t.Parallel()
+		testCid := "test-cid"
+		isCidUploaded := true
 
-			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
-
-			testCid := "test-cid"
-			isCidUploaded := true
+		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetAgentImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return([]string{testCid}, nil)
@@ -184,6 +189,13 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 			suite.pinMetrics.EXPECT().
 				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomeAlreadyPinned)
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), false)
+		}
+
+		t.Run("Should return no error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
+			initSuite(suite)
 
 			tokenId := big.NewInt(123)
 			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
@@ -201,13 +213,10 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 	t.Run("Given image cid is not yet pinned", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return no error", func(t *testing.T) {
-			t.Parallel()
+		testCid := "test-cid"
+		isCidUploaded := false
 
-			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
-
-			testCid := "test-cid"
-			isCidUploaded := false
+		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetAgentImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return([]string{testCid}, nil)
@@ -224,6 +233,13 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 			suite.pinMetrics.EXPECT().
 				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomePinned)
 			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), false)
+		}
+
+		t.Run("Should return no error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
+			initSuite(suite)
 
 			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
 				CollectionRequest: requests.CollectionRequest{
