@@ -96,12 +96,9 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 	t.Run("Given error occurs while pushing to pinata", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
+		testCid := "test-cid"
 
-			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
-
-			testCid := "test-cid"
+		initSuite := func(suite *WhenPushingImagesOfMintProposalTestSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetMintProposalImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return([]string{testCid}, nil)
@@ -123,6 +120,14 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 			suite.pinMetrics.EXPECT().
 				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindMintProposal, gomock.Any(), true)
 
+		}
+
+		t.Run("Should return error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
+			initSuite(suite)
+
 			_, err := suite.sut.Execute(context.Background(), &requests.PushImagesOfMintProposalRequest{
 				ProposalRequest: requests.ProposalRequest{
 					CollectionRequest: requests.CollectionRequest{
@@ -140,12 +145,9 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 	t.Run("Given no error occurs", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return no error", func(t *testing.T) {
-			t.Parallel()
+		testCid := "test-cid"
 
-			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
-
-			testCid := "test-cid"
+		initSuite := func(suite *WhenPushingImagesOfMintProposalTestSuite) {
 			suite.agentCollectionRequester.EXPECT().
 				GetMintProposalImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return([]string{testCid}, nil)
@@ -162,6 +164,14 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindMintProposal, metrics_interfaces.PinOutcomePinned)
 			suite.pinMetrics.EXPECT().
 				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindMintProposal, gomock.Any(), false)
+
+		}
+
+		t.Run("Should return no error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
+			initSuite(suite)
 
 			_, err := suite.sut.Execute(context.Background(), &requests.PushImagesOfMintProposalRequest{
 				ProposalRequest: requests.ProposalRequest{
