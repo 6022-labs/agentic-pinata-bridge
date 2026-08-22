@@ -93,7 +93,6 @@ type useRestApiParams struct {
 	Controllers    []mvc_interfaces.ControllerInterface `group:"controllers"`
 }
 
-// UseRestApi hooks up the routes and
 func useRestApi(p useRestApiParams) {
 	if !p.HostSettings.UseApi {
 		return
