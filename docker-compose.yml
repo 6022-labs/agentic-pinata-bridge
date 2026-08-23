@@ -38,7 +38,7 @@ services:
       - "4318:4318" # OTLP HTTP
 
   pinata-bridge-mimir:
-    image: "grafana/mimir:3.1.1"
+    image: "grafana/mimir:3.2.0"
     container_name: pinata-bridge-mimir
     command: ["--config.file=/etc/mimir/mimir.yml", "--target=all"]
     volumes:
@@ -48,7 +48,7 @@ services:
       - "9009:9009"
 
   pinata-bridge-loki:
-    image: "grafana/loki:3.7.2"
+    image: "grafana/loki:3.7.6"
     container_name: pinata-bridge-loki
     command: ["-config.file=/etc/loki/loki.yaml"]
     volumes:
@@ -58,7 +58,7 @@ services:
       - "3100:3100"
 
   pinata-bridge-tempo:
-    image: "grafana/tempo:3.0.0"
+    image: "grafana/tempo:3.0.3"
     container_name: pinata-bridge-tempo
     depends_on:
       - pinata-bridge-mimir
@@ -70,7 +70,7 @@ services:
       - "3200:3200"
 
   pinata-bridge-grafana:
-    image: "grafana/grafana:12.3.7"
+    image: "grafana/grafana:13.2.0"
     container_name: pinata-bridge-grafana
     depends_on:
       - pinata-bridge-mimir
