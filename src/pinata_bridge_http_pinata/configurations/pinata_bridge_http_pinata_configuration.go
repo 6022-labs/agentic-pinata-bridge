@@ -9,6 +9,7 @@ import (
 	http_pinata_services "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/settings"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/dig"
 )
 
@@ -43,7 +44,9 @@ func AddPinataBridgeHttpPinataConfiguration(container *dig.Container) {
 			Transport: otelhttp.NewTransport(common_metrics.NewHttpMetricsRoundTripper(
 				http.DefaultTransport,
 				common_metrics.NewExternalHttpMetrics("agentic_pinata_bridge_http"),
-			)),
+			),
+				otelhttp.WithMeterProvider(metricnoop.NewMeterProvider()),
+			),
 		}
 	})
 	if err != nil {

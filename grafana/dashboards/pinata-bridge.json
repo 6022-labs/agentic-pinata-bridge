@@ -97,7 +97,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (outcome) (rate(pinata_pin_count_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "expr": "sum by (outcome) (rate(pinata_pin_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
           "legendFormat": "{{outcome}}"
         }
       ]
@@ -124,7 +124,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(pinata_pin_count_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\", pinata_host_addresses=\"false\"}[5m]))",
+          "expr": "sum(rate(pinata_pin_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\", pinata_host_addresses=\"false\"}[5m]))",
           "legendFormat": "no host addresses"
         }
       ]
