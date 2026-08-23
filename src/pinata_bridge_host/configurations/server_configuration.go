@@ -8,10 +8,10 @@ import (
 	common_settings "github.com/6022-labs/agentic-pinata-bridge/src/common/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_host/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
-	"github.com/gofiber/contrib/fiberzap/v2"
-	"github.com/gofiber/contrib/otelfiber/v2"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
+	fiberotel "github.com/gofiber/contrib/v3/otel"
+	fiberzap "github.com/gofiber/contrib/v3/zap"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
@@ -99,12 +99,12 @@ func useRestApi(p useRestApiParams) {
 	}
 
 	p.App.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowHeaders: "*",
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{"*"},
 	}))
 
 	// Spans only: ApiRequestMetrics owns http.server.*.
-	p.App.Use(otelfiber.Middleware(otelfiber.WithoutMetrics(true)))
+	p.App.Use(fiberotel.Middleware(fiberotel.WithoutMetrics(true)))
 	p.App.Use(p.RequestMetrics.Handle)
 
 	p.App.Use(fiberzap.New(fiberzap.Config{

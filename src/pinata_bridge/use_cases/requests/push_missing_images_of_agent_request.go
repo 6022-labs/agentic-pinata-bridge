@@ -10,7 +10,7 @@ import (
 type PushMissingImagesOfAgentRequest struct {
 	CollectionRequest
 
-	AgentCollectionTokenId string `params:"agentCollectionTokenId" json:"agentCollectionTokenId"`
+	AgentCollectionTokenId string `uri:"agentCollectionTokenId" json:"agentCollectionTokenId"`
 
 	agentCollectionTokenId big.Int
 }

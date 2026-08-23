@@ -3,7 +3,7 @@ package requests
 type PushImagesOfMintProposalRequest struct {
 	ProposalRequest
 
-	MintProposalId string `params:"mintProposalId" json:"mintProposalId"`
+	MintProposalId string `uri:"mintProposalId" json:"mintProposalId"`
 }
 
 func (r *PushImagesOfMintProposalRequest) ValidateAndSanitize() error {

@@ -4,7 +4,7 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/common/mvc"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases/requests"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 const (
@@ -38,36 +38,36 @@ func (c *PinataPushController) RegisterRoutes(app fiber.Router) {
 	app.Post(PushImagesOfMintProposalEndpoint, c.PushImagesOfMintProposal)
 }
 
-func (c *PinataPushController) PushMissingImageCids(ctx *fiber.Ctx) error {
-	if _, err := c.pushMissingImageCids.Execute(ctx.UserContext()); err != nil {
+func (c *PinataPushController) PushMissingImageCids(ctx fiber.Ctx) error {
+	if _, err := c.pushMissingImageCids.Execute(ctx.Context()); err != nil {
 		return mvc.WriteError(ctx, err)
 	}
 
 	return ctx.SendStatus(fiber.StatusNoContent)
 }
 
-func (c *PinataPushController) PushMissingImagesOfAgent(ctx *fiber.Ctx) error {
+func (c *PinataPushController) PushMissingImagesOfAgent(ctx fiber.Ctx) error {
 	request := &requests.PushMissingImagesOfAgentRequest{}
-	if err := ctx.ParamsParser(request); err != nil {
+	if err := ctx.Bind().URI(request); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).
 			JSON(fiber.Map{"code": "invalid_params", "message": err.Error()})
 	}
 
-	if _, err := c.pushMissingImagesOfAgent.Execute(ctx.UserContext(), request); err != nil {
+	if _, err := c.pushMissingImagesOfAgent.Execute(ctx.Context(), request); err != nil {
 		return mvc.WriteError(ctx, err)
 	}
 
 	return ctx.SendStatus(fiber.StatusNoContent)
 }
 
-func (c *PinataPushController) PushImagesOfMintProposal(ctx *fiber.Ctx) error {
+func (c *PinataPushController) PushImagesOfMintProposal(ctx fiber.Ctx) error {
 	request := &requests.PushImagesOfMintProposalRequest{}
-	if err := ctx.ParamsParser(request); err != nil {
+	if err := ctx.Bind().URI(request); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).
 			JSON(fiber.Map{"code": "invalid_params", "message": err.Error()})
 	}
 
-	if _, err := c.pushImagesOfMintProposal.Execute(ctx.UserContext(), request); err != nil {
+	if _, err := c.pushImagesOfMintProposal.Execute(ctx.Context(), request); err != nil {
 		return mvc.WriteError(ctx, err)
 	}
 
