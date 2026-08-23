@@ -10,8 +10,8 @@ import (
 
 // CollectionRequest is the chain + collection pair every push request carries.
 type CollectionRequest struct {
-	ChainId                string `params:"chainId"                json:"chainId"`
-	AgentCollectionAddress string `params:"agentCollectionAddress" json:"agentCollectionAddress"`
+	ChainId                string `uri:"chainId"                json:"chainId"`
+	AgentCollectionAddress string `uri:"agentCollectionAddress" json:"agentCollectionAddress"`
 
 	chainId                uint64
 	agentCollectionAddress common.Address

@@ -3,7 +3,7 @@ package requests
 type PushImageOfAgentImageProposalRequest struct {
 	ProposalRequest
 
-	AgentImageProposalId string `params:"agentImageProposalId" json:"agentImageProposalId"`
+	AgentImageProposalId string `uri:"agentImageProposalId" json:"agentImageProposalId"`
 }
 
 func (r *PushImageOfAgentImageProposalRequest) ValidateAndSanitize() error {
