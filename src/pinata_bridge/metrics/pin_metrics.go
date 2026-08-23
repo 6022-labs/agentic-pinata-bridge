@@ -17,7 +17,6 @@ const meterName = "agentic_pinata_bridge"
 const errorTypeOther = "_OTHER"
 
 type PinMetrics struct {
-	pinCounter         metric.Int64Counter
 	pinHistogram       metric.Float64Histogram
 	hostLookupCounter  metric.Int64Counter
 	hostLookupAttempts metric.Int64Histogram
@@ -28,14 +27,6 @@ type PinMetrics struct {
 func NewPinMetrics() *PinMetrics {
 	noopMeter := noop.NewMeterProvider().Meter(meterName)
 	meter := otel.GetMeterProvider().Meter(meterName)
-
-	pinCounter, err := meter.Int64Counter(
-		"pinata.pin.count",
-		metric.WithDescription("Total number of pin attempts by outcome"),
-	)
-	if err != nil {
-		pinCounter, _ = noopMeter.Int64Counter("pinata.pin.count")
-	}
 
 	pinHistogram, err := meter.Float64Histogram(
 		"pinata.pin.duration",
@@ -84,7 +75,6 @@ func NewPinMetrics() *PinMetrics {
 	}
 
 	return &PinMetrics{
-		pinCounter:         pinCounter,
 		pinHistogram:       pinHistogram,
 		hostLookupCounter:  hostLookupCounter,
 		hostLookupAttempts: hostLookupAttempts,
@@ -98,7 +88,6 @@ func (m *PinMetrics) RecordPin(ctx context.Context, outcome string, withHostAddr
 		attribute.String("outcome", outcome),
 		attribute.Bool("pinata.host_addresses", withHostAddresses),
 	)
-	m.pinCounter.Add(ctx, 1, attrs)
 	m.pinHistogram.Record(ctx, duration.Seconds(), attrs)
 }
 
@@ -110,7 +99,7 @@ func (m *PinMetrics) RecordHostLookup(ctx context.Context, outcome string, attem
 
 func (m *PinMetrics) RecordSweep(ctx context.Context, kind string, duration time.Duration, failed bool) {
 	attrs := []attribute.KeyValue{attribute.String("pinata.sweep.kind", kind)}
-	// semconv forbids error.type on a completed operation, so it stays off the success path.
+	// error.type is conditionally required, and only on a failed operation.
 	if failed {
 		attrs = append(attrs, attribute.String("error.type", errorTypeOther))
 	}

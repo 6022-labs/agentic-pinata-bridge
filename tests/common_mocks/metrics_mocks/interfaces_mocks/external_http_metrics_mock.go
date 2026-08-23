@@ -42,25 +42,25 @@ func (m *MockExternalHttpMetricsInterface) EXPECT() *MockExternalHttpMetricsInte
 }
 
 // RecordRequest mocks base method.
-func (m *MockExternalHttpMetricsInterface) RecordRequest(ctx context.Context, method, route string, statusCode int, duration time.Duration, responseSize int64) {
+func (m *MockExternalHttpMetricsInterface) RecordRequest(ctx context.Context, method, serverUrl string, statusCode int, duration time.Duration, responseSize int64) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RecordRequest", ctx, method, route, statusCode, duration, responseSize)
+	m.ctrl.Call(m, "RecordRequest", ctx, method, serverUrl, statusCode, duration, responseSize)
 }
 
 // RecordRequest indicates an expected call of RecordRequest.
-func (mr *MockExternalHttpMetricsInterfaceMockRecorder) RecordRequest(ctx, method, route, statusCode, duration, responseSize any) *gomock.Call {
+func (mr *MockExternalHttpMetricsInterfaceMockRecorder) RecordRequest(ctx, method, serverUrl, statusCode, duration, responseSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRequest", reflect.TypeOf((*MockExternalHttpMetricsInterface)(nil).RecordRequest), ctx, method, route, statusCode, duration, responseSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRequest", reflect.TypeOf((*MockExternalHttpMetricsInterface)(nil).RecordRequest), ctx, method, serverUrl, statusCode, duration, responseSize)
 }
 
 // RecordTransportError mocks base method.
-func (m *MockExternalHttpMetricsInterface) RecordTransportError(ctx context.Context, method, route string, duration time.Duration) {
+func (m *MockExternalHttpMetricsInterface) RecordTransportError(ctx context.Context, method, serverUrl string, duration time.Duration, err error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RecordTransportError", ctx, method, route, duration)
+	m.ctrl.Call(m, "RecordTransportError", ctx, method, serverUrl, duration, err)
 }
 
 // RecordTransportError indicates an expected call of RecordTransportError.
-func (mr *MockExternalHttpMetricsInterfaceMockRecorder) RecordTransportError(ctx, method, route, duration any) *gomock.Call {
+func (mr *MockExternalHttpMetricsInterfaceMockRecorder) RecordTransportError(ctx, method, serverUrl, duration, err any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordTransportError", reflect.TypeOf((*MockExternalHttpMetricsInterface)(nil).RecordTransportError), ctx, method, route, duration)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordTransportError", reflect.TypeOf((*MockExternalHttpMetricsInterface)(nil).RecordTransportError), ctx, method, serverUrl, duration, err)
 }

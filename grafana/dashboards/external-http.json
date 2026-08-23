@@ -97,8 +97,8 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (service_name, http_route) (rate(http_client_request_count_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
-          "legendFormat": "{{service_name}} {{http_route}}"
+          "expr": "sum by (service_name, server_address) (rate(http_client_request_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "legendFormat": "{{service_name}} {{server_address}}"
         }
       ]
     },
@@ -124,7 +124,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (service_name) (rate(http_client_request_errors_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "expr": "sum by (service_name) (rate(http_client_request_duration_seconds_count{error_type!=\"\",deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
           "legendFormat": "{{service_name}}"
         }
       ]

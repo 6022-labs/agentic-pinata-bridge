@@ -97,7 +97,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (chain_event_name) (rate(chain_event_count_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "expr": "sum by (chain_event_name) (rate(chain_event_handle_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
           "legendFormat": "{{chain_event_name}}"
         }
       ]
@@ -124,7 +124,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (chain_event_name) (rate(chain_event_count_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\", outcome=\"failed\"}[5m]))",
+          "expr": "sum by (chain_event_name) (rate(chain_event_handle_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\", outcome=\"failed\"}[5m]))",
           "legendFormat": "{{chain_event_name}}"
         }
       ]

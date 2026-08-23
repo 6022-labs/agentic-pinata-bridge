@@ -15,7 +15,6 @@ import (
 const meterName = "agentic_pinata_bridge_listeners"
 
 type ChainEventMetrics struct {
-	eventCounter        metric.Int64Counter
 	handleHistogram     metric.Float64Histogram
 	activeSubscriptions metric.Int64UpDownCounter
 	subscriptionErrors  metric.Int64Counter
@@ -24,14 +23,6 @@ type ChainEventMetrics struct {
 func NewChainEventMetrics() *ChainEventMetrics {
 	noopMeter := noop.NewMeterProvider().Meter(meterName)
 	meter := otel.GetMeterProvider().Meter(meterName)
-
-	eventCounter, err := meter.Int64Counter(
-		"chain.event.count",
-		metric.WithDescription("Total number of chain events received, by outcome"),
-	)
-	if err != nil {
-		eventCounter, _ = noopMeter.Int64Counter("chain.event.count")
-	}
 
 	handleHistogram, err := meter.Float64Histogram(
 		"chain.event.handle.duration",
@@ -60,7 +51,6 @@ func NewChainEventMetrics() *ChainEventMetrics {
 	}
 
 	return &ChainEventMetrics{
-		eventCounter:        eventCounter,
 		handleHistogram:     handleHistogram,
 		activeSubscriptions: activeSubscriptions,
 		subscriptionErrors:  subscriptionErrors,
@@ -79,7 +69,6 @@ func (m *ChainEventMetrics) RecordEvent(
 		attribute.String("chain.id", strconv.FormatUint(chainId, 10)),
 		attribute.String("outcome", outcome),
 	)
-	m.eventCounter.Add(ctx, 1, attrs)
 	m.handleHistogram.Record(ctx, duration.Seconds(), attrs)
 }
 
