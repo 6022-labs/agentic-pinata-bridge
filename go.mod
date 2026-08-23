@@ -4,6 +4,9 @@ go 1.26.2
 
 require (
 	github.com/ethereum/go-ethereum v1.17.5
+	github.com/gofiber/contrib/v3/otel v1.2.3
+	github.com/gofiber/contrib/v3/zap v1.0.10
+	github.com/gofiber/fiber/v3 v3.5.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/knadh/koanf/parsers/json v1.0.1
@@ -51,9 +54,6 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
-	github.com/gofiber/contrib/v3/otel v1.2.3 // indirect
-	github.com/gofiber/contrib/v3/zap v1.0.10 // indirect
-	github.com/gofiber/fiber/v3 v3.5.0 // indirect
 	github.com/gofiber/schema v1.8.3 // indirect
 	github.com/gofiber/utils/v2 v2.4.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
