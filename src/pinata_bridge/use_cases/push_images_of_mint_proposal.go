@@ -79,7 +79,12 @@ func (u *PushImagesOfMintProposal) push(
 				metrics_interfaces.SweepKindMintProposal,
 				metrics_interfaces.PinOutcomeInvalidCid,
 			)
-			u.logger.Warn("Mint proposal image is not a CID, skipping", zap.String("image", image))
+			u.logger.Warn("Mint proposal image is not a CID, skipping",
+				zap.String("image", image),
+				zap.Uint64("chainId", chainId),
+				zap.String("agentCollectionAddress", agentCollectionAddress.String()),
+				zap.String("proposalId", proposalId.String()),
+			)
 			continue
 		}
 
