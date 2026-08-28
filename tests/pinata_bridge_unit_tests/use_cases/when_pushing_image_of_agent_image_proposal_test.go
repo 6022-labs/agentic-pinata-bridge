@@ -99,7 +99,7 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 	t.Run("Given error occurs while pushing to pinata", func(t *testing.T) {
 		t.Parallel()
 
-		testCid := "test-cid"
+		testCid := testValidCid
 
 		initSuite := func(suite *WhenPushingImageOfAgentImageProposalTestSuite) {
 			suite.agentCollectionRequester.EXPECT().
@@ -146,10 +146,46 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 		})
 	})
 
+	t.Run("Given the proposal image is not a cid", func(t *testing.T) {
+		t.Parallel()
+
+		nonCidImage := testNonCidImage
+
+		initSuite := func(suite *WhenPushingImageOfAgentImageProposalTestSuite) {
+			suite.agentCollectionRequester.EXPECT().
+				GetAgentImageProposalImage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(&nonCidImage, nil)
+
+			suite.pinMetrics.EXPECT().
+				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindImageProposal, metrics_interfaces.PinOutcomeInvalidCid)
+			suite.pinMetrics.EXPECT().
+				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindImageProposal, gomock.Any(), false)
+		}
+
+		t.Run("Should skip it without calling pinata", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingImageOfAgentImageProposalBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.Execute(context.Background(), &requests.PushImageOfAgentImageProposalRequest{
+				ProposalRequest: requests.ProposalRequest{
+					CollectionRequest: requests.CollectionRequest{
+						ChainId:                testChainIdString,
+						AgentCollectionAddress: testCollectionAddress,
+					},
+				},
+				AgentImageProposalId: big.NewInt(123).String(),
+			})
+
+			assert.Nil(t, err)
+		})
+	})
+
 	t.Run("Given no error occurs", func(t *testing.T) {
 		t.Parallel()
 
-		testCid := "test-cid"
+		testCid := testValidCid
 
 		initSuite := func(suite *WhenPushingImageOfAgentImageProposalTestSuite) {
 			suite.agentCollectionRequester.EXPECT().

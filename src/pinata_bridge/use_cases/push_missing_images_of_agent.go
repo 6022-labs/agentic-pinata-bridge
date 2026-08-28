@@ -9,7 +9,9 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases/requests"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases/responses"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/utils"
 	"github.com/ethereum/go-ethereum/common"
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"math/big"
 )
@@ -65,14 +67,32 @@ func (u *PushMissingImagesOfAgent) push(
 ) (err error) {
 	defer u.recordSweep(ctx, metrics_interfaces.SweepKindAgent, time.Now(), &err)
 
-	cids, err := u.agentCollectionRequester.GetAgentImages(ctx, chainId, agentCollectionAddress, agentCollectionTokenId)
+	images, err := u.agentCollectionRequester.GetAgentImages(
+		ctx,
+		chainId,
+		agentCollectionAddress,
+		agentCollectionTokenId,
+	)
 	if err != nil {
 		u.logger.Error("Failed to read agent images", zap.Uint64("chainId", chainId), zap.Error(err))
 
 		return errors.NewUnavailableError("agent_images_read_failed", upstreamFailureMessage)
 	}
 
-	for _, cid := range cids {
+	var pinErrors error
+
+	for _, image := range images {
+		cid, ok := utils.ExtractCid(image)
+		if !ok {
+			u.pinMetrics.RecordSweepImage(
+				ctx,
+				metrics_interfaces.SweepKindAgent,
+				metrics_interfaces.PinOutcomeInvalidCid,
+			)
+			u.logger.Warn("Agent image is not a CID, skipping", zap.String("image", image))
+			continue
+		}
+
 		isUploaded, err := u.pinataRequester.IsCidUploaded(ctx, cid)
 		if err != nil {
 			u.logger.Error("Failed to check if cid is uploaded", zap.String("cid", cid), zap.Error(err))
@@ -96,14 +116,19 @@ func (u *PushMissingImagesOfAgent) push(
 			zap.Int64("agentCollectionTokenId", agentCollectionTokenId.Int64()),
 		)
 
+		// One unpinnable image must not cost the agent its remaining ones.
 		if err := u.cidPinner.Pin(ctx, cid); err != nil {
 			u.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomeFailed)
 			u.logger.Error("Failed to push agent image cid to pinata", zap.String("cid", cid), zap.Error(err))
-
-			return errors.NewUnavailableError("image_pin_failed", upstreamFailureMessage)
+			pinErrors = multierr.Append(pinErrors, err)
+			continue
 		}
 
 		u.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomePinned)
+	}
+
+	if pinErrors != nil {
+		return errors.NewUnavailableError("image_pin_failed", upstreamFailureMessage)
 	}
 
 	return nil

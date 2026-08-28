@@ -1,0 +1,11 @@
+package: clients
+output: oapi_client.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  # Pinata's spec declares more than we consume, and `/groups/{network}` is malformed
+  # (positional path parameter never declared), which fails whole-spec generation.
+  include-operation-ids:
+    - pinByCid
+    - listFiles

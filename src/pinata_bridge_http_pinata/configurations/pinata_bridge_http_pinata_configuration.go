@@ -1,6 +1,7 @@
 package configurations
 
 import (
+	"context"
 	"net/http"
 
 	common_metrics "github.com/6022-labs/agentic-pinata-bridge/src/common/metrics"
@@ -12,6 +13,22 @@ import (
 	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/dig"
 )
+
+// newPinataClient builds the generated pinata client; pinata.base_url is the v3 server root.
+func newPinataClient(
+	pinataSettings *settings.PinataSettings,
+	httpClient *http.Client,
+) (clients.ClientWithResponsesInterface, error) {
+	return clients.NewClientWithResponses(
+		pinataSettings.BaseUrl,
+		clients.WithHTTPClient(httpClient),
+		clients.WithRequestEditorFn(func(_ context.Context, req *http.Request) error {
+			req.Header.Set("Authorization", "Bearer "+pinataSettings.ApiKey)
+
+			return nil
+		}),
+	)
+}
 
 func AddPinataBridgeHttpPinataConfiguration(container *dig.Container) {
 	// Settings
@@ -30,10 +47,7 @@ func AddPinataBridgeHttpPinataConfiguration(container *dig.Container) {
 	}
 
 	// Clients
-	err = container.Provide(
-		clients.NewPinataClient,
-		dig.As(new(clients.PinataClientInterface)),
-	)
+	err = container.Provide(newPinataClient)
 	if err != nil {
 		panic(err)
 	}

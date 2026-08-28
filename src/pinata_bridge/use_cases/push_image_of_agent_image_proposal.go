@@ -10,6 +10,7 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases/requests"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases/responses"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 )
@@ -62,25 +63,42 @@ func (u *PushImageOfAgentImageProposal) push(
 ) (err error) {
 	defer u.recordSweep(ctx, metrics_interfaces.SweepKindImageProposal, time.Now(), &err)
 
-	cid, err := u.agentCollectionRequester.GetAgentImageProposalImage(ctx, chainId, agentCollectionAddress, proposalId)
+	image, err := u.agentCollectionRequester.GetAgentImageProposalImage(
+		ctx,
+		chainId,
+		agentCollectionAddress,
+		proposalId,
+	)
 	if err != nil {
 		return errors.NewUnavailableError("image_proposal_read_failed", upstreamFailureMessage)
 	}
 
+	cid, ok := utils.ExtractCid(*image)
+	if !ok {
+		u.pinMetrics.RecordSweepImage(
+			ctx,
+			metrics_interfaces.SweepKindImageProposal,
+			metrics_interfaces.PinOutcomeInvalidCid,
+		)
+		u.logger.Warn("Agent image proposal image is not a CID, skipping", zap.String("image", *image))
+
+		return nil
+	}
+
 	u.logger.Info("Pushing agent image proposal cid to pinata",
-		zap.String("cid", *cid),
+		zap.String("cid", cid),
 		zap.String("agentCollectionAddress", agentCollectionAddress.String()),
 		zap.Int64("proposalId", proposalId.Int64()),
 	)
 
-	if err := u.cidPinner.Pin(ctx, *cid); err != nil {
+	if err := u.cidPinner.Pin(ctx, cid); err != nil {
 		u.pinMetrics.RecordSweepImage(
 			ctx,
 			metrics_interfaces.SweepKindImageProposal,
 			metrics_interfaces.PinOutcomeFailed,
 		)
 
-		u.logger.Error("Failed to push agent image proposal cid to pinata", zap.String("cid", *cid), zap.Error(err))
+		u.logger.Error("Failed to push agent image proposal cid to pinata", zap.String("cid", cid), zap.Error(err))
 
 		return errors.NewUnavailableError("image_pin_failed", upstreamFailureMessage)
 	}
