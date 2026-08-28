@@ -9,13 +9,16 @@ import (
 
 const PinataSettingsKey = "pinata"
 
+// defaultPinataBaseUrl is the server the generated v3 client is built against.
+const defaultPinataBaseUrl = "https://api.pinata.cloud/v3"
+
 type PinataSettings struct {
 	ApiKey  string `koanf:"api_key"`
 	BaseUrl string `koanf:"base_url"`
 }
 
 func NewPinataSettings(logger *zap.Logger, k *koanf.Koanf) *PinataSettings {
-	settings := PinataSettings{}
+	settings := PinataSettings{BaseUrl: defaultPinataBaseUrl}
 	if err := k.Unmarshal(PinataSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal pinata settings", zap.Error(err))
 	}
@@ -27,7 +30,8 @@ func NewPinataSettings(logger *zap.Logger, k *koanf.Koanf) *PinataSettings {
 
 	settings.BaseUrl = strings.TrimSpace(settings.BaseUrl)
 	if settings.BaseUrl == "" {
-		logger.Fatal("please set pinata.base_url (or PINATA__BASE_URL env)")
+		logger.Warn("empty pinata.base_url, using default", zap.String("default", defaultPinataBaseUrl))
+		settings.BaseUrl = defaultPinataBaseUrl
 	}
 
 	return &settings
