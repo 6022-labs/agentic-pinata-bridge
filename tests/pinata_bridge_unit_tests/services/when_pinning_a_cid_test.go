@@ -13,6 +13,9 @@ import (
 	"go.uber.org/zap"
 )
 
+// testHostNodeId is a libp2p peer id, the shape pinata's host_nodes expects.
+const testHostNodeId = "12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEg"
+
 type WhenPinningACidTestSuite struct {
 	sut *services.CidPinner
 
@@ -58,8 +61,8 @@ func TestWhenPinningACid(t *testing.T) {
 				Return(assert.AnError).
 				Times(2)
 			suite.ipfsCheckRequester.EXPECT().
-				GetMultiAddresses(gomock.Any(), gomock.Any()).
-				Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).
+				GetHostNodeIds(gomock.Any(), gomock.Any()).
+				Return([]string{testHostNodeId}, nil).
 				AnyTimes()
 
 			suite.pinMetrics.EXPECT().RecordHostLookup(
@@ -89,8 +92,8 @@ func TestWhenPinningACid(t *testing.T) {
 			// Only one call, returns nil
 			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			suite.ipfsCheckRequester.EXPECT().
-				GetMultiAddresses(gomock.Any(), gomock.Any()).
-				Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).
+				GetHostNodeIds(gomock.Any(), gomock.Any()).
+				Return([]string{testHostNodeId}, nil).
 				AnyTimes()
 
 			suite.pinMetrics.EXPECT().RecordHostLookup(
@@ -114,7 +117,7 @@ func TestWhenPinningACid(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPinningACidTestSuite) {
-			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			suite.ipfsCheckRequester.EXPECT().GetHostNodeIds(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 			suite.pinataRequester.EXPECT().
 				PinCid(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(assert.AnError).

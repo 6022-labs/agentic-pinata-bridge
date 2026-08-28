@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/clients"
+	"github.com/samber/lo"
 )
 
 type IpfsCheckRequester struct {
@@ -16,16 +17,22 @@ func NewIpfsCheckRequester(ipfsCheckClient clients.IpfsCheckClientInterface) *Ip
 	}
 }
 
-func (r *IpfsCheckRequester) GetMultiAddresses(ctx context.Context, cid string) ([]string, error) {
+func (r *IpfsCheckRequester) GetHostNodeIds(ctx context.Context, cid string) ([]string, error) {
 	checkResponses, err := r.ipfsCheckClient.Check(ctx, cid)
 	if err != nil {
 		return nil, err
 	}
 
-	multiAddresses := make([]string, 0)
+	hostNodeIds := make([]string, 0)
 	for _, provider := range checkResponses {
-		multiAddresses = append(multiAddresses, provider.ConnectionMaddrs...)
+		// An empty ConnectionMaddrs means ipfs-check never reached the provider; Pinata gains nothing from it.
+		if provider.ID == "" || len(provider.ConnectionMaddrs) == 0 {
+			continue
+		}
+
+		hostNodeIds = append(hostNodeIds, provider.ID)
 	}
 
-	return multiAddresses, nil
+	// ipfs-check reports a provider once per source that advertised it.
+	return lo.Uniq(hostNodeIds), nil
 }
