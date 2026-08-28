@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const hostAddressesMaxRetries = 3
+const hostNodeIdsMaxRetries = 3
 
 // CidPinner pins a single CID, looking its host addresses up first so Pinata can fetch it faster.
 type CidPinner struct {
@@ -46,18 +46,18 @@ func (s *CidPinner) Pin(ctx context.Context, cid string) (err error) {
 		}
 	}()
 
-	addresses, err := s.getCidHostAddresses(ctx, cid)
+	hostNodeIds, err := s.getCidHostNodeIds(ctx, cid)
 	if err != nil {
-		s.logger.Warn("Failed to get host addresses for cid", zap.String("cid", cid), zap.Error(err))
+		s.logger.Warn("Failed to get host node ids for cid", zap.String("cid", cid), zap.Error(err))
 	}
-	if len(addresses) == 0 {
-		s.logger.Warn("No host addresses found for cid", zap.String("cid", cid))
+	if len(hostNodeIds) == 0 {
+		s.logger.Warn("No host node ids found for cid", zap.String("cid", cid))
 	}
 
-	withHostAddresses := len(addresses) > 0
+	withHostAddresses := len(hostNodeIds) > 0
 
 	start := time.Now()
-	err = s.pinataRequester.PinCid(ctx, cid, addresses)
+	err = s.pinataRequester.PinCid(ctx, cid, hostNodeIds)
 	if err == nil {
 		s.pinMetrics.RecordPin(ctx, metrics_interfaces.PinOutcomePinned, withHostAddresses, time.Since(start))
 		return nil
@@ -69,7 +69,7 @@ func (s *CidPinner) Pin(ctx context.Context, cid string) (err error) {
 		return err
 	}
 
-	s.logger.Warn("Failed to pin cid to pinata with host addresses, retrying without",
+	s.logger.Warn("Failed to pin cid to pinata with host node ids, retrying without",
 		zap.String("cid", cid),
 		zap.Error(err),
 	)
@@ -85,18 +85,18 @@ func (s *CidPinner) Pin(ctx context.Context, cid string) (err error) {
 	return nil
 }
 
-func (s *CidPinner) getCidHostAddresses(ctx context.Context, cid string) ([]string, error) {
-	var addresses []string
+func (s *CidPinner) getCidHostNodeIds(ctx context.Context, cid string) ([]string, error) {
+	var hostNodeIds []string
 	var err error
 
-	for attempt := 1; attempt <= hostAddressesMaxRetries; attempt++ {
-		addresses, err = s.ipfsCheckRequester.GetMultiAddresses(ctx, cid)
-		if err == nil && len(addresses) > 0 {
+	for attempt := 1; attempt <= hostNodeIdsMaxRetries; attempt++ {
+		hostNodeIds, err = s.ipfsCheckRequester.GetHostNodeIds(ctx, cid)
+		if err == nil && len(hostNodeIds) > 0 {
 			s.pinMetrics.RecordHostLookup(ctx, metrics_interfaces.HostLookupOutcomeFound, int64(attempt))
-			return addresses, nil
+			return hostNodeIds, nil
 		}
 
-		s.logger.Warn("Failed to get host addresses for cid, retrying...",
+		s.logger.Warn("Failed to get host node ids for cid, retrying...",
 			zap.String("cid", cid),
 			zap.Int("attempt", attempt),
 			zap.Error(err),
@@ -107,7 +107,7 @@ func (s *CidPinner) getCidHostAddresses(ctx context.Context, cid string) ([]stri
 	if err != nil {
 		outcome = metrics_interfaces.HostLookupOutcomeFailed
 	}
-	s.pinMetrics.RecordHostLookup(ctx, outcome, hostAddressesMaxRetries)
+	s.pinMetrics.RecordHostLookup(ctx, outcome, hostNodeIdsMaxRetries)
 
 	return nil, err
 }

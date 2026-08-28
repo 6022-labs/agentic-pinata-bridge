@@ -110,8 +110,8 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 				Return(assert.AnError).
 				Times(2)
 			suite.ipfsCheckRequester.EXPECT().
-				GetMultiAddresses(gomock.Any(), gomock.Any()).
-				Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).
+				GetHostNodeIds(gomock.Any(), gomock.Any()).
+				Return([]string{testHostNodeId}, nil).
 				AnyTimes()
 
 			suite.pinMetrics.EXPECT().
@@ -193,8 +193,8 @@ func TestWhenPushingImageOfAgentImageProposal(t *testing.T) {
 				Return(&testCid, nil)
 			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			suite.ipfsCheckRequester.EXPECT().
-				GetMultiAddresses(gomock.Any(), gomock.Any()).
-				Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).
+				GetHostNodeIds(gomock.Any(), gomock.Any()).
+				Return([]string{testHostNodeId}, nil).
 				AnyTimes()
 
 			suite.pinMetrics.EXPECT().

@@ -147,8 +147,8 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 				Return(assert.AnError).
 				Times(2)
 			suite.ipfsCheckRequester.EXPECT().
-				GetMultiAddresses(gomock.Any(), gomock.Any()).
-				Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).
+				GetHostNodeIds(gomock.Any(), gomock.Any()).
+				Return([]string{testHostNodeId}, nil).
 				AnyTimes()
 
 			suite.pinMetrics.EXPECT().
@@ -226,7 +226,7 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 				Return(&isCidUploaded, nil).
 				Times(2)
 			suite.ipfsCheckRequester.EXPECT().
-				GetMultiAddresses(gomock.Any(), gomock.Any()).
+				GetHostNodeIds(gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError).
 				AnyTimes()
 
@@ -314,8 +314,8 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 			suite.pinataRequester.EXPECT().IsCidUploaded(gomock.Any(), testCid).Return(&isCidUploaded, nil)
 			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			suite.ipfsCheckRequester.EXPECT().
-				GetMultiAddresses(gomock.Any(), gomock.Any()).
-				Return([]string{"/ip4/127.0.0.1/tcp/4001"}, nil).
+				GetHostNodeIds(gomock.Any(), gomock.Any()).
+				Return([]string{testHostNodeId}, nil).
 				AnyTimes()
 
 			suite.pinMetrics.EXPECT().

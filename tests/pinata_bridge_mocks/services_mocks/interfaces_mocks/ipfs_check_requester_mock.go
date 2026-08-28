@@ -40,17 +40,17 @@ func (m *MockIpfsCheckRequesterInterface) EXPECT() *MockIpfsCheckRequesterInterf
 	return m.recorder
 }
 
-// GetMultiAddresses mocks base method.
-func (m *MockIpfsCheckRequesterInterface) GetMultiAddresses(ctx context.Context, cid string) ([]string, error) {
+// GetHostNodeIds mocks base method.
+func (m *MockIpfsCheckRequesterInterface) GetHostNodeIds(ctx context.Context, cid string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMultiAddresses", ctx, cid)
+	ret := m.ctrl.Call(m, "GetHostNodeIds", ctx, cid)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetMultiAddresses indicates an expected call of GetMultiAddresses.
-func (mr *MockIpfsCheckRequesterInterfaceMockRecorder) GetMultiAddresses(ctx, cid any) *gomock.Call {
+// GetHostNodeIds indicates an expected call of GetHostNodeIds.
+func (mr *MockIpfsCheckRequesterInterfaceMockRecorder) GetHostNodeIds(ctx, cid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultiAddresses", reflect.TypeOf((*MockIpfsCheckRequesterInterface)(nil).GetMultiAddresses), ctx, cid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostNodeIds", reflect.TypeOf((*MockIpfsCheckRequesterInterface)(nil).GetHostNodeIds), ctx, cid)
 }

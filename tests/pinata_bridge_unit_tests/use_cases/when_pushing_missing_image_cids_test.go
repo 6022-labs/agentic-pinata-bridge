@@ -171,7 +171,7 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 				PinCid(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil).
 				Times(len(tokenIds))
-			suite.ipfsCheckRequester.EXPECT().GetMultiAddresses(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			suite.ipfsCheckRequester.EXPECT().GetHostNodeIds(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
 			suite.pinMetrics.EXPECT().
 				RecordHostLookup(gomock.Any(), metrics_interfaces.HostLookupOutcomeEmpty, int64(3)).
