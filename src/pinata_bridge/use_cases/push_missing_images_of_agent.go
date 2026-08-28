@@ -89,7 +89,12 @@ func (u *PushMissingImagesOfAgent) push(
 				metrics_interfaces.SweepKindAgent,
 				metrics_interfaces.PinOutcomeInvalidCid,
 			)
-			u.logger.Warn("Agent image is not a CID, skipping", zap.String("image", image))
+			u.logger.Warn("Agent image is not a CID, skipping",
+				zap.String("image", image),
+				zap.Uint64("chainId", chainId),
+				zap.String("agentCollectionAddress", agentCollectionAddress.String()),
+				zap.String("agentCollectionTokenId", agentCollectionTokenId.String()),
+			)
 			continue
 		}
 

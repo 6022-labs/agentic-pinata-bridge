@@ -80,7 +80,12 @@ func (u *PushImageOfAgentImageProposal) push(
 			metrics_interfaces.SweepKindImageProposal,
 			metrics_interfaces.PinOutcomeInvalidCid,
 		)
-		u.logger.Warn("Agent image proposal image is not a CID, skipping", zap.String("image", *image))
+		u.logger.Warn("Agent image proposal image is not a CID, skipping",
+			zap.String("image", *image),
+			zap.Uint64("chainId", chainId),
+			zap.String("agentCollectionAddress", agentCollectionAddress.String()),
+			zap.String("proposalId", proposalId.String()),
+		)
 
 		return nil
 	}
