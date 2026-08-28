@@ -24,7 +24,7 @@ func TestWhenLoadingPinataSettings(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]any{
 			"pinata.api_key":  "  secret-key  ",
-			"pinata.base_url": "  https://api.pinata.cloud  ",
+			"pinata.base_url": "  https://api.pinata.cloud/v3  ",
 		}, "."), nil)
 
 		t.Run("Should load and trim every field", func(t *testing.T) {
@@ -33,7 +33,7 @@ func TestWhenLoadingPinataSettings(t *testing.T) {
 			result := settings.NewPinataSettings(zap.NewNop(), k)
 
 			assert.Equal(t, "secret-key", result.ApiKey)
-			assert.Equal(t, "https://api.pinata.cloud", result.BaseUrl)
+			assert.Equal(t, "https://api.pinata.cloud/v3", result.BaseUrl)
 		})
 	})
 
@@ -43,7 +43,7 @@ func TestWhenLoadingPinataSettings(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]any{
 			"pinata.api_key":  "   ",
-			"pinata.base_url": "https://api.pinata.cloud",
+			"pinata.base_url": "https://api.pinata.cloud/v3",
 		}, "."), nil)
 
 		t.Run("Should fatal", func(t *testing.T) {
@@ -55,21 +55,56 @@ func TestWhenLoadingPinataSettings(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the base url is missing", func(t *testing.T) {
+	t.Run("Given the base url is blank", func(t *testing.T) {
 		t.Parallel()
 
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]any{
 			"pinata.api_key":  "secret-key",
-			"pinata.base_url": "",
+			"pinata.base_url": "   ",
 		}, "."), nil)
 
-		t.Run("Should fatal", func(t *testing.T) {
+		t.Run("Should fall back to the v3 server", func(t *testing.T) {
 			t.Parallel()
 
-			assert.Panics(t, func() {
-				settings.NewPinataSettings(panicLogger(), k)
-			})
+			result := settings.NewPinataSettings(zap.NewNop(), k)
+
+			assert.Equal(t, "https://api.pinata.cloud/v3", result.BaseUrl)
+		})
+	})
+
+	t.Run("Given the base url is not configured at all", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"pinata.api_key": "secret-key",
+		}, "."), nil)
+
+		t.Run("Should fall back to the v3 server", func(t *testing.T) {
+			t.Parallel()
+
+			result := settings.NewPinataSettings(zap.NewNop(), k)
+
+			assert.Equal(t, "https://api.pinata.cloud/v3", result.BaseUrl)
+		})
+	})
+
+	t.Run("Given the base url is configured", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"pinata.api_key":  "secret-key",
+			"pinata.base_url": "https://pinata.internal/v3",
+		}, "."), nil)
+
+		t.Run("Should keep it over the default", func(t *testing.T) {
+			t.Parallel()
+
+			result := settings.NewPinataSettings(zap.NewNop(), k)
+
+			assert.Equal(t, "https://pinata.internal/v3", result.BaseUrl)
 		})
 	})
 }
