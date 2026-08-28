@@ -99,7 +99,7 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 	t.Run("Given error occurs while checking if cid is already pinned", func(t *testing.T) {
 		t.Parallel()
 
-		testCid := "test-cid"
+		testCid := testValidCid
 
 		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
 			suite.agentCollectionRequester.EXPECT().
@@ -134,7 +134,7 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 	t.Run("Given error occurs while pushing to pinata", func(t *testing.T) {
 		t.Parallel()
 
-		testCid := "test-cid"
+		testCid := testValidCid
 		isCidUploaded := false
 
 		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
@@ -181,10 +181,94 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 		})
 	})
 
+	t.Run("Given an agent image is not a cid", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
+			suite.agentCollectionRequester.EXPECT().
+				GetAgentImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return([]string{testNonCidImage}, nil)
+
+			suite.pinMetrics.EXPECT().
+				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomeInvalidCid)
+			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), false)
+		}
+
+		t.Run("Should skip it without calling pinata", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
+				CollectionRequest: requests.CollectionRequest{
+					ChainId:                testChainIdString,
+					AgentCollectionAddress: testCollectionAddress,
+				},
+				AgentCollectionTokenId: big.NewInt(123).String(),
+			})
+
+			assert.Nil(t, err)
+		})
+	})
+
+	t.Run("Given an agent image fails to pin", func(t *testing.T) {
+		t.Parallel()
+
+		isCidUploaded := false
+
+		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
+			suite.agentCollectionRequester.EXPECT().
+				GetAgentImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return([]string{testValidCid, testOtherValidCid}, nil)
+			suite.pinataRequester.EXPECT().
+				IsCidUploaded(gomock.Any(), gomock.Any()).
+				Return(&isCidUploaded, nil).
+				Times(2)
+			suite.ipfsCheckRequester.EXPECT().
+				GetMultiAddresses(gomock.Any(), gomock.Any()).
+				Return(nil, assert.AnError).
+				AnyTimes()
+
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), testValidCid, nil).Return(assert.AnError)
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), testOtherValidCid, nil).Return(nil)
+
+			suite.pinMetrics.EXPECT().
+				RecordHostLookup(gomock.Any(), metrics_interfaces.HostLookupOutcomeFailed, gomock.Any()).
+				Times(2)
+			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomeFailed, false, gomock.Any())
+			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomePinned, false, gomock.Any())
+			suite.pinMetrics.EXPECT().
+				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomeFailed)
+			suite.pinMetrics.EXPECT().
+				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomePinned)
+			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAgent, gomock.Any(), true)
+		}
+
+		t.Run("Should still pin the remaining images and report the failure", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImagesOfAgentBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.Execute(context.Background(), &requests.PushMissingImagesOfAgentRequest{
+				CollectionRequest: requests.CollectionRequest{
+					ChainId:                testChainIdString,
+					AgentCollectionAddress: testCollectionAddress,
+				},
+				AgentCollectionTokenId: big.NewInt(123).String(),
+			})
+
+			var unavailableError *apperrors.UnavailableError
+			assert.ErrorAs(t, err, &unavailableError)
+			assert.Equal(t, "image_pin_failed", unavailableError.Code)
+		})
+	})
+
 	t.Run("Given image cid is already pinned", func(t *testing.T) {
 		t.Parallel()
 
-		testCid := "test-cid"
+		testCid := testValidCid
 		isCidUploaded := true
 
 		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
@@ -220,7 +304,7 @@ func TestWhenPushingImagesOfAgent(t *testing.T) {
 	t.Run("Given image cid is not yet pinned", func(t *testing.T) {
 		t.Parallel()
 
-		testCid := "test-cid"
+		testCid := testValidCid
 		isCidUploaded := false
 
 		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {

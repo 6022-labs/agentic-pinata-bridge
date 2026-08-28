@@ -9,6 +9,7 @@ const (
 	PinOutcomePinned        = "pinned"
 	PinOutcomeAlreadyPinned = "already_pinned"
 	PinOutcomeFailed        = "failed"
+	PinOutcomeInvalidCid    = "invalid_cid"
 )
 
 const (

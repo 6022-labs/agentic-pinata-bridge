@@ -107,6 +107,30 @@ func TestWhenCheckingCid(t *testing.T) {
 		})
 	})
 
+	t.Run("Given the ipfs-check service answers 200 with a diagnostic object", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenCheckingCidTestingSuite) {
+			suite.handler = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`{"MutableResolution":{"Error":"DNSLink lookup failed"}}`))
+			}
+		}
+
+		t.Run("Should return an error naming the body", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenCheckingCidBeforeEach()
+			defer WhenCheckingCidAfterEach(suite)
+			initSuite(suite)
+
+			resp, err := suite.sut.Check(context.Background(), "QmHash")
+
+			assert.Nil(t, resp)
+			assert.ErrorContains(t, err, "MutableResolution")
+		})
+	})
+
 	t.Run("Given the ipfs-check service returns a malformed body", func(t *testing.T) {
 		t.Parallel()
 

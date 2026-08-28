@@ -18,13 +18,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const testChainId uint64 = 80002
-
-const (
-	testChainIdString     = "80002"
-	testCollectionAddress = "0x0000000000000000000000000000000000000000"
-)
-
 type WhenPushingMissingImageCidsTestingSuite struct {
 	sut *use_cases.PushMissingImageCids
 
@@ -151,7 +144,7 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 			*big.NewInt(2),
 		}
 
-		imageCid := "test-cid"
+		imageCid := testValidCid
 
 		initSuite := func(suite *WhenPushingMissingImageCidsTestingSuite) {
 			suite.agentCollectionsManagerRequester.EXPECT().

@@ -18,7 +18,7 @@ func TestDISmoke(t *testing.T) {
 		"chains.80002.rpc_http_url": "http://localhost:8545",
 		"chains.80002.rpc_ws_url":   "ws://localhost:8546",
 		"pinata.api_key":            "key",
-		"pinata.base_url":           "https://api.pinata.cloud",
+		"pinata.base_url":           "https://api.pinata.cloud/v3",
 		"ipfs_check.base_url":       "https://ipfs-check.example",
 	}, "."), nil)
 

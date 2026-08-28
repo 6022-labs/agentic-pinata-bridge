@@ -81,10 +81,16 @@ func (client *IpfsCheckClient) Check(ctx context.Context, cid string) ([]models.
 		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 
+	// ipfs-check answers 200 with a diagnostic object instead of the provider array when the cid is not immutable.
+	if trimmed := bytes.TrimLeft(body, " \t\r\n"); len(trimmed) == 0 || trimmed[0] != '[' {
+		client.logger.Error("Unexpected response shape", zap.String("body", string(body)))
+		return nil, fmt.Errorf("unexpected response shape: %s", string(body))
+	}
+
 	// Parse the response body into the expected structure
 	var result []models.ExternalCheckResponse
 	if err := json.Unmarshal(body, &result); err != nil {
-		client.logger.Error("Failed to unmarshal response", zap.Error(err))
+		client.logger.Error("Failed to unmarshal response", zap.Error(err), zap.String("body", string(body)))
 		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
