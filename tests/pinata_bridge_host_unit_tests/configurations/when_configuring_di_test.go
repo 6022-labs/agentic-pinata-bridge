@@ -31,11 +31,11 @@ func TestDISmoke(t *testing.T) {
 		Subs      []pinata_bridge_listeners.CollectionEventSubscriberInterface `group:"collection_event_subscribers"`
 	}
 	if err := container.Invoke(func(p params) {
-		if len(p.Listeners) != 4 {
-			t.Fatalf("expected 4 event listeners, got %d", len(p.Listeners))
+		if len(p.Listeners) != 5 {
+			t.Fatalf("expected 5 event listeners, got %d", len(p.Listeners))
 		}
-		if len(p.Subs) != 3 {
-			t.Fatalf("expected 3 collection subscribers, got %d", len(p.Subs))
+		if len(p.Subs) != 4 {
+			t.Fatalf("expected 4 collection subscribers, got %d", len(p.Subs))
 		}
 	}); err != nil {
 		t.Fatalf("DI failed: %v", err)

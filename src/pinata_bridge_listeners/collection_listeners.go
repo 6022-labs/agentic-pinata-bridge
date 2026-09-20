@@ -14,6 +14,8 @@ type (
 	AgentCollectionMintProposalCreatedListener = ChainEventListener[abi.AgentCollectionV1MintProposalCreated]
 	// AgentCollectionAgentImageProposalCreatedListener watches proposals that replace an agent's image.
 	AgentCollectionAgentImageProposalCreatedListener = ChainEventListener[abi.AgentCollectionV1AgentImageProposalCreated]
+	// AgentCollectionAgentImageUpdatedListener catches image writes that skip the proposal flow.
+	AgentCollectionAgentImageUpdatedListener = ChainEventListener[abi.AgentCollectionV1AgentImageUpdated]
 )
 
 func NewAgentCollectionMintedListener(
@@ -70,5 +72,24 @@ func NewAgentCollectionAgentImageProposalCreatedListener(
 		chainEventMetrics,
 		subscriptionProvider.StartAgentImageProposalCreatedSubscription,
 		handleAgentImageProposalCreatedEvent.Execute,
+	)
+}
+
+func NewAgentCollectionAgentImageUpdatedListener(
+	logger *zap.Logger,
+	chainsSettings *settings.ChainsSettings,
+	listCollectionAddresses *use_cases.ListCollectionAddresses,
+	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface,
+	subscriptionProvider interfaces.AgentImageUpdatedSubscriptionProviderInterface,
+	handleAgentImageUpdatedEvent *use_cases.HandleAgentImageUpdatedEvent,
+) *AgentCollectionAgentImageUpdatedListener {
+	return NewChainEventListener(
+		logger,
+		"AgentCollection.AgentImageUpdated",
+		chainsSettings,
+		listCollectionAddresses,
+		chainEventMetrics,
+		subscriptionProvider.StartAgentImageUpdatedSubscription,
+		handleAgentImageUpdatedEvent.Execute,
 	)
 }

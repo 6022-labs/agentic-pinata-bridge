@@ -53,6 +53,7 @@ func AddPinataBridgeConfiguration(container *dig.Container) {
 		use_cases.NewHandleMintedEvent,
 		use_cases.NewHandleMintProposalCreatedEvent,
 		use_cases.NewHandleAgentImageProposalCreatedEvent,
+		use_cases.NewHandleAgentImageUpdatedEvent,
 	}
 	for _, provider := range useCaseProviders {
 		if err := container.Provide(provider); err != nil {

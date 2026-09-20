@@ -58,7 +58,7 @@ func (u *PushMissingImagesOfAgent) Execute(
 	return &responses.PushResponse{}, nil
 }
 
-// push is the chain-typed entry point the minted-event use case reuses.
+// push is the chain-typed entry point the event use cases reuse.
 func (u *PushMissingImagesOfAgent) push(
 	ctx context.Context,
 	chainId uint64,
