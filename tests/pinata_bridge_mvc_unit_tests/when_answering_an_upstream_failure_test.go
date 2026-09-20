@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc"
@@ -29,35 +28,25 @@ type WhenAnsweringAnUpstreamFailureTestingSuite struct {
 func WhenAnsweringAnUpstreamFailureBeforeEach(t *testing.T) *WhenAnsweringAnUpstreamFailureTestingSuite {
 	mockController := gomock.NewController(t)
 
-	mockPinataRequester := interfaces_mocks.NewMockPinataRequesterInterface(mockController)
-	mockIpfsCheckRequester := interfaces_mocks.NewMockIpfsCheckRequesterInterface(mockController)
 	mockAgentCollectionRequester := interfaces_mocks.NewMockAgentCollectionRequesterInterface(mockController)
 	mockAgentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(
 		mockController,
 	)
 	mockPinMetrics := metrics_mocks.NewMockPinMetricsInterface(mockController)
-	mockPinTracer := newNoopPinTracer(mockController)
-
-	cidPinner := services.NewCidPinner(
-		zap.NewNop(),
-		mockPinataRequester,
-		mockIpfsCheckRequester,
-		mockPinMetrics,
-		mockPinTracer,
-	)
-	pushMissingImagesOfAgent := use_cases.NewPushMissingImagesOfAgent(
-		zap.NewNop(), cidPinner, mockAgentCollectionRequester, mockPinataRequester, mockPinMetrics,
-	)
 
 	controller := pinata_bridge_mvc.NewPinataPushController(
 		use_cases.NewPushMissingImageCids(
 			zap.NewNop(), mockAgentCollectionRequester, mockPinMetrics,
 			// One configured chain, so the sweep actually reaches the manager requester.
 			settings.NewChainsSettingsFromChainIds([]uint64{80002}),
-			mockAgentCollectionsManagerRequester, pushMissingImagesOfAgent, mockPinTracer,
+			mockAgentCollectionsManagerRequester,
+			interfaces_mocks.NewMockAgentImagesPinnerInterface(mockController),
+			newNoopPinTracer(mockController),
 		),
-		pushMissingImagesOfAgent,
-		use_cases.NewPushImagesOfMintProposal(zap.NewNop(), cidPinner, mockAgentCollectionRequester, mockPinMetrics),
+		use_cases.NewPushMissingImagesOfAgent(interfaces_mocks.NewMockAgentImagesPinnerInterface(mockController)),
+		use_cases.NewPushImagesOfMintProposal(
+			interfaces_mocks.NewMockMintProposalImagesPinnerInterface(mockController),
+		),
 	)
 
 	app := fiber.New()

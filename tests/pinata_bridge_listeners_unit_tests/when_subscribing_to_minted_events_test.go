@@ -10,7 +10,6 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
 	metrics_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_listeners_mocks/metrics_mocks/interfaces_mocks"
-	metrics_mocks_pin "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/metrics_mocks/interfaces_mocks"
 	interfaces_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
@@ -40,13 +39,7 @@ func WhenSubscribingToMintedEventsBeforeEach(t *testing.T) *WhenSubscribingToMin
 	chainEventMetrics := metrics_mocks.NewMockChainEventMetricsInterface(mockController)
 
 	// No event reaches the handler in these subscription tests; it only has to be wired.
-	handleMintedEvent := use_cases.NewHandleMintedEvent(use_cases.NewPushMissingImagesOfAgent(
-		zap.NewNop(),
-		interfaces_mocks.NewMockCidPinnerInterface(mockController),
-		interfaces_mocks.NewMockAgentCollectionRequesterInterface(mockController),
-		interfaces_mocks.NewMockPinataRequesterInterface(mockController),
-		metrics_mocks_pin.NewMockPinMetricsInterface(mockController),
-	))
+	handleMintedEvent := interfaces_mocks.NewMockMintedEventHandlerInterface(mockController)
 
 	sut := pinata_bridge_listeners.NewAgentCollectionMintedListener(
 		zap.NewNop(),

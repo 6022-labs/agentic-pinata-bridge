@@ -6,75 +6,73 @@ import (
 	"testing"
 
 	apperrors "github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
-	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases/requests"
-	metrics_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks/interfaces_mocks"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"go.uber.org/zap"
 )
 
-type WhenPushingImagesOfMintProposalTestSuite struct {
+type WhenPushingImagesOfMintProposalTestingSuite struct {
 	sut *use_cases.PushImagesOfMintProposal
 
-	pinataRequester                  *interfaces_mocks.MockPinataRequesterInterface
-	ipfsCheckRequester               *interfaces_mocks.MockIpfsCheckRequesterInterface
-	agentCollectionRequester         *interfaces_mocks.MockAgentCollectionRequesterInterface
-	agentCollectionsManagerRequester *interfaces_mocks.MockAgentCollectionsManagerRequesterInterface
-	pinMetrics                       *metrics_mocks.MockPinMetricsInterface
+	mintProposalImagesPinner *interfaces_mocks.MockMintProposalImagesPinnerInterface
 }
 
-func WhenPushingImagesOfMintProposalBeforeEach(t *testing.T) *WhenPushingImagesOfMintProposalTestSuite {
+func WhenPushingImagesOfMintProposalBeforeEach(t *testing.T) *WhenPushingImagesOfMintProposalTestingSuite {
 	mockController := gomock.NewController(t)
+	mintProposalImagesPinner := interfaces_mocks.NewMockMintProposalImagesPinnerInterface(mockController)
 
-	pinataRequester := interfaces_mocks.NewMockPinataRequesterInterface(mockController)
-	ipfsCheckRequester := interfaces_mocks.NewMockIpfsCheckRequesterInterface(mockController)
-	agentCollectionRequester := interfaces_mocks.NewMockAgentCollectionRequesterInterface(mockController)
-	agentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(
-		mockController,
-	)
-
-	pinMetrics := metrics_mocks.NewMockPinMetricsInterface(mockController)
-
-	pinTracer := newNoopPinTracer(mockController)
-
-	cidPinner := services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics, pinTracer)
-
-	sut := use_cases.NewPushImagesOfMintProposal(
-		zap.NewNop(),
-		cidPinner,
-		agentCollectionRequester,
-		pinMetrics,
-	)
-	return &WhenPushingImagesOfMintProposalTestSuite{
-		sut:                              sut,
-		pinataRequester:                  pinataRequester,
-		ipfsCheckRequester:               ipfsCheckRequester,
-		agentCollectionRequester:         agentCollectionRequester,
-		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
-		pinMetrics:                       pinMetrics,
+	return &WhenPushingImagesOfMintProposalTestingSuite{
+		sut:                      use_cases.NewPushImagesOfMintProposal(mintProposalImagesPinner),
+		mintProposalImagesPinner: mintProposalImagesPinner,
 	}
 }
 
 func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given error occurs while getting mint proposal images", func(t *testing.T) {
+	t.Run("Given a valid request", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenPushingImagesOfMintProposalTestSuite) {
-			suite.agentCollectionRequester.EXPECT().
-				GetMintProposalImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(nil, assert.AnError)
-
-			suite.pinMetrics.EXPECT().
-				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindMintProposal, gomock.Any(), true)
+		initSuite := func(suite *WhenPushingImagesOfMintProposalTestingSuite) {
+			suite.mintProposalImagesPinner.EXPECT().
+				Pin(gomock.Any(), testChainId, common.HexToAddress(testCollectionAddress), *big.NewInt(123)).
+				Return(nil)
 		}
 
-		t.Run("Should return error", func(t *testing.T) {
+		t.Run("Should hand the parsed values to the mintProposalImagesPinner", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
+			initSuite(suite)
+
+			response, err := suite.sut.Execute(context.Background(), &requests.PushImagesOfMintProposalRequest{
+				ProposalRequest: requests.ProposalRequest{
+					CollectionRequest: requests.CollectionRequest{
+						ChainId:                testChainIdString,
+						AgentCollectionAddress: testCollectionAddress,
+					},
+				},
+				MintProposalId: "123",
+			})
+
+			assert.NoError(t, err)
+			assert.NotNil(t, response)
+		})
+	})
+
+	t.Run("Given the mintProposalImagesPinner fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPushingImagesOfMintProposalTestingSuite) {
+			suite.mintProposalImagesPinner.EXPECT().
+				Pin(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(apperrors.NewUnavailableError("mint_proposal_images_read_failed", "upstream request failed"))
+		}
+
+		t.Run("Should return its error untouched", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
@@ -87,7 +85,7 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 						AgentCollectionAddress: testCollectionAddress,
 					},
 				},
-				MintProposalId: big.NewInt(123).String(),
+				MintProposalId: "123",
 			})
 
 			var unavailableError *apperrors.UnavailableError
@@ -96,183 +94,18 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 		})
 	})
 
-	t.Run("Given error occurs while pushing to pinata", func(t *testing.T) {
+	t.Run("Given an empty request", func(t *testing.T) {
 		t.Parallel()
 
-		testCid := testValidCid
-
-		initSuite := func(suite *WhenPushingImagesOfMintProposalTestSuite) {
-			suite.agentCollectionRequester.EXPECT().
-				GetMintProposalImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-				Return([]string{testCid}, nil)
-			suite.pinataRequester.EXPECT().
-				PinCid(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(assert.AnError).
-				Times(2)
-			suite.ipfsCheckRequester.EXPECT().
-				GetHostNodeIds(gomock.Any(), gomock.Any()).
-				Return([]string{testHostNodeId}, nil).
-				AnyTimes()
-
-			suite.pinMetrics.EXPECT().
-				RecordHostLookup(gomock.Any(), metrics_interfaces.HostLookupOutcomeFound, int64(1))
-			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomeFailed, true, gomock.Any())
-			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomeFailed, false, gomock.Any())
-			suite.pinMetrics.EXPECT().
-				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindMintProposal, metrics_interfaces.PinOutcomeFailed)
-			suite.pinMetrics.EXPECT().
-				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindMintProposal, gomock.Any(), true)
-
-		}
-
-		t.Run("Should return error", func(t *testing.T) {
+		t.Run("Should reject the request before touching the mintProposalImagesPinner", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
-			initSuite(suite)
 
-			_, err := suite.sut.Execute(context.Background(), &requests.PushImagesOfMintProposalRequest{
-				ProposalRequest: requests.ProposalRequest{
-					CollectionRequest: requests.CollectionRequest{
-						ChainId:                testChainIdString,
-						AgentCollectionAddress: testCollectionAddress,
-					},
-				},
-				MintProposalId: big.NewInt(123).String(),
-			})
+			_, err := suite.sut.Execute(context.Background(), &requests.PushImagesOfMintProposalRequest{})
 
-			var unavailableError *apperrors.UnavailableError
-			assert.ErrorAs(t, err, &unavailableError)
-			assert.Equal(t, "image_pin_failed", unavailableError.Code)
-		})
-	})
-
-	t.Run("Given a mint proposal image is not a cid", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenPushingImagesOfMintProposalTestSuite) {
-			suite.agentCollectionRequester.EXPECT().
-				GetMintProposalImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-				Return([]string{testNonCidImage}, nil)
-
-			suite.pinMetrics.EXPECT().
-				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindMintProposal, metrics_interfaces.PinOutcomeInvalidCid)
-			suite.pinMetrics.EXPECT().
-				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindMintProposal, gomock.Any(), false)
-		}
-
-		t.Run("Should skip it without calling pinata", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
-			initSuite(suite)
-
-			_, err := suite.sut.Execute(context.Background(), &requests.PushImagesOfMintProposalRequest{
-				ProposalRequest: requests.ProposalRequest{
-					CollectionRequest: requests.CollectionRequest{
-						ChainId:                testChainIdString,
-						AgentCollectionAddress: testCollectionAddress,
-					},
-				},
-				MintProposalId: big.NewInt(123).String(),
-			})
-
-			assert.Nil(t, err)
-		})
-	})
-
-	t.Run("Given a mint proposal image fails to pin", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenPushingImagesOfMintProposalTestSuite) {
-			suite.agentCollectionRequester.EXPECT().
-				GetMintProposalImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-				Return([]string{testValidCid, testOtherValidCid}, nil)
-			suite.ipfsCheckRequester.EXPECT().
-				GetHostNodeIds(gomock.Any(), gomock.Any()).
-				Return(nil, assert.AnError).
-				AnyTimes()
-
-			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), testValidCid, nil).Return(assert.AnError)
-			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), testOtherValidCid, nil).Return(nil)
-
-			suite.pinMetrics.EXPECT().
-				RecordHostLookup(gomock.Any(), metrics_interfaces.HostLookupOutcomeFailed, gomock.Any()).
-				Times(2)
-			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomeFailed, false, gomock.Any())
-			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomePinned, false, gomock.Any())
-			suite.pinMetrics.EXPECT().
-				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindMintProposal, metrics_interfaces.PinOutcomeFailed)
-			suite.pinMetrics.EXPECT().
-				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindMintProposal, metrics_interfaces.PinOutcomePinned)
-			suite.pinMetrics.EXPECT().
-				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindMintProposal, gomock.Any(), true)
-		}
-
-		t.Run("Should still pin the remaining images and report the failure", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
-			initSuite(suite)
-
-			_, err := suite.sut.Execute(context.Background(), &requests.PushImagesOfMintProposalRequest{
-				ProposalRequest: requests.ProposalRequest{
-					CollectionRequest: requests.CollectionRequest{
-						ChainId:                testChainIdString,
-						AgentCollectionAddress: testCollectionAddress,
-					},
-				},
-				MintProposalId: big.NewInt(123).String(),
-			})
-
-			var unavailableError *apperrors.UnavailableError
-			assert.ErrorAs(t, err, &unavailableError)
-			assert.Equal(t, "image_pin_failed", unavailableError.Code)
-		})
-	})
-
-	t.Run("Given no error occurs", func(t *testing.T) {
-		t.Parallel()
-
-		testCid := testValidCid
-
-		initSuite := func(suite *WhenPushingImagesOfMintProposalTestSuite) {
-			suite.agentCollectionRequester.EXPECT().
-				GetMintProposalImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-				Return([]string{testCid}, nil)
-			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			suite.ipfsCheckRequester.EXPECT().
-				GetHostNodeIds(gomock.Any(), gomock.Any()).
-				Return([]string{testHostNodeId}, nil).
-				AnyTimes()
-
-			suite.pinMetrics.EXPECT().
-				RecordHostLookup(gomock.Any(), metrics_interfaces.HostLookupOutcomeFound, int64(1))
-			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomePinned, true, gomock.Any())
-			suite.pinMetrics.EXPECT().
-				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindMintProposal, metrics_interfaces.PinOutcomePinned)
-			suite.pinMetrics.EXPECT().
-				RecordSweep(gomock.Any(), metrics_interfaces.SweepKindMintProposal, gomock.Any(), false)
-
-		}
-
-		t.Run("Should return no error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenPushingImagesOfMintProposalBeforeEach(t)
-			initSuite(suite)
-
-			_, err := suite.sut.Execute(context.Background(), &requests.PushImagesOfMintProposalRequest{
-				ProposalRequest: requests.ProposalRequest{
-					CollectionRequest: requests.CollectionRequest{
-						ChainId:                testChainIdString,
-						AgentCollectionAddress: testCollectionAddress,
-					},
-				},
-				MintProposalId: big.NewInt(123).String(),
-			})
-
-			assert.Equal(t, err, nil)
+			var validationError *apperrors.ValidationError
+			assert.ErrorAs(t, err, &validationError)
 		})
 	})
 }

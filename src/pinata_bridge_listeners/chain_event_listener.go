@@ -26,11 +26,11 @@ type StartCollectionSubscription[T any] func(
 	agentCollectionAddresses []common.Address,
 ) (<-chan *T, ethereum.Subscription, error)
 
-// HandleChainEvent hands one decoded event to the use case that owns it.
+// HandleChainEvent hands one decoded event to the event handler that owns it.
 type HandleChainEvent[T any] func(ctx context.Context, chainId uint64, event *T) error
 
 // ChainEventListener is transport only: it keeps one subscription per chain covering every known
-// collection, and hands each decoded event to a single use case.
+// collection, and hands each decoded event to a single event handler.
 type ChainEventListener[T ChainEvent] struct {
 	*AbstractUpdatableSubscriptionListener
 

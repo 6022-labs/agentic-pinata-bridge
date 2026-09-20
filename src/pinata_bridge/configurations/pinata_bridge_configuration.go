@@ -35,11 +35,26 @@ func AddPinataBridgeConfiguration(container *dig.Container) {
 	}
 
 	// Services
-	if err := container.Provide(
-		services.NewCidPinner,
-		dig.As(new(interfaces.CidPinnerInterface)),
-	); err != nil {
-		panic(err)
+	serviceProviders := []struct {
+		constructor any
+		port        any
+	}{
+		{services.NewCidPinner, new(interfaces.CidPinnerInterface)},
+		{services.NewAgentImagesPinner, new(interfaces.AgentImagesPinnerInterface)},
+		{services.NewMintProposalImagesPinner, new(interfaces.MintProposalImagesPinnerInterface)},
+		{services.NewAgentImageProposalImagePinner, new(interfaces.AgentImageProposalImagePinnerInterface)},
+		{services.NewMintedEventHandler, new(interfaces.MintedEventHandlerInterface)},
+		{services.NewMintProposalCreatedEventHandler, new(interfaces.MintProposalCreatedEventHandlerInterface)},
+		{
+			services.NewAgentImageProposalCreatedEventHandler,
+			new(interfaces.AgentImageProposalCreatedEventHandlerInterface),
+		},
+		{services.NewAgentImageUpdatedEventHandler, new(interfaces.AgentImageUpdatedEventHandlerInterface)},
+	}
+	for _, provider := range serviceProviders {
+		if err := container.Provide(provider.constructor, dig.As(provider.port)); err != nil {
+			panic(err)
+		}
 	}
 
 	// Use cases
@@ -50,10 +65,6 @@ func AddPinataBridgeConfiguration(container *dig.Container) {
 		use_cases.NewPushImagesOfMintProposal,
 		use_cases.NewPushImageOfAgentImageProposal,
 		use_cases.NewPushMissingImageCids,
-		use_cases.NewHandleMintedEvent,
-		use_cases.NewHandleMintProposalCreatedEvent,
-		use_cases.NewHandleAgentImageProposalCreatedEvent,
-		use_cases.NewHandleAgentImageUpdatedEvent,
 	}
 	for _, provider := range useCaseProviders {
 		if err := container.Provide(provider); err != nil {
