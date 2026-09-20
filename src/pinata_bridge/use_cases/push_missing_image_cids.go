@@ -13,13 +13,17 @@ import (
 	"go.uber.org/zap"
 )
 
+// upstreamFailureMessage keeps upstream text (RPC urls carry api keys) off the wire; the log has the detail.
+const upstreamFailureMessage = "upstream request failed"
+
 // PushMissingImageCids sweeps every configured chain and pins whatever Pinata is missing.
 type PushMissingImageCids struct {
-	*AbstractPushUseCase
-
+	logger                           *zap.Logger
+	agentCollectionRequester         interfaces.AgentCollectionRequesterInterface
+	pinMetrics                       metrics_interfaces.PinMetricsInterface
 	chainsSettings                   *settings.ChainsSettings
 	agentCollectionsManagerRequester interfaces.AgentCollectionsManagerRequesterInterface
-	pushMissingImagesOfAgent         *PushMissingImagesOfAgent
+	agentImagesPinner                interfaces.AgentImagesPinnerInterface
 	pinTracer                        traces_interfaces.PinTracerInterface
 }
 
@@ -29,14 +33,16 @@ func NewPushMissingImageCids(
 	pinMetrics metrics_interfaces.PinMetricsInterface,
 	chainsSettings *settings.ChainsSettings,
 	agentCollectionsManagerRequester interfaces.AgentCollectionsManagerRequesterInterface,
-	pushMissingImagesOfAgent *PushMissingImagesOfAgent,
+	agentImagesPinner interfaces.AgentImagesPinnerInterface,
 	pinTracer traces_interfaces.PinTracerInterface,
 ) *PushMissingImageCids {
 	return &PushMissingImageCids{
-		AbstractPushUseCase:              NewAbstractPushUseCase(logger, agentCollectionRequester, pinMetrics),
+		logger:                           logger,
+		agentCollectionRequester:         agentCollectionRequester,
+		pinMetrics:                       pinMetrics,
 		chainsSettings:                   chainsSettings,
 		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
-		pushMissingImagesOfAgent:         pushMissingImagesOfAgent,
+		agentImagesPinner:                agentImagesPinner,
 		pinTracer:                        pinTracer,
 	}
 }
@@ -50,7 +56,8 @@ func (u *PushMissingImageCids) Execute(ctx context.Context) (response *responses
 		}
 	}()
 
-	defer u.recordSweep(ctx, metrics_interfaces.SweepKindAll, time.Now(), &err)
+	start := time.Now()
+	defer func() { u.pinMetrics.RecordSweep(ctx, metrics_interfaces.SweepKindAll, time.Since(start), err != nil) }()
 
 	for _, chainId := range u.chainsSettings.ChainIds() {
 		u.logger.Info("Processing chain", zap.Uint64("chainId", chainId))
@@ -72,7 +79,7 @@ func (u *PushMissingImageCids) Execute(ctx context.Context) (response *responses
 			}
 
 			for _, tokenId := range tokenIds {
-				if err := u.pushMissingImagesOfAgent.push(ctx, chainId, collectionAddress, tokenId); err != nil {
+				if err := u.agentImagesPinner.PinMissing(ctx, chainId, collectionAddress, tokenId); err != nil {
 					u.logger.Error("Failed to push agent image cid to pinata", zap.Error(err))
 					continue
 				}

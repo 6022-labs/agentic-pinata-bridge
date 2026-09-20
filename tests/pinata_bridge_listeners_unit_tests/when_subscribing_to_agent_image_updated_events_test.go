@@ -17,33 +17,33 @@ import (
 	"go.uber.org/zap"
 )
 
-const agentImageProposalCreatedEventName = "AgentCollection.AgentImageProposalCreated"
+const agentImageUpdatedEventName = "AgentCollection.AgentImageUpdated"
 
-type WhenSubscribingToAgentImageProposalCreatedEventsTestingSuite struct {
-	sut *pinata_bridge_listeners.AgentCollectionAgentImageProposalCreatedListener
+type WhenSubscribingToAgentImageUpdatedEventsTestingSuite struct {
+	sut *pinata_bridge_listeners.AgentCollectionAgentImageUpdatedListener
 
 	agentCollectionsManagerRequester *interfaces_mocks.MockAgentCollectionsManagerRequesterInterface
-	subscriptionProvider             *interfaces_mocks.MockAgentImageProposalCreatedSubscriptionProviderInterface
+	subscriptionProvider             *interfaces_mocks.MockAgentImageUpdatedSubscriptionProviderInterface
 	chainEventMetrics                *metrics_mocks.MockChainEventMetricsInterface
 }
 
-func WhenSubscribingToAgentImageProposalCreatedEventsBeforeEach(
+func WhenSubscribingToAgentImageUpdatedEventsBeforeEach(
 	t *testing.T,
-) *WhenSubscribingToAgentImageProposalCreatedEventsTestingSuite {
+) *WhenSubscribingToAgentImageUpdatedEventsTestingSuite {
 	mockController := gomock.NewController(t)
 
 	agentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(
 		mockController,
 	)
-	subscriptionProvider := interfaces_mocks.NewMockAgentImageProposalCreatedSubscriptionProviderInterface(
+	subscriptionProvider := interfaces_mocks.NewMockAgentImageUpdatedSubscriptionProviderInterface(
 		mockController,
 	)
 	chainEventMetrics := metrics_mocks.NewMockChainEventMetricsInterface(mockController)
 
 	// No event reaches the handler in these subscription tests; it only has to be wired.
-	handleEvent := interfaces_mocks.NewMockAgentImageProposalCreatedEventHandlerInterface(mockController)
+	handleEvent := interfaces_mocks.NewMockAgentImageUpdatedEventHandlerInterface(mockController)
 
-	sut := pinata_bridge_listeners.NewAgentCollectionAgentImageProposalCreatedListener(
+	sut := pinata_bridge_listeners.NewAgentCollectionAgentImageUpdatedListener(
 		zap.NewNop(),
 		settings.NewChainsSettingsFromChainIds([]uint64{testChainId}),
 		use_cases.NewListCollectionAddresses(agentCollectionsManagerRequester),
@@ -52,7 +52,7 @@ func WhenSubscribingToAgentImageProposalCreatedEventsBeforeEach(
 		handleEvent,
 	)
 
-	return &WhenSubscribingToAgentImageProposalCreatedEventsTestingSuite{
+	return &WhenSubscribingToAgentImageUpdatedEventsTestingSuite{
 		sut: sut,
 
 		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
@@ -61,7 +61,7 @@ func WhenSubscribingToAgentImageProposalCreatedEventsBeforeEach(
 	}
 }
 
-func TestWhenSubscribingToAgentImageProposalCreatedEvents(t *testing.T) {
+func TestWhenSubscribingToAgentImageUpdatedEvents(t *testing.T) {
 	t.Parallel()
 
 	collectionAddress := common.HexToAddress("0x1234567890123456789012345678901234567890")
@@ -69,26 +69,26 @@ func TestWhenSubscribingToAgentImageProposalCreatedEvents(t *testing.T) {
 	t.Run("Given the chain has one collection", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenSubscribingToAgentImageProposalCreatedEventsTestingSuite) {
+		initSuite := func(suite *WhenSubscribingToAgentImageUpdatedEventsTestingSuite) {
 			suite.agentCollectionsManagerRequester.EXPECT().
 				GetAllCollectionAddresses(gomock.Any(), testChainId).
 				Return([]common.Address{collectionAddress}, nil)
 			suite.subscriptionProvider.EXPECT().
-				StartAgentImageProposalCreatedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
-				Return(make(chan *abi.AgentCollectionV1AgentImageProposalCreated), newStubSubscription(), nil)
+				StartAgentImageUpdatedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
+				Return(make(chan *abi.AgentCollectionV1AgentImageUpdated), newStubSubscription(), nil)
 		}
 
 		t.Run("Should subscribe to it", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSubscribingToAgentImageProposalCreatedEventsBeforeEach(t)
+			suite := WhenSubscribingToAgentImageUpdatedEventsBeforeEach(t)
 
 			initSuite(suite)
 
 			suite.chainEventMetrics.EXPECT().
-				RecordSubscriptionOpened(gomock.Any(), agentImageProposalCreatedEventName, testChainId)
+				RecordSubscriptionOpened(gomock.Any(), agentImageUpdatedEventName, testChainId)
 			suite.chainEventMetrics.EXPECT().
-				RecordSubscriptionClosed(gomock.Any(), agentImageProposalCreatedEventName, testChainId).AnyTimes()
+				RecordSubscriptionClosed(gomock.Any(), agentImageUpdatedEventName, testChainId).AnyTimes()
 
 			err := suite.sut.SubscribeAll(context.Background())
 
@@ -99,7 +99,7 @@ func TestWhenSubscribingToAgentImageProposalCreatedEvents(t *testing.T) {
 	t.Run("Given the collection cannot be listed", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenSubscribingToAgentImageProposalCreatedEventsTestingSuite) {
+		initSuite := func(suite *WhenSubscribingToAgentImageUpdatedEventsTestingSuite) {
 			suite.agentCollectionsManagerRequester.EXPECT().
 				GetAllCollectionAddresses(gomock.Any(), testChainId).
 				Return(nil, assert.AnError)
@@ -108,7 +108,7 @@ func TestWhenSubscribingToAgentImageProposalCreatedEvents(t *testing.T) {
 		t.Run("Should return the error without subscribing", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSubscribingToAgentImageProposalCreatedEventsBeforeEach(t)
+			suite := WhenSubscribingToAgentImageUpdatedEventsBeforeEach(t)
 
 			initSuite(suite)
 
@@ -124,23 +124,23 @@ func TestWhenSubscribingToAgentImageProposalCreatedEvents(t *testing.T) {
 		subscription := newStubSubscription()
 		stoppedTracking := make(chan struct{})
 
-		initSuite := func(suite *WhenSubscribingToAgentImageProposalCreatedEventsTestingSuite) {
+		initSuite := func(suite *WhenSubscribingToAgentImageUpdatedEventsTestingSuite) {
 			suite.subscriptionProvider.EXPECT().
-				StartAgentImageProposalCreatedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
-				Return(make(chan *abi.AgentCollectionV1AgentImageProposalCreated), subscription, nil)
+				StartAgentImageUpdatedSubscription(gomock.Any(), testChainId, []common.Address{collectionAddress}).
+				Return(make(chan *abi.AgentCollectionV1AgentImageUpdated), subscription, nil)
 
 			suite.chainEventMetrics.EXPECT().
-				RecordSubscriptionOpened(gomock.Any(), agentImageProposalCreatedEventName, testChainId)
+				RecordSubscriptionOpened(gomock.Any(), agentImageUpdatedEventName, testChainId)
 
 			suite.chainEventMetrics.EXPECT().
-				RecordSubscriptionClosed(gomock.Any(), agentImageProposalCreatedEventName, testChainId).
+				RecordSubscriptionClosed(gomock.Any(), agentImageUpdatedEventName, testChainId).
 				Do(func(context.Context, string, uint64) { close(stoppedTracking) })
 		}
 
 		t.Run("Should record the subscription as closed once its watcher stops", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSubscribingToAgentImageProposalCreatedEventsBeforeEach(t)
+			suite := WhenSubscribingToAgentImageUpdatedEventsBeforeEach(t)
 			initSuite(suite)
 
 			err := suite.sut.Subscribe(context.Background(), testChainId, collectionAddress)

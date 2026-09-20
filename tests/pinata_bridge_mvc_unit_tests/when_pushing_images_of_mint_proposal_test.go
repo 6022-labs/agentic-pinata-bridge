@@ -2,10 +2,12 @@ package pinata_bridge_mvc_unit_tests_test
 
 import (
 	"encoding/json"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -17,10 +19,9 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
-			suite.agentCollectionRequester.EXPECT().
-				GetMintProposalImages(gomock.Any(), uint64(80002), gomock.Any(), gomock.Any()).
-				Return(nil, nil)
-			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), gomock.Any(), gomock.Any(), false)
+			suite.mintProposalImagesPinner.EXPECT().
+				Pin(gomock.Any(), uint64(80002), common.HexToAddress(validCollectionAddress), *big.NewInt(7)).
+				Return(nil)
 		}
 
 		t.Run("Should reach the use case and return 204", func(t *testing.T) {

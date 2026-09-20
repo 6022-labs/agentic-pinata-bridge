@@ -14,6 +14,8 @@ type (
 	AgentCollectionMintProposalCreatedListener = ChainEventListener[abi.AgentCollectionV1MintProposalCreated]
 	// AgentCollectionAgentImageProposalCreatedListener watches proposals that replace an agent's image.
 	AgentCollectionAgentImageProposalCreatedListener = ChainEventListener[abi.AgentCollectionV1AgentImageProposalCreated]
+	// AgentCollectionAgentImageUpdatedListener catches image writes that skip the proposal flow.
+	AgentCollectionAgentImageUpdatedListener = ChainEventListener[abi.AgentCollectionV1AgentImageUpdated]
 )
 
 func NewAgentCollectionMintedListener(
@@ -21,8 +23,8 @@ func NewAgentCollectionMintedListener(
 	chainsSettings *settings.ChainsSettings,
 	listCollectionAddresses *use_cases.ListCollectionAddresses,
 	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface,
-	subscriptionProvider interfaces.MintedSubscriptionProviderInterface,
-	handleMintedEvent *use_cases.HandleMintedEvent,
+	mintedSubscriptionProvider interfaces.MintedSubscriptionProviderInterface,
+	mintedEventHandler interfaces.MintedEventHandlerInterface,
 ) *AgentCollectionMintedListener {
 	return NewChainEventListener(
 		logger,
@@ -30,8 +32,8 @@ func NewAgentCollectionMintedListener(
 		chainsSettings,
 		listCollectionAddresses,
 		chainEventMetrics,
-		subscriptionProvider.StartMintedSubscription,
-		handleMintedEvent.Execute,
+		mintedSubscriptionProvider.StartMintedSubscription,
+		mintedEventHandler.Handle,
 	)
 }
 
@@ -40,8 +42,8 @@ func NewAgentCollectionMintProposalCreatedListener(
 	chainsSettings *settings.ChainsSettings,
 	listCollectionAddresses *use_cases.ListCollectionAddresses,
 	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface,
-	subscriptionProvider interfaces.MintProposalCreatedSubscriptionProviderInterface,
-	handleMintProposalCreatedEvent *use_cases.HandleMintProposalCreatedEvent,
+	mintProposalCreatedSubscriptionProvider interfaces.MintProposalCreatedSubscriptionProviderInterface,
+	mintProposalCreatedEventHandler interfaces.MintProposalCreatedEventHandlerInterface,
 ) *AgentCollectionMintProposalCreatedListener {
 	return NewChainEventListener(
 		logger,
@@ -49,8 +51,8 @@ func NewAgentCollectionMintProposalCreatedListener(
 		chainsSettings,
 		listCollectionAddresses,
 		chainEventMetrics,
-		subscriptionProvider.StartMintProposalCreatedSubscription,
-		handleMintProposalCreatedEvent.Execute,
+		mintProposalCreatedSubscriptionProvider.StartMintProposalCreatedSubscription,
+		mintProposalCreatedEventHandler.Handle,
 	)
 }
 
@@ -59,8 +61,8 @@ func NewAgentCollectionAgentImageProposalCreatedListener(
 	chainsSettings *settings.ChainsSettings,
 	listCollectionAddresses *use_cases.ListCollectionAddresses,
 	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface,
-	subscriptionProvider interfaces.AgentImageProposalCreatedSubscriptionProviderInterface,
-	handleAgentImageProposalCreatedEvent *use_cases.HandleAgentImageProposalCreatedEvent,
+	agentImageProposalCreatedSubscriptionProvider interfaces.AgentImageProposalCreatedSubscriptionProviderInterface,
+	agentImageProposalCreatedEventHandler interfaces.AgentImageProposalCreatedEventHandlerInterface,
 ) *AgentCollectionAgentImageProposalCreatedListener {
 	return NewChainEventListener(
 		logger,
@@ -68,7 +70,26 @@ func NewAgentCollectionAgentImageProposalCreatedListener(
 		chainsSettings,
 		listCollectionAddresses,
 		chainEventMetrics,
-		subscriptionProvider.StartAgentImageProposalCreatedSubscription,
-		handleAgentImageProposalCreatedEvent.Execute,
+		agentImageProposalCreatedSubscriptionProvider.StartAgentImageProposalCreatedSubscription,
+		agentImageProposalCreatedEventHandler.Handle,
+	)
+}
+
+func NewAgentCollectionAgentImageUpdatedListener(
+	logger *zap.Logger,
+	chainsSettings *settings.ChainsSettings,
+	listCollectionAddresses *use_cases.ListCollectionAddresses,
+	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface,
+	agentImageUpdatedSubscriptionProvider interfaces.AgentImageUpdatedSubscriptionProviderInterface,
+	agentImageUpdatedEventHandler interfaces.AgentImageUpdatedEventHandlerInterface,
+) *AgentCollectionAgentImageUpdatedListener {
+	return NewChainEventListener(
+		logger,
+		"AgentCollection.AgentImageUpdated",
+		chainsSettings,
+		listCollectionAddresses,
+		chainEventMetrics,
+		agentImageUpdatedSubscriptionProvider.StartAgentImageUpdatedSubscription,
+		agentImageUpdatedEventHandler.Handle,
 	)
 }

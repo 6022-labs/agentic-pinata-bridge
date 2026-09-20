@@ -3,16 +3,17 @@ package pinata_bridge_mvc_unit_tests_test
 import (
 	"encoding/json"
 	"io"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc"
 	metrics_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks/interfaces_mocks"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -24,40 +25,30 @@ const validCollectionAddress = "0x1234567890123456789012345678901234567890"
 type WhenPushingMissingImagesOfAgentTestingSuite struct {
 	app *fiber.App
 
-	agentCollectionRequester *interfaces_mocks.MockAgentCollectionRequesterInterface
+	agentImagesPinner        *interfaces_mocks.MockAgentImagesPinnerInterface
+	mintProposalImagesPinner *interfaces_mocks.MockMintProposalImagesPinnerInterface
 	pinMetrics               *metrics_mocks.MockPinMetricsInterface
 }
 
 func WhenPushingMissingImagesOfAgentBeforeEach(t *testing.T) *WhenPushingMissingImagesOfAgentTestingSuite {
 	mockController := gomock.NewController(t)
 
-	pinataRequester := interfaces_mocks.NewMockPinataRequesterInterface(mockController)
-	ipfsCheckRequester := interfaces_mocks.NewMockIpfsCheckRequesterInterface(mockController)
-	agentCollectionRequester := interfaces_mocks.NewMockAgentCollectionRequesterInterface(mockController)
-	agentCollectionsManagerRequester := interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(
-		mockController,
-	)
+	agentImagesPinner := interfaces_mocks.NewMockAgentImagesPinnerInterface(mockController)
+	mintProposalImagesPinner := interfaces_mocks.NewMockMintProposalImagesPinnerInterface(mockController)
 	pinMetrics := metrics_mocks.NewMockPinMetricsInterface(mockController)
-	pinTracer := newNoopPinTracer(mockController)
-
-	cidPinner := services.NewCidPinner(zap.NewNop(), pinataRequester, ipfsCheckRequester, pinMetrics, pinTracer)
-
-	pushMissingImagesOfAgent := use_cases.NewPushMissingImagesOfAgent(
-		zap.NewNop(), cidPinner, agentCollectionRequester, pinataRequester, pinMetrics,
-	)
-	pushImagesOfMintProposal := use_cases.NewPushImagesOfMintProposal(
-		zap.NewNop(), cidPinner, agentCollectionRequester, pinMetrics,
-	)
-	pushMissingImageCids := use_cases.NewPushMissingImageCids(
-		zap.NewNop(), agentCollectionRequester, pinMetrics,
-		settings.NewChainsSettingsFromChainIds(nil),
-		agentCollectionsManagerRequester, pushMissingImagesOfAgent, pinTracer,
-	)
 
 	controller := pinata_bridge_mvc.NewPinataPushController(
-		pushMissingImageCids,
-		pushMissingImagesOfAgent,
-		pushImagesOfMintProposal,
+		use_cases.NewPushMissingImageCids(
+			zap.NewNop(),
+			interfaces_mocks.NewMockAgentCollectionRequesterInterface(mockController),
+			pinMetrics,
+			settings.NewChainsSettingsFromChainIds(nil),
+			interfaces_mocks.NewMockAgentCollectionsManagerRequesterInterface(mockController),
+			agentImagesPinner,
+			newNoopPinTracer(mockController),
+		),
+		use_cases.NewPushMissingImagesOfAgent(agentImagesPinner),
+		use_cases.NewPushImagesOfMintProposal(mintProposalImagesPinner),
 	)
 
 	app := fiber.New()
@@ -65,7 +56,8 @@ func WhenPushingMissingImagesOfAgentBeforeEach(t *testing.T) *WhenPushingMissing
 
 	return &WhenPushingMissingImagesOfAgentTestingSuite{
 		app:                      app,
-		agentCollectionRequester: agentCollectionRequester,
+		agentImagesPinner:        agentImagesPinner,
+		mintProposalImagesPinner: mintProposalImagesPinner,
 		pinMetrics:               pinMetrics,
 	}
 }
@@ -77,10 +69,9 @@ func TestWhenPushingMissingImagesOfAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
-			suite.agentCollectionRequester.EXPECT().
-				GetAgentImages(gomock.Any(), uint64(80002), gomock.Any(), gomock.Any()).
-				Return(nil, nil)
-			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), gomock.Any(), gomock.Any(), false)
+			suite.agentImagesPinner.EXPECT().
+				PinMissing(gomock.Any(), uint64(80002), common.HexToAddress(validCollectionAddress), *big.NewInt(123)).
+				Return(nil)
 		}
 
 		t.Run("Should reach the use case and return 204", func(t *testing.T) {

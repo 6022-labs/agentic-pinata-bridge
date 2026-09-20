@@ -30,6 +30,10 @@ func AddPinataBridgeListenersConfiguration(container *dig.Container) {
 		container,
 		pinata_bridge_listeners.NewAgentCollectionAgentImageProposalCreatedListener,
 	)
+	provideCollectionListener[abi.AgentCollectionV1AgentImageUpdated](
+		container,
+		pinata_bridge_listeners.NewAgentCollectionAgentImageUpdatedListener,
+	)
 
 	if err := container.Provide(
 		pinata_bridge_listeners.NewAgentCollectionsManagerCollectionCreatedListener,

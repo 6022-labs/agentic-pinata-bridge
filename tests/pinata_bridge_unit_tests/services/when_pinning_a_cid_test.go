@@ -13,9 +13,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// testHostNodeId is a libp2p peer id, the shape pinata's host_nodes expects.
-const testHostNodeId = "12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEg"
-
 type WhenPinningACidTestSuite struct {
 	sut *services.CidPinner
 

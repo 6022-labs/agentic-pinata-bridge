@@ -69,6 +69,14 @@ func AddPinataBridgeBlockchainConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(
+		blockchain_services.NewAgentCollectionAgentImageUpdatedEventSubscriptionProvider,
+		dig.As(new(interfaces.AgentImageUpdatedSubscriptionProviderInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	// Services
 	err = container.Provide(
 		blockchain_services.NewAgentCollectionRequester,

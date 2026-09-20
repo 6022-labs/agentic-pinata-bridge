@@ -28,6 +28,7 @@ configured chain, and to each collection it learns about:
 | `Minted` | the new agent's images |
 | `MintProposalCreated` | the proposed agent's images, before approval |
 | `AgentImageProposalCreated` | the proposed replacement image |
+| `AgentImageUpdated` | the agent's images after any image write, direct or applied proposal |
 
 Collections discovered at runtime are picked up without a restart — the
 per-collection subscriptions are added as `CollectionCreated` fires.

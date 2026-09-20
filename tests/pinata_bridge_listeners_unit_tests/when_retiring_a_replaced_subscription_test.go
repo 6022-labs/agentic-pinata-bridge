@@ -11,7 +11,6 @@ import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_listeners"
 	metrics_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_listeners_mocks/metrics_mocks/interfaces_mocks"
-	metrics_mocks_pin "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/metrics_mocks/interfaces_mocks"
 	interfaces_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -29,7 +28,6 @@ type WhenRetiringAReplacedSubscriptionTestingSuite struct {
 	agentCollectionsManagerRequester *interfaces_mocks.MockAgentCollectionsManagerRequesterInterface
 	subscriptionProvider             *interfaces_mocks.MockMintedSubscriptionProviderInterface
 	chainEventMetrics                *metrics_mocks.MockChainEventMetricsInterface
-	pinMetrics                       *metrics_mocks_pin.MockPinMetricsInterface
 }
 
 func WhenRetiringAReplacedSubscriptionBeforeEach(t *testing.T) *WhenRetiringAReplacedSubscriptionTestingSuite {
@@ -40,20 +38,9 @@ func WhenRetiringAReplacedSubscriptionBeforeEach(t *testing.T) *WhenRetiringARep
 	)
 	subscriptionProvider := interfaces_mocks.NewMockMintedSubscriptionProviderInterface(mockController)
 	chainEventMetrics := metrics_mocks.NewMockChainEventMetricsInterface(mockController)
-	pinMetrics := metrics_mocks_pin.NewMockPinMetricsInterface(mockController)
 
-	agentCollectionRequester := interfaces_mocks.NewMockAgentCollectionRequesterInterface(mockController)
-	agentCollectionRequester.EXPECT().
-		GetAgentImages(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(nil, nil).AnyTimes()
-
-	handleMintedEvent := use_cases.NewHandleMintedEvent(use_cases.NewPushMissingImagesOfAgent(
-		zap.NewNop(),
-		interfaces_mocks.NewMockCidPinnerInterface(mockController),
-		agentCollectionRequester,
-		interfaces_mocks.NewMockPinataRequesterInterface(mockController),
-		pinMetrics,
-	))
+	handleMintedEvent := interfaces_mocks.NewMockMintedEventHandlerInterface(mockController)
+	handleMintedEvent.EXPECT().Handle(gomock.Any(), testChainId, gomock.Any()).Return(nil).AnyTimes()
 
 	sut := pinata_bridge_listeners.NewAgentCollectionMintedListener(
 		zap.NewNop(),
@@ -69,7 +56,6 @@ func WhenRetiringAReplacedSubscriptionBeforeEach(t *testing.T) *WhenRetiringARep
 		agentCollectionsManagerRequester: agentCollectionsManagerRequester,
 		subscriptionProvider:             subscriptionProvider,
 		chainEventMetrics:                chainEventMetrics,
-		pinMetrics:                       pinMetrics,
 	}
 }
 
@@ -119,7 +105,6 @@ func TestWhenRetiringAReplacedSubscription(t *testing.T) {
 			suite.chainEventMetrics.EXPECT().
 				RecordEvent(gomock.Any(), mintedEventName, testChainId, gomock.Any(), gomock.Any()).
 				Do(func(context.Context, string, uint64, string, time.Duration) { handled <- struct{}{} })
-			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 		}
 
 		t.Run("Should retire only this chain's parked subscription", func(t *testing.T) {
