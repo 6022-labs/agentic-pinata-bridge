@@ -64,10 +64,16 @@ func TestWhenPushingMissingImagesOfAgent(t *testing.T) {
 	t.Run("Given the agentImagesPinner fails", func(t *testing.T) {
 		t.Parallel()
 
+		sourceErr := apperrors.NewUnavailableError(
+			"agent_images_read_failed",
+			"upstream request failed",
+			assert.AnError,
+		)
+
 		initSuite := func(suite *WhenPushingMissingImagesOfAgentTestingSuite) {
 			suite.agentImagesPinner.EXPECT().
 				PinMissing(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(apperrors.NewUnavailableError("agent_images_read_failed", "upstream request failed"))
+				Return(sourceErr)
 		}
 
 		t.Run("Should return its error untouched", func(t *testing.T) {
@@ -84,9 +90,7 @@ func TestWhenPushingMissingImagesOfAgent(t *testing.T) {
 				AgentCollectionTokenId: "123",
 			})
 
-			var unavailableError *apperrors.UnavailableError
-			assert.ErrorAs(t, err, &unavailableError)
-			assert.Equal(t, "agent_images_read_failed", unavailableError.Code)
+			assert.Same(t, sourceErr, err)
 		})
 	})
 

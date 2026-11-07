@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -83,6 +84,16 @@ func TestWhenPinningMintProposalImages(t *testing.T) {
 			var unavailableError *apperrors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableError)
 			assert.Equal(t, "mint_proposal_images_read_failed", unavailableError.Code)
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(
+				t,
+				err,
+				fmt.Sprintf(
+					"read images of %s mint proposal 123 on chain %d",
+					common.HexToAddress(testCollectionAddress).Hex(),
+					testChainId,
+				),
+			)
 		})
 	})
 
@@ -131,6 +142,8 @@ func TestWhenPinningMintProposalImages(t *testing.T) {
 			var unavailableError *apperrors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableError)
 			assert.Equal(t, "image_pin_failed", unavailableError.Code)
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(t, err, "pin cid "+testCid)
 		})
 	})
 
@@ -209,6 +222,8 @@ func TestWhenPinningMintProposalImages(t *testing.T) {
 			var unavailableError *apperrors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableError)
 			assert.Equal(t, "image_pin_failed", unavailableError.Code)
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(t, err, "pin cid "+testValidCid)
 		})
 	})
 

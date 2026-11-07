@@ -9,11 +9,12 @@ import (
 const HealthEndpoint = "/health"
 
 type HealthController struct {
-	getHealth *use_cases.GetHealth
+	getHealth   *use_cases.GetHealth
+	errorWriter *mvc.ErrorWriter
 }
 
-func NewHealthController(getHealth *use_cases.GetHealth) *HealthController {
-	return &HealthController{getHealth: getHealth}
+func NewHealthController(getHealth *use_cases.GetHealth, errorWriter *mvc.ErrorWriter) *HealthController {
+	return &HealthController{getHealth: getHealth, errorWriter: errorWriter}
 }
 
 func (c *HealthController) RegisterRoutes(app fiber.Router) {
@@ -23,7 +24,7 @@ func (c *HealthController) RegisterRoutes(app fiber.Router) {
 func (c *HealthController) GetHealth(ctx fiber.Ctx) error {
 	response, err := c.getHealth.Execute(ctx.Context())
 	if err != nil {
-		return mvc.WriteError(ctx, err)
+		return c.errorWriter.Write(ctx, err)
 	}
 
 	return ctx.JSON(response)

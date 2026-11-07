@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"time"
 
@@ -49,7 +50,17 @@ func (s *MintProposalImagesPinner) Pin(
 
 	images, err := s.agentCollectionRequester.GetMintProposalImages(ctx, chainId, agentCollectionAddress, proposalId)
 	if err != nil {
-		return errors.NewUnavailableError("mint_proposal_images_read_failed", upstreamFailureMessage)
+		return errors.NewUnavailableError(
+			"mint_proposal_images_read_failed",
+			upstreamFailureMessage,
+			fmt.Errorf(
+				"read images of %s mint proposal %s on chain %d: %w",
+				agentCollectionAddress,
+				proposalId.String(),
+				chainId,
+				err,
+			),
+		)
 	}
 
 	var pinErrors error
@@ -84,8 +95,7 @@ func (s *MintProposalImagesPinner) Pin(
 				metrics_interfaces.SweepKindMintProposal,
 				metrics_interfaces.PinOutcomeFailed,
 			)
-			s.logger.Error("Failed to push mint proposal cid to pinata", zap.String("cid", cid), zap.Error(err))
-			pinErrors = multierr.Append(pinErrors, err)
+			pinErrors = multierr.Append(pinErrors, fmt.Errorf("pin cid %s: %w", cid, err))
 			continue
 		}
 
@@ -97,7 +107,7 @@ func (s *MintProposalImagesPinner) Pin(
 	}
 
 	if pinErrors != nil {
-		return errors.NewUnavailableError("image_pin_failed", upstreamFailureMessage)
+		return errors.NewUnavailableError("image_pin_failed", upstreamFailureMessage, pinErrors)
 	}
 
 	return nil

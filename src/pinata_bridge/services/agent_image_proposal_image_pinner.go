@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"time"
 
@@ -53,7 +54,17 @@ func (s *AgentImageProposalImagePinner) Pin(
 		proposalId,
 	)
 	if err != nil {
-		return errors.NewUnavailableError("image_proposal_read_failed", upstreamFailureMessage)
+		return errors.NewUnavailableError(
+			"image_proposal_read_failed",
+			upstreamFailureMessage,
+			fmt.Errorf(
+				"read image of %s image proposal %s on chain %d: %w",
+				agentCollectionAddress,
+				proposalId.String(),
+				chainId,
+				err,
+			),
+		)
 	}
 
 	cid, ok := utils.ExtractCid(*image)
@@ -85,9 +96,11 @@ func (s *AgentImageProposalImagePinner) Pin(
 			metrics_interfaces.SweepKindImageProposal,
 			metrics_interfaces.PinOutcomeFailed,
 		)
-		s.logger.Error("Failed to push agent image proposal cid to pinata", zap.String("cid", cid), zap.Error(err))
-
-		return errors.NewUnavailableError("image_pin_failed", upstreamFailureMessage)
+		return errors.NewUnavailableError(
+			"image_pin_failed",
+			upstreamFailureMessage,
+			fmt.Errorf("pin cid %s: %w", cid, err),
+		)
 	}
 
 	s.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindImageProposal, metrics_interfaces.PinOutcomePinned)

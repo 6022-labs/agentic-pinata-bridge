@@ -2,6 +2,7 @@ package use_cases_test
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -82,6 +83,8 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 			var unavailableError *apperrors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableError)
 			assert.Equal(t, "collections_read_failed", unavailableError.Code)
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(t, err, fmt.Sprintf("chain %d", testChainId))
 		})
 	})
 
@@ -109,6 +112,8 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 			var unavailableError *apperrors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableError)
 			assert.Equal(t, "token_ids_read_failed", unavailableError.Code)
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(t, err, fmt.Sprintf("collection %s on chain %d", collectionAddress, testChainId))
 		})
 	})
 
