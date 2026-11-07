@@ -66,10 +66,16 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 	t.Run("Given the mintProposalImagesPinner fails", func(t *testing.T) {
 		t.Parallel()
 
+		sourceErr := apperrors.NewUnavailableError(
+			"mint_proposal_images_read_failed",
+			"upstream request failed",
+			assert.AnError,
+		)
+
 		initSuite := func(suite *WhenPushingImagesOfMintProposalTestingSuite) {
 			suite.mintProposalImagesPinner.EXPECT().
 				Pin(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(apperrors.NewUnavailableError("mint_proposal_images_read_failed", "upstream request failed"))
+				Return(sourceErr)
 		}
 
 		t.Run("Should return its error untouched", func(t *testing.T) {
@@ -88,9 +94,7 @@ func TestWhenPushingImagesOfMintProposal(t *testing.T) {
 				MintProposalId: "123",
 			})
 
-			var unavailableError *apperrors.UnavailableError
-			assert.ErrorAs(t, err, &unavailableError)
-			assert.Equal(t, "mint_proposal_images_read_failed", unavailableError.Code)
+			assert.Same(t, sourceErr, err)
 		})
 	})
 

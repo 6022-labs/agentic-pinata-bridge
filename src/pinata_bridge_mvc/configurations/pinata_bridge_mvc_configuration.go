@@ -3,6 +3,7 @@ package configurations
 import (
 	common_metrics "github.com/6022-labs/agentic-pinata-bridge/src/common/metrics"
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/common/metrics/interfaces"
+	"github.com/6022-labs/agentic-pinata-bridge/src/common/mvc"
 	mvc_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/interfaces"
 	mvc_middlewares "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/middlewares"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc"
@@ -19,6 +20,11 @@ func AddPinataBridgeMvcConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(mvc_middlewares.NewApiRequestMetricsMiddleware)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(mvc.NewErrorWriter)
 	if err != nil {
 		panic(err)
 	}

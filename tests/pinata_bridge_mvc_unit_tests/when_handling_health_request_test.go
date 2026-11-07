@@ -6,10 +6,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/6022-labs/agentic-pinata-bridge/src/common/mvc"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc"
 	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestWhenHandlingHealthRequest(t *testing.T) {
@@ -22,7 +24,8 @@ func TestWhenHandlingHealthRequest(t *testing.T) {
 			t.Parallel()
 
 			app := fiber.New()
-			pinata_bridge_mvc.NewHealthController(use_cases.NewGetHealth()).RegisterRoutes(app)
+			pinata_bridge_mvc.NewHealthController(use_cases.NewGetHealth(), mvc.NewErrorWriter(zap.NewNop())).
+				RegisterRoutes(app)
 
 			req := httptest.NewRequest(http.MethodGet, "/health", nil)
 			resp, err := app.Test(req)

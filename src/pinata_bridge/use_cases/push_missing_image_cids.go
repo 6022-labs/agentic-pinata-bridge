@@ -2,6 +2,7 @@ package use_cases
 
 import (
 	"context"
+	"fmt"
 	"github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// upstreamFailureMessage keeps upstream text (RPC urls carry api keys) off the wire; the log has the detail.
+// upstreamFailureMessage keeps upstream text (RPC urls carry api keys) off the wire; the cause travels on the error.
 const upstreamFailureMessage = "upstream request failed"
 
 // PushMissingImageCids sweeps every configured chain and pins whatever Pinata is missing.
@@ -64,7 +65,11 @@ func (u *PushMissingImageCids) Execute(ctx context.Context) (response *responses
 
 		allCollections, err := u.agentCollectionsManagerRequester.GetAllCollectionAddresses(ctx, chainId)
 		if err != nil {
-			return nil, errors.NewUnavailableError("collections_read_failed", upstreamFailureMessage)
+			return nil, errors.NewUnavailableError(
+				"collections_read_failed",
+				upstreamFailureMessage,
+				fmt.Errorf("chain %d: %w", chainId, err),
+			)
 		}
 
 		for _, collectionAddress := range allCollections {
@@ -75,7 +80,11 @@ func (u *PushMissingImageCids) Execute(ctx context.Context) (response *responses
 
 			tokenIds, err := u.agentCollectionRequester.GetAllTokenIds(ctx, chainId, collectionAddress)
 			if err != nil {
-				return nil, errors.NewUnavailableError("token_ids_read_failed", upstreamFailureMessage)
+				return nil, errors.NewUnavailableError(
+					"token_ids_read_failed",
+					upstreamFailureMessage,
+					fmt.Errorf("collection %s on chain %d: %w", collectionAddress, chainId, err),
+				)
 			}
 
 			for _, tokenId := range tokenIds {

@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/6022-labs/agentic-pinata-bridge/src/common/mvc"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_mvc"
@@ -49,6 +50,7 @@ func WhenPushingMissingImagesOfAgentBeforeEach(t *testing.T) *WhenPushingMissing
 		),
 		use_cases.NewPushMissingImagesOfAgent(agentImagesPinner),
 		use_cases.NewPushImagesOfMintProposal(mintProposalImagesPinner),
+		mvc.NewErrorWriter(zap.NewNop()),
 	)
 
 	app := fiber.New()

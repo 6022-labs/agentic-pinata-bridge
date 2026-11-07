@@ -3,6 +3,7 @@ package configurations
 import (
 	"context"
 
+	"github.com/6022-labs/agentic-pinata-bridge/src/common/mvc"
 	mvc_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/interfaces"
 	mvc_middlewares "github.com/6022-labs/agentic-pinata-bridge/src/common/mvc/middlewares"
 	common_settings "github.com/6022-labs/agentic-pinata-bridge/src/common/settings"
@@ -42,14 +43,16 @@ func ConfigureServer(container *dig.Container, listenersContext context.Context)
 func newHttpServer(
 	hostSettings *settings.HostFeaturesSettings,
 	commonHostSettings *common_settings.HostSettings,
+	errorWriter *mvc.ErrorWriter,
 ) *fiber.App {
 	if !hostSettings.UseApi {
 		return nil
 	}
 
 	return fiber.New(fiber.Config{
-		AppName:   AppName,
-		BodyLimit: commonHostSettings.BodyLimitBytes,
+		AppName:      AppName,
+		BodyLimit:    commonHostSettings.BodyLimitBytes,
+		ErrorHandler: errorWriter.Write,
 	})
 }
 

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// upstreamFailureMessage keeps upstream text (RPC urls carry api keys) off the wire; the log has the detail.
+// upstreamFailureMessage keeps upstream text (RPC urls carry api keys) off the wire; the cause travels on the error.
 const upstreamFailureMessage = "upstream request failed"
 
 // AgentImagesPinner is the one place an agent's images get swept, whatever triggered it.
@@ -55,9 +56,17 @@ func (s *AgentImagesPinner) PinMissing(
 
 	images, err := s.agentCollectionRequester.GetAgentImages(ctx, chainId, agentCollectionAddress, tokenId)
 	if err != nil {
-		s.logger.Error("Failed to read agent images", zap.Uint64("chainId", chainId), zap.Error(err))
-
-		return errors.NewUnavailableError("agent_images_read_failed", upstreamFailureMessage)
+		return errors.NewUnavailableError(
+			"agent_images_read_failed",
+			upstreamFailureMessage,
+			fmt.Errorf(
+				"read images of %s token %s on chain %d: %w",
+				agentCollectionAddress,
+				tokenId.String(),
+				chainId,
+				err,
+			),
+		)
 	}
 
 	var pinErrors error
@@ -81,9 +90,11 @@ func (s *AgentImagesPinner) PinMissing(
 
 		isUploaded, err := s.pinataRequester.IsCidUploaded(ctx, cid)
 		if err != nil {
-			s.logger.Error("Failed to check if cid is uploaded", zap.String("cid", cid), zap.Error(err))
-
-			return errors.NewUnavailableError("pin_status_read_failed", upstreamFailureMessage)
+			return errors.NewUnavailableError(
+				"pin_status_read_failed",
+				upstreamFailureMessage,
+				fmt.Errorf("check cid %s: %w", cid, err),
+			)
 		}
 
 		if *isUploaded {
@@ -105,8 +116,7 @@ func (s *AgentImagesPinner) PinMissing(
 		// One unpinnable image must not cost the agent its remaining ones.
 		if err := s.cidPinner.Pin(ctx, cid); err != nil {
 			s.pinMetrics.RecordSweepImage(ctx, metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomeFailed)
-			s.logger.Error("Failed to push agent image cid to pinata", zap.String("cid", cid), zap.Error(err))
-			pinErrors = multierr.Append(pinErrors, err)
+			pinErrors = multierr.Append(pinErrors, fmt.Errorf("pin cid %s: %w", cid, err))
 			continue
 		}
 
@@ -114,7 +124,7 @@ func (s *AgentImagesPinner) PinMissing(
 	}
 
 	if pinErrors != nil {
-		return errors.NewUnavailableError("image_pin_failed", upstreamFailureMessage)
+		return errors.NewUnavailableError("image_pin_failed", upstreamFailureMessage, pinErrors)
 	}
 
 	return nil

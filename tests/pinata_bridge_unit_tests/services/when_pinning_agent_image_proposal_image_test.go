@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -83,6 +84,16 @@ func TestWhenPinningAgentImageProposalImage(t *testing.T) {
 			var unavailableError *apperrors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableError)
 			assert.Equal(t, "image_proposal_read_failed", unavailableError.Code)
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(
+				t,
+				err,
+				fmt.Sprintf(
+					"read image of %s image proposal 123 on chain %d",
+					common.HexToAddress(testCollectionAddress).Hex(),
+					testChainId,
+				),
+			)
 		})
 	})
 
@@ -130,6 +141,8 @@ func TestWhenPinningAgentImageProposalImage(t *testing.T) {
 			var unavailableError *apperrors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableError)
 			assert.Equal(t, "image_pin_failed", unavailableError.Code)
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(t, err, "pin cid "+testCid)
 		})
 	})
 

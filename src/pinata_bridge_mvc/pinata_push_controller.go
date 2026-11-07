@@ -1,6 +1,7 @@
 package pinata_bridge_mvc
 
 import (
+	"github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
 	"github.com/6022-labs/agentic-pinata-bridge/src/common/mvc"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/use_cases/requests"
@@ -18,17 +19,20 @@ type PinataPushController struct {
 	pushMissingImageCids     *use_cases.PushMissingImageCids
 	pushMissingImagesOfAgent *use_cases.PushMissingImagesOfAgent
 	pushImagesOfMintProposal *use_cases.PushImagesOfMintProposal
+	errorWriter              *mvc.ErrorWriter
 }
 
 func NewPinataPushController(
 	pushMissingImageCids *use_cases.PushMissingImageCids,
 	pushMissingImagesOfAgent *use_cases.PushMissingImagesOfAgent,
 	pushImagesOfMintProposal *use_cases.PushImagesOfMintProposal,
+	errorWriter *mvc.ErrorWriter,
 ) *PinataPushController {
 	return &PinataPushController{
 		pushMissingImageCids:     pushMissingImageCids,
 		pushMissingImagesOfAgent: pushMissingImagesOfAgent,
 		pushImagesOfMintProposal: pushImagesOfMintProposal,
+		errorWriter:              errorWriter,
 	}
 }
 
@@ -40,7 +44,7 @@ func (c *PinataPushController) RegisterRoutes(app fiber.Router) {
 
 func (c *PinataPushController) PushMissingImageCids(ctx fiber.Ctx) error {
 	if _, err := c.pushMissingImageCids.Execute(ctx.Context()); err != nil {
-		return mvc.WriteError(ctx, err)
+		return c.errorWriter.Write(ctx, err)
 	}
 
 	return ctx.SendStatus(fiber.StatusNoContent)
@@ -49,12 +53,11 @@ func (c *PinataPushController) PushMissingImageCids(ctx fiber.Ctx) error {
 func (c *PinataPushController) PushMissingImagesOfAgent(ctx fiber.Ctx) error {
 	request := &requests.PushMissingImagesOfAgentRequest{}
 	if err := ctx.Bind().URI(request); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).
-			JSON(fiber.Map{"code": "invalid_params", "message": err.Error()})
+		return c.errorWriter.Write(ctx, errors.NewBadRequestError("invalid_params", err.Error()))
 	}
 
 	if _, err := c.pushMissingImagesOfAgent.Execute(ctx.Context(), request); err != nil {
-		return mvc.WriteError(ctx, err)
+		return c.errorWriter.Write(ctx, err)
 	}
 
 	return ctx.SendStatus(fiber.StatusNoContent)
@@ -63,12 +66,11 @@ func (c *PinataPushController) PushMissingImagesOfAgent(ctx fiber.Ctx) error {
 func (c *PinataPushController) PushImagesOfMintProposal(ctx fiber.Ctx) error {
 	request := &requests.PushImagesOfMintProposalRequest{}
 	if err := ctx.Bind().URI(request); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).
-			JSON(fiber.Map{"code": "invalid_params", "message": err.Error()})
+		return c.errorWriter.Write(ctx, errors.NewBadRequestError("invalid_params", err.Error()))
 	}
 
 	if _, err := c.pushImagesOfMintProposal.Execute(ctx.Context(), request); err != nil {
-		return mvc.WriteError(ctx, err)
+		return c.errorWriter.Write(ctx, err)
 	}
 
 	return ctx.SendStatus(fiber.StatusNoContent)

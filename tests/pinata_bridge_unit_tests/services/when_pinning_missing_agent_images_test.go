@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -85,6 +86,16 @@ func TestWhenPinningMissingAgentImages(t *testing.T) {
 			var unavailableError *apperrors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableError)
 			assert.Equal(t, "agent_images_read_failed", unavailableError.Code)
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(
+				t,
+				err,
+				fmt.Sprintf(
+					"read images of %s token 123 on chain %d",
+					common.HexToAddress(testCollectionAddress).Hex(),
+					testChainId,
+				),
+			)
 		})
 	})
 
@@ -119,6 +130,8 @@ func TestWhenPinningMissingAgentImages(t *testing.T) {
 			var unavailableError *apperrors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableError)
 			assert.Equal(t, "pin_status_read_failed", unavailableError.Code)
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(t, err, "check cid "+testCid)
 		})
 	})
 
@@ -168,6 +181,8 @@ func TestWhenPinningMissingAgentImages(t *testing.T) {
 			var unavailableError *apperrors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableError)
 			assert.Equal(t, "image_pin_failed", unavailableError.Code)
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(t, err, "pin cid "+testCid)
 		})
 	})
 
@@ -250,6 +265,8 @@ func TestWhenPinningMissingAgentImages(t *testing.T) {
 			var unavailableError *apperrors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableError)
 			assert.Equal(t, "image_pin_failed", unavailableError.Code)
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(t, err, "pin cid "+testValidCid)
 		})
 	})
 
