@@ -3,13 +3,14 @@ package factory
 import (
 	"time"
 
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/transports"
+
 	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 	"sync"
 
-	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/metrics"
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_blockchain/settings"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -51,16 +52,21 @@ func (f *EthClientFactory) Http(chainId uint64) (*ethclient.Client, error) {
 		return nil, fmt.Errorf("no rpc configured for chain %d", chainId)
 	}
 
+	rpcRoundTripper, err := transports.NewRpcRoundTripper(
+		http.DefaultTransport,
+		rpcConfig.HttpUrl,
+		f.blockchainRpcMetrics,
+		strconv.FormatUint(chainId, 10),
+	)
+	if err != nil {
+		return nil, err
+	}
 	httpClient := &http.Client{
-		Timeout: time.Duration(rpcConfig.RequestTimeoutSeconds) * time.Second,
-		Transport: metrics.NewRpcRoundTripper(
-			http.DefaultTransport,
-			f.blockchainRpcMetrics,
-			strconv.FormatUint(chainId, 10),
-		),
+		Timeout:   time.Duration(rpcConfig.RequestTimeoutSeconds) * time.Second,
+		Transport: rpcRoundTripper,
 	}
 
-	rpcClient, err := rpc.DialOptions(context.Background(), rpcConfig.HttpUrl, rpc.WithHTTPClient(httpClient))
+	rpcClient, err := rpc.DialOptions(context.Background(), rpcRoundTripper.Origin(), rpc.WithHTTPClient(httpClient))
 	if err != nil {
 		return nil, fmt.Errorf("dial http rpc for chain %d: %w", chainId, err)
 	}
