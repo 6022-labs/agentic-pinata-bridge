@@ -94,7 +94,7 @@ double underscores map to the JSON nesting (`PINATA__API_KEY` is
 | `CHAINS__<chain_id>__RPC_HTTP_URL` / `RPC_WS_URL` | one pair per chain to watch; the WS URL carries the event subscriptions |
 | `PINATA__*` | API base URL and key |
 | `IPFS_CHECK__*` | ipfs-check base URL |
-| `TELEMETRY__*` | OTLP export — endpoint, environment, credentials |
+| `TELEMETRY__*` | OTLP export — protocol (`grpc`/`http`), endpoint, environment, credentials |
 
 `AgentCollectionsManager` addresses are not operator config: they are baked into
 the build in `src/pinata_bridge_blockchain/settings/agent_collections_managers.json`
@@ -103,9 +103,11 @@ is simply skipped.
 
 ## Observability
 
-The host exports metrics, logs and traces over OTLP/gRPC to Grafana Alloy, which
+The host exports metrics, logs and traces over OTLP to Grafana Alloy, which
 fans them out to Mimir, Loki and Tempo. Dashboards for pin throughput, sweep
 duration, chain events, RPC and HTTP are provisioned under `grafana/dashboards/`.
+`TELEMETRY__PROTOCOL` picks `grpc` (default, port 4317) or `http` (port 4318) for
+hosts whose route to Alloy only carries plain HTTPS.
 The OTLP ingest is unauthenticated by default; `OTLP_AUTH_*` and `OTLP_TLS_*`
 turn that on.
 
