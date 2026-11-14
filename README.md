@@ -134,6 +134,7 @@ make build   # go build ./src/...
 make test    # unit tests
 make lint    # golangci-lint v2
 make mocks   # regenerate gomock mocks after an interface change
+make hooks   # git hooks: format + secret scan on commit, build/lint/test on push
 ```
 
 `make help` lists the rest.
