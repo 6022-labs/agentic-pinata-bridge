@@ -1,4 +1,4 @@
-.PHONY: build test lint fmt mocks help
+.PHONY: build test lint fmt mocks hooks help
 
 # build compiles every Go package under src/.
 build:
@@ -20,9 +20,16 @@ fmt:
 mocks:
 	deepsearch-mockgen -S ./src -O ./tests -A -P
 
+# hooks installs pinned lefthook + gitleaks into GOPATH/bin and wires the git hooks.
+hooks:
+	go install github.com/evilmartians/lefthook/v2@v2.2.2
+	go install github.com/zricethezav/gitleaks/v8@v8.30.1
+	$$(go env GOPATH)/bin/lefthook install
+
 help:
 	@echo "build       - go build ./src/..."
 	@echo "test        - go test unit-test packages"
 	@echo "lint        - golangci-lint run ./... (needs golangci-lint v2)"
 	@echo "fmt         - golangci-lint fmt, 120-char cap"
 	@echo "mocks       - regenerate mocks (needs deepsearch-mockgen)"
+	@echo "hooks       - install git hooks (format + secret scan on commit, build/lint/test on push)"

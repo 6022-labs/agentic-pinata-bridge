@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Vendored Pinata OpenAPI spec examples"
+paths = ['''pinata-api-v3\.yaml$''']
