@@ -1,6 +1,6 @@
 module github.com/6022-labs/agentic-pinata-bridge
 
-go 1.26.2
+go 1.27.4
 
 require (
 	github.com/ethereum/go-ethereum v1.17.10
