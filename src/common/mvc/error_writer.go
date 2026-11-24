@@ -24,6 +24,8 @@ func (w *ErrorWriter) Write(ctx fiber.Ctx, err error) error {
 		return w.write(ctx, fiber.StatusBadRequest, "", e, nil)
 	case *errors.BadRequestError:
 		return w.write(ctx, fiber.StatusBadRequest, e.Code, e, nil)
+	case *errors.ConflictError:
+		return w.write(ctx, fiber.StatusConflict, e.Code, e, nil)
 	case *errors.UnavailableError:
 		return w.write(ctx, fiber.StatusBadGateway, e.Code, e, e.Cause)
 	case *errors.InternalError:

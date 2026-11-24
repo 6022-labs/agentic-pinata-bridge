@@ -150,4 +150,72 @@ func TestWhenPushingMissingImageCids(t *testing.T) {
 			assert.NoError(t, err)
 		})
 	})
+
+	t.Run("Given missing images are already being pushed", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPushingMissingImageCidsTestingSuite, started, finish chan struct{}) {
+			suite.agentCollectionsManagerRequester.EXPECT().
+				GetAllCollectionAddresses(gomock.Any(), testChainId).
+				DoAndReturn(func(context.Context, uint64) ([]common.Address, error) {
+					close(started)
+					<-finish
+
+					return nil, nil
+				})
+			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAll, gomock.Any(), false)
+		}
+
+		t.Run("Should refuse the second push", func(t *testing.T) {
+			t.Parallel()
+
+			started, finish, done := make(chan struct{}), make(chan struct{}), make(chan error, 1)
+			suite := WhenPushingMissingImageCidsBeforeEach(t)
+			initSuite(suite, started, finish)
+
+			go func() {
+				_, err := suite.sut.Execute(context.Background())
+				done <- err
+			}()
+			<-started
+
+			_, err := suite.sut.Execute(context.Background())
+			close(finish)
+
+			var conflictError *apperrors.ConflictError
+			assert.ErrorAs(t, err, &conflictError)
+			assert.Equal(t, "push_in_progress", conflictError.Code)
+			assert.NoError(t, <-done)
+		})
+	})
+
+	t.Run("Given the previous push failed", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPushingMissingImageCidsTestingSuite) {
+			gomock.InOrder(
+				suite.agentCollectionsManagerRequester.EXPECT().
+					GetAllCollectionAddresses(gomock.Any(), testChainId).
+					Return(nil, assert.AnError),
+				suite.agentCollectionsManagerRequester.EXPECT().
+					GetAllCollectionAddresses(gomock.Any(), testChainId).
+					Return(nil, nil),
+			)
+			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAll, gomock.Any(), true)
+			suite.pinMetrics.EXPECT().RecordSweep(gomock.Any(), metrics_interfaces.SweepKindAll, gomock.Any(), false)
+		}
+
+		t.Run("Should run the next push", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPushingMissingImageCidsBeforeEach(t)
+			initSuite(suite)
+			_, err := suite.sut.Execute(context.Background())
+			assert.ErrorIs(t, err, assert.AnError)
+
+			_, err = suite.sut.Execute(context.Background())
+
+			assert.NoError(t, err)
+		})
+	})
 }

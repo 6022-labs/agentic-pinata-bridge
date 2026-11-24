@@ -45,6 +45,8 @@ bridge and by nobody else. See [Exposure](#exposure).
 | `POST /push_images_of_mint_proposal/:chainId/:agentCollectionAddress/:mintProposalId` | one mint proposal |
 | `GET /health` | liveness |
 
+`POST /push_missing_image_cids` answers `409` while a previous call is still running on the same instance.
+
 Both paths converge on the same pinner, and pinning by hash is idempotent — the
 agent-scoped paths additionally ask Pinata what it already holds and skip those
 CIDs. Before each pin the bridge resolves the CID's current host addresses

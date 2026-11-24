@@ -81,6 +81,23 @@ func TestWhenWritingAnError(t *testing.T) {
 		})
 	})
 
+	t.Run("Given a ConflictError", func(t *testing.T) {
+		t.Parallel()
+
+		sourceErr := apperrors.NewConflictError("push_in_progress", "missing images are already being pushed")
+
+		t.Run("Should respond 409 with the code and message", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenWritingAnErrorBeforeEach(t)
+
+			status, body := suite.write(t, sourceErr)
+
+			assert.Equal(t, http.StatusConflict, status)
+			assert.JSONEq(t, `{"code":"push_in_progress","message":"missing images are already being pushed"}`, body)
+		})
+	})
+
 	t.Run("Given a BadRequestError", func(t *testing.T) {
 		t.Parallel()
 

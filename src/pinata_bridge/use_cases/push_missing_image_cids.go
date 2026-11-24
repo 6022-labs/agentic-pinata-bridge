@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
+	"sync"
 	"time"
 
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
@@ -26,6 +27,7 @@ type PushMissingImageCids struct {
 	agentCollectionsManagerRequester interfaces.AgentCollectionsManagerRequesterInterface
 	agentImagesPinner                interfaces.AgentImagesPinnerInterface
 	pinTracer                        traces_interfaces.PinTracerInterface
+	pushMutex                        sync.Mutex
 }
 
 func NewPushMissingImageCids(
@@ -49,6 +51,14 @@ func NewPushMissingImageCids(
 }
 
 func (u *PushMissingImageCids) Execute(ctx context.Context) (response *responses.PushResponse, err error) {
+	if !u.pushMutex.TryLock() {
+		return nil, errors.NewConflictError(
+			"push_in_progress",
+			"missing images are already being pushed to Pinata, retry later",
+		)
+	}
+	defer u.pushMutex.Unlock()
+
 	ctx, span := u.pinTracer.StartSweep(ctx, metrics_interfaces.SweepKindAll)
 	defer span.End()
 	defer func() {
