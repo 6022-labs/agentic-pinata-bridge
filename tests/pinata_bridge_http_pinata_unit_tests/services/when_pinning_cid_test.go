@@ -7,6 +7,7 @@ import (
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/clients"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_http_pinata_mocks/clients_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -22,7 +23,7 @@ func WhenPinningCidBeforeEach(t *testing.T) *WhenPinningCidTestingSuite {
 	client := clients_mocks.NewMockClientWithResponsesInterface(mockController)
 
 	return &WhenPinningCidTestingSuite{
-		sut:    services.NewPinataRequester(client),
+		sut:    services.NewPinataRequester(client, &settings.PinataSettings{RequestTimeout: testRequestTimeout}),
 		client: client,
 	}
 }
@@ -135,6 +136,35 @@ func TestWhenPinningCid(t *testing.T) {
 			err := suite.sut.PinCid(context.Background(), testCid, nil)
 
 			assert.ErrorIs(t, err, assert.AnError)
+		})
+	})
+
+	t.Run("Given pinata never answers", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPinningCidTestingSuite) {
+			suite.client.EXPECT().PinByCidWithResponse(gomock.Any(), gomock.Any()).DoAndReturn(
+				func(
+					ctx context.Context,
+					_ clients.PinByCidJSONRequestBody,
+					_ ...clients.RequestEditorFn,
+				) (*clients.PinByCidResponse, error) {
+					<-ctx.Done()
+
+					return nil, ctx.Err()
+				},
+			)
+		}
+
+		t.Run("Should give up after the request timeout", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPinningCidBeforeEach(t)
+			initSuite(suite)
+
+			err := suite.sut.PinCid(context.Background(), testCid, nil)
+
+			assert.ErrorIs(t, err, context.DeadlineExceeded)
 		})
 	})
 }

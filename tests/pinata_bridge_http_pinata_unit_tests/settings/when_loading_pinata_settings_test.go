@@ -2,6 +2,7 @@ package settings_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/settings"
 	"github.com/knadh/koanf/providers/confmap"
@@ -105,6 +106,77 @@ func TestWhenLoadingPinataSettings(t *testing.T) {
 			result := settings.NewPinataSettings(zap.NewNop(), k)
 
 			assert.Equal(t, "https://pinata.internal/v3", result.BaseUrl)
+		})
+	})
+
+	t.Run("Given the request timeout is configured", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"pinata.api_key":                 "secret-key",
+			"pinata.request_timeout_seconds": 5,
+		}, "."), nil)
+
+		t.Run("Should use it", func(t *testing.T) {
+			t.Parallel()
+
+			result := settings.NewPinataSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 5*time.Second, result.RequestTimeout)
+		})
+	})
+
+	t.Run("Given the request timeout is not configured", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"pinata.api_key": "secret-key",
+		}, "."), nil)
+
+		t.Run("Should default to 30 seconds", func(t *testing.T) {
+			t.Parallel()
+
+			result := settings.NewPinataSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 30*time.Second, result.RequestTimeout)
+		})
+	})
+
+	t.Run("Given the request timeout is zero", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"pinata.api_key":                 "secret-key",
+			"pinata.request_timeout_seconds": 0,
+		}, "."), nil)
+
+		t.Run("Should fall back to 30 seconds", func(t *testing.T) {
+			t.Parallel()
+
+			result := settings.NewPinataSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 30*time.Second, result.RequestTimeout)
+		})
+	})
+
+	t.Run("Given the request timeout is negative", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"pinata.api_key":                 "secret-key",
+			"pinata.request_timeout_seconds": -1,
+		}, "."), nil)
+
+		t.Run("Should fall back to 30 seconds", func(t *testing.T) {
+			t.Parallel()
+
+			result := settings.NewPinataSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 30*time.Second, result.RequestTimeout)
 		})
 	})
 }
