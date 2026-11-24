@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/clients"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/settings"
@@ -13,9 +14,10 @@ import (
 )
 
 type WhenCheckingCidTestingSuite struct {
-	sut     *clients.IpfsCheckClient
-	server  *httptest.Server
-	handler http.HandlerFunc
+	sut      *clients.IpfsCheckClient
+	server   *httptest.Server
+	handler  http.HandlerFunc
+	settings *settings.IpfsCheckSettings
 }
 
 func WhenCheckingCidBeforeEach() *WhenCheckingCidTestingSuite {
@@ -29,11 +31,8 @@ func WhenCheckingCidBeforeEach() *WhenCheckingCidTestingSuite {
 		suite.handler(w, r)
 	}))
 
-	suite.sut = clients.NewIpfsCheckClient(
-		zap.NewNop(),
-		http.DefaultClient,
-		&settings.IpfsCheckSettings{BaseUrl: suite.server.URL},
-	)
+	suite.settings = &settings.IpfsCheckSettings{BaseUrl: suite.server.URL, RequestTimeout: 10 * time.Second}
+	suite.sut = clients.NewIpfsCheckClient(zap.NewNop(), http.DefaultClient, suite.settings)
 
 	return suite
 }
@@ -152,6 +151,30 @@ func TestWhenCheckingCid(t *testing.T) {
 
 			assert.Error(t, err)
 			assert.Nil(t, resp)
+		})
+	})
+
+	t.Run("Given the ipfs-check service never answers", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenCheckingCidTestingSuite) {
+			suite.settings.RequestTimeout = 50 * time.Millisecond
+			suite.handler = func(_ http.ResponseWriter, r *http.Request) {
+				<-r.Context().Done()
+			}
+		}
+
+		t.Run("Should give up after the request timeout", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenCheckingCidBeforeEach()
+			defer WhenCheckingCidAfterEach(suite)
+			initSuite(suite)
+
+			resp, err := suite.sut.Check(context.Background(), "QmHash")
+
+			assert.Nil(t, resp)
+			assert.ErrorIs(t, err, context.DeadlineExceeded)
 		})
 	})
 }

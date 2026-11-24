@@ -8,6 +8,7 @@ import (
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/clients"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/services"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/settings"
 	"github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_http_pinata_mocks/clients_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -23,7 +24,7 @@ func WhenCheckingCidIsUploadedBeforeEach(t *testing.T) *WhenCheckingCidIsUploade
 	client := clients_mocks.NewMockClientWithResponsesInterface(mockController)
 
 	return &WhenCheckingCidIsUploadedTestingSuite{
-		sut:    services.NewPinataRequester(client),
+		sut:    services.NewPinataRequester(client, &settings.PinataSettings{RequestTimeout: testRequestTimeout}),
 		client: client,
 	}
 }
@@ -173,6 +174,37 @@ func TestWhenCheckingCidIsUploaded(t *testing.T) {
 
 			assert.ErrorIs(t, err, assert.AnError)
 			assert.Nil(t, uploaded)
+		})
+	})
+
+	t.Run("Given pinata never answers", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenCheckingCidIsUploadedTestingSuite) {
+			suite.client.EXPECT().ListFilesWithResponse(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+				func(
+					ctx context.Context,
+					_ clients.ListFilesParamsNetwork,
+					_ *clients.ListFilesParams,
+					_ ...clients.RequestEditorFn,
+				) (*clients.ListFilesResponse, error) {
+					<-ctx.Done()
+
+					return nil, ctx.Err()
+				},
+			)
+		}
+
+		t.Run("Should give up after the request timeout", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenCheckingCidIsUploadedBeforeEach(t)
+			initSuite(suite)
+
+			isUploaded, err := suite.sut.IsCidUploaded(context.Background(), testCid)
+
+			assert.Nil(t, isUploaded)
+			assert.ErrorIs(t, err, context.DeadlineExceeded)
 		})
 	})
 }

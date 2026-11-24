@@ -6,15 +6,21 @@ import (
 	"net/http"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/clients"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/settings"
 )
 
 type PinataRequester struct {
-	client clients.ClientWithResponsesInterface
+	client         clients.ClientWithResponsesInterface
+	pinataSettings *settings.PinataSettings
 }
 
-func NewPinataRequester(client clients.ClientWithResponsesInterface) *PinataRequester {
+func NewPinataRequester(
+	client clients.ClientWithResponsesInterface,
+	pinataSettings *settings.PinataSettings,
+) *PinataRequester {
 	return &PinataRequester{
-		client: client,
+		client:         client,
+		pinataSettings: pinataSettings,
 	}
 }
 
@@ -23,6 +29,9 @@ func (pr *PinataRequester) PinCid(ctx context.Context, cid string, hostNodes []s
 	if len(hostNodes) > 0 {
 		body.HostNodes = &hostNodes
 	}
+
+	ctx, cancel := context.WithTimeout(ctx, pr.pinataSettings.RequestTimeout)
+	defer cancel()
 
 	response, err := pr.client.PinByCidWithResponse(ctx, body)
 	if err != nil {
@@ -33,6 +42,9 @@ func (pr *PinataRequester) PinCid(ctx context.Context, cid string, hostNodes []s
 }
 
 func (pr *PinataRequester) IsCidUploaded(ctx context.Context, cid string) (*bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, pr.pinataSettings.RequestTimeout)
+	defer cancel()
+
 	response, err := pr.client.ListFilesWithResponse(
 		ctx,
 		clients.Public,

@@ -2,6 +2,7 @@ package settings_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/settings"
 	"github.com/knadh/koanf/providers/confmap"
@@ -49,6 +50,77 @@ func TestWhenLoadingIpfsCheckSettings(t *testing.T) {
 			assert.Panics(t, func() {
 				settings.NewIpfsCheckSettings(panicLogger(), k)
 			})
+		})
+	})
+
+	t.Run("Given the request timeout is configured", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"ipfs_check.base_url":                "https://ipfs-check.example.com",
+			"ipfs_check.request_timeout_seconds": 5,
+		}, "."), nil)
+
+		t.Run("Should use it", func(t *testing.T) {
+			t.Parallel()
+
+			result := settings.NewIpfsCheckSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 5*time.Second, result.RequestTimeout)
+		})
+	})
+
+	t.Run("Given the request timeout is not configured", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"ipfs_check.base_url": "https://ipfs-check.example.com",
+		}, "."), nil)
+
+		t.Run("Should default to 90 seconds", func(t *testing.T) {
+			t.Parallel()
+
+			result := settings.NewIpfsCheckSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 90*time.Second, result.RequestTimeout)
+		})
+	})
+
+	t.Run("Given the request timeout is zero", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"ipfs_check.base_url":                "https://ipfs-check.example.com",
+			"ipfs_check.request_timeout_seconds": 0,
+		}, "."), nil)
+
+		t.Run("Should fall back to 90 seconds", func(t *testing.T) {
+			t.Parallel()
+
+			result := settings.NewIpfsCheckSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 90*time.Second, result.RequestTimeout)
+		})
+	})
+
+	t.Run("Given the request timeout is negative", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"ipfs_check.base_url":                "https://ipfs-check.example.com",
+			"ipfs_check.request_timeout_seconds": -1,
+		}, "."), nil)
+
+		t.Run("Should fall back to 90 seconds", func(t *testing.T) {
+			t.Parallel()
+
+			result := settings.NewIpfsCheckSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 90*time.Second, result.RequestTimeout)
 		})
 	})
 }

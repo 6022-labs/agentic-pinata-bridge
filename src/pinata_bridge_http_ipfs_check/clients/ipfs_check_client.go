@@ -43,6 +43,9 @@ func NewIpfsCheckClient(
 func (client *IpfsCheckClient) Check(ctx context.Context, cid string) ([]models.ExternalCheckResponse, error) {
 	client.logger.Info("Starting Check method", zap.String("cid", cid))
 
+	ctx, cancel := context.WithTimeout(ctx, client.ipfsCheckSettings.RequestTimeout)
+	defer cancel()
+
 	url := fmt.Sprintf("%s%s?cid=%s", client.ipfsCheckSettings.BaseUrl, CHECK_ENDPOINT, cid)
 	client.logger.Debug("Constructed URL", zap.String("url", url))
 

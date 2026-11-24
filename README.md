@@ -92,8 +92,8 @@ double underscores map to the JSON nesting (`PINATA__API_KEY` is
 |---|---|
 | `HOST__*` | `API_PORT`, `LISTEN_ADDRESS` (empty binds every interface), and the `USE_API` / `USE_LISTENERS` role switches |
 | `CHAINS__<chain_id>__RPC_HTTP_URL` / `RPC_WS_URL` | one pair per chain to watch; the WS URL carries the event subscriptions |
-| `PINATA__*` | API base URL and key |
-| `IPFS_CHECK__*` | ipfs-check base URL |
+| `PINATA__*` | API base URL, key and request timeout |
+| `IPFS_CHECK__*` | ipfs-check base URL and request timeout |
 | `TELEMETRY__*` | OTLP export — protocol (`grpc`/`http`), endpoint, environment, credentials |
 
 `AgentCollectionsManager` addresses are not operator config: they are baked into
