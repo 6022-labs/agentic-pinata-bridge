@@ -3,12 +3,22 @@ package configurations
 import (
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/clients"
+	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/metrics/interfaces"
 	ipfs_check_services "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/services"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/settings"
 	"go.uber.org/dig"
 )
 
 func AddPinataBridgeHttpIpfsCheckConfiguration(container *dig.Container) {
+	// Metrics
+	if err := container.Provide(
+		metrics.NewHostLookupMetrics,
+		dig.As(new(metrics_interfaces.HostLookupMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	// Settings
 	err := container.Provide(settings.NewIpfsCheckSettings)
 	if err != nil {

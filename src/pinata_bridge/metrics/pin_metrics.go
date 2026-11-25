@@ -17,11 +17,9 @@ const meterName = "agentic_pinata_bridge"
 const errorTypeOther = "_OTHER"
 
 type PinMetrics struct {
-	pinHistogram       metric.Float64Histogram
-	hostLookupCounter  metric.Int64Counter
-	hostLookupAttempts metric.Int64Histogram
-	sweepHistogram     metric.Float64Histogram
-	sweepImageCounter  metric.Int64Counter
+	pinHistogram      metric.Float64Histogram
+	sweepHistogram    metric.Float64Histogram
+	sweepImageCounter metric.Int64Counter
 }
 
 func NewPinMetrics() *PinMetrics {
@@ -36,24 +34,6 @@ func NewPinMetrics() *PinMetrics {
 	)
 	if err != nil {
 		pinHistogram, _ = noopMeter.Float64Histogram("pinata.pin.duration")
-	}
-
-	hostLookupCounter, err := meter.Int64Counter(
-		"ipfs.host_lookup.count",
-		metric.WithDescription("Total number of ipfs-check host lookups by outcome"),
-	)
-	if err != nil {
-		hostLookupCounter, _ = noopMeter.Int64Counter("ipfs.host_lookup.count")
-	}
-
-	hostLookupAttempts, err := meter.Int64Histogram(
-		"ipfs.host_lookup.attempts",
-		metric.WithUnit("{attempt}"),
-		metric.WithExplicitBucketBoundaries(common_metrics.RetryAttemptsBuckets...),
-		metric.WithDescription("Attempts spent per ipfs-check host lookup"),
-	)
-	if err != nil {
-		hostLookupAttempts, _ = noopMeter.Int64Histogram("ipfs.host_lookup.attempts")
 	}
 
 	sweepHistogram, err := meter.Float64Histogram(
@@ -75,11 +55,9 @@ func NewPinMetrics() *PinMetrics {
 	}
 
 	return &PinMetrics{
-		pinHistogram:       pinHistogram,
-		hostLookupCounter:  hostLookupCounter,
-		hostLookupAttempts: hostLookupAttempts,
-		sweepHistogram:     sweepHistogram,
-		sweepImageCounter:  sweepImageCounter,
+		pinHistogram:      pinHistogram,
+		sweepHistogram:    sweepHistogram,
+		sweepImageCounter: sweepImageCounter,
 	}
 }
 
@@ -89,12 +67,6 @@ func (m *PinMetrics) RecordPin(ctx context.Context, outcome string, withHostAddr
 		attribute.Bool("pinata.host_addresses", withHostAddresses),
 	)
 	m.pinHistogram.Record(ctx, duration.Seconds(), attrs)
-}
-
-func (m *PinMetrics) RecordHostLookup(ctx context.Context, outcome string, attempts int64) {
-	attrs := metric.WithAttributes(attribute.String("outcome", outcome))
-	m.hostLookupCounter.Add(ctx, 1, attrs)
-	m.hostLookupAttempts.Record(ctx, attempts, attrs)
 }
 
 func (m *PinMetrics) RecordSweep(ctx context.Context, kind string, duration time.Duration, failed bool) {

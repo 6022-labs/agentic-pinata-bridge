@@ -2,20 +2,12 @@ package services
 
 import (
 	"context"
-	"errors"
 	"time"
 
-	apperrors "github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services/interfaces"
 	traces_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/traces/interfaces"
-	"github.com/avast/retry-go/v5"
 	"go.uber.org/zap"
-)
-
-const (
-	hostNodeIdsAttempts   = 3
-	hostNodeIdsRetryDelay = time.Second
 )
 
 // CidPinner pins a single CID, looking its host addresses up first so Pinata can fetch it faster.
@@ -52,7 +44,7 @@ func (s *CidPinner) Pin(ctx context.Context, cid string) (err error) {
 		}
 	}()
 
-	hostNodeIds, err := s.getCidHostNodeIds(ctx, cid)
+	hostNodeIds, err := s.ipfsCheckRequester.GetHostNodeIds(ctx, cid)
 	if err != nil {
 		s.logger.Warn("Failed to get host node ids for cid", zap.String("cid", cid), zap.Error(err))
 	}
@@ -89,33 +81,4 @@ func (s *CidPinner) Pin(ctx context.Context, cid string) (err error) {
 
 	s.pinMetrics.RecordPin(ctx, metrics_interfaces.PinOutcomePinned, false, time.Since(start))
 	return nil
-}
-
-// getCidHostNodeIds never retries a timeout, as the pin goes ahead without host nodes anyway.
-func (s *CidPinner) getCidHostNodeIds(ctx context.Context, cid string) ([]string, error) {
-	attempts := int64(0)
-	hostNodeIds, err := retry.NewWithData[[]string](
-		retry.Context(ctx),
-		retry.Attempts(hostNodeIdsAttempts),
-		retry.Delay(hostNodeIdsRetryDelay),
-		retry.DelayType(retry.CombineDelay(retry.BackOffDelay, retry.RandomDelay)),
-		retry.LastErrorOnly(true),
-		retry.RetryIf(func(err error) bool {
-			var statusError *apperrors.UpstreamStatusError
-			return errors.As(err, &statusError) && statusError.IsRetryable()
-		}),
-	).Do(func() ([]string, error) {
-		attempts++
-		return s.ipfsCheckRequester.GetHostNodeIds(ctx, cid)
-	})
-
-	outcome := metrics_interfaces.HostLookupOutcomeFound
-	if err != nil {
-		outcome = metrics_interfaces.HostLookupOutcomeFailed
-	} else if len(hostNodeIds) == 0 {
-		outcome = metrics_interfaces.HostLookupOutcomeEmpty
-	}
-	s.pinMetrics.RecordHostLookup(ctx, outcome, attempts)
-
-	return hostNodeIds, err
 }

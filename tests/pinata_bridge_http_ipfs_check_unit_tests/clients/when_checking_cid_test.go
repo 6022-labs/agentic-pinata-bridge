@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	apperrors "github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/clients"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/settings"
 	"github.com/stretchr/testify/assert"
@@ -92,7 +93,7 @@ func TestWhenCheckingCid(t *testing.T) {
 			}
 		}
 
-		t.Run("Should return an error", func(t *testing.T) {
+		t.Run("Should return an error carrying the status and body", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenCheckingCidBeforeEach()
@@ -101,7 +102,10 @@ func TestWhenCheckingCid(t *testing.T) {
 
 			resp, err := suite.sut.Check(context.Background(), "QmHash")
 
-			assert.Error(t, err)
+			var statusError *apperrors.UpstreamStatusError
+			assert.ErrorAs(t, err, &statusError)
+			assert.Equal(t, http.StatusBadGateway, statusError.StatusCode)
+			assert.Equal(t, "upstream error", statusError.Body)
 			assert.Nil(t, resp)
 		})
 	})

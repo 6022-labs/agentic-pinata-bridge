@@ -82,7 +82,7 @@ func (client *IpfsCheckClient) Check(ctx context.Context, cid string) ([]models.
 			zap.Int("status", resp.StatusCode),
 			zap.String("body", string(body)),
 		)
-		return nil, apperrors.NewUpstreamStatusError("ipfs-check", resp.StatusCode, string(body))
+		return nil, apperrors.NewUpstreamStatusError("ipfs-check", resp.StatusCode, 0, string(body))
 	}
 
 	// ipfs-check answers 200 with a diagnostic object instead of the provider array when the cid is not immutable.
