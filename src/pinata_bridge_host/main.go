@@ -33,11 +33,8 @@ func main() {
 	// Every exit path must flush telemetry, not just the signal branch.
 	defer func() { _ = shutdownTelemetry(context.Background()) }()
 
-	// Cancelling this context unsubscribes every chain listener before the process exits.
-	listenersContext, stopListeners := context.WithCancel(context.Background())
-	defer stopListeners()
-
-	configurations.ConfigureServer(container, listenersContext)
+	configurations.ConfigureServer(container)
+	configurations.ConfigureListeners(container)
 
 	err = container.Invoke(func(logger *zap.Logger, hostSettings *settings.HostFeaturesSettings) {
 		logger.Info("Starting Pinata Bridge Host")
@@ -92,13 +89,11 @@ func main() {
 		case sig := <-sigCh:
 			logger.Info("Shutdown signal received", zap.String("signal", sig.String()))
 
-			stopListeners()
+			if err := app.Shutdown(); err != nil {
+				logger.Warn("Fiber shutdown returned an error", zap.Error(err))
+			}
 
 			if hostSettings.UseApi {
-				if err := app.Shutdown(); err != nil {
-					logger.Warn("Fiber shutdown returned an error", zap.Error(err))
-				}
-
 				if err := <-serverErrCh; err != nil {
 					logger.Error("Server stopped with error", zap.Error(err))
 				} else {
