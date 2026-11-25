@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"testing/synctest"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/clients"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/services"
@@ -165,6 +166,86 @@ func TestWhenPinningCid(t *testing.T) {
 			err := suite.sut.PinCid(context.Background(), testCid, nil)
 
 			assert.ErrorIs(t, err, context.DeadlineExceeded)
+		})
+	})
+
+	t.Run("Given pinata is rate limiting then accepts", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPinningCidTestingSuite) {
+			gomock.InOrder(
+				suite.client.EXPECT().PinByCidWithResponse(gomock.Any(), gomock.Any()).
+					Return(pinByCidResponseWith(http.StatusTooManyRequests, `{}`), nil),
+				suite.client.EXPECT().PinByCidWithResponse(gomock.Any(), gomock.Any()).
+					Return(pinByCidResponseWith(http.StatusOK, `{}`), nil),
+			)
+		}
+
+		t.Run("Should retry and pin the cid", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenPinningCidBeforeEach(t)
+				initSuite(suite)
+
+				err := suite.sut.PinCid(context.Background(), testCid, nil)
+
+				assert.NoError(t, err)
+			})
+		})
+	})
+
+	t.Run("Given pinata fails with a server error then accepts", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPinningCidTestingSuite) {
+			gomock.InOrder(
+				suite.client.EXPECT().PinByCidWithResponse(gomock.Any(), gomock.Any()).
+					Return(pinByCidResponseWith(http.StatusBadGateway, `{}`), nil),
+				suite.client.EXPECT().PinByCidWithResponse(gomock.Any(), gomock.Any()).
+					Return(pinByCidResponseWith(http.StatusOK, `{}`), nil),
+			)
+		}
+
+		t.Run("Should retry and pin the cid", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenPinningCidBeforeEach(t)
+				initSuite(suite)
+
+				err := suite.sut.PinCid(context.Background(), testCid, nil)
+
+				assert.NoError(t, err)
+			})
+		})
+	})
+
+	t.Run("Given pinata keeps failing with a server error", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPinningCidTestingSuite) {
+			gomock.InOrder(
+				suite.client.EXPECT().PinByCidWithResponse(gomock.Any(), gomock.Any()).
+					Return(pinByCidResponseWith(http.StatusInternalServerError, `{}`), nil),
+				suite.client.EXPECT().PinByCidWithResponse(gomock.Any(), gomock.Any()).
+					Return(pinByCidResponseWith(http.StatusInternalServerError, `{}`), nil),
+				suite.client.EXPECT().PinByCidWithResponse(gomock.Any(), gomock.Any()).
+					Return(pinByCidResponseWith(http.StatusInternalServerError, `{}`), nil),
+			)
+		}
+
+		t.Run("Should return the last error after three attempts", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenPinningCidBeforeEach(t)
+				initSuite(suite)
+
+				err := suite.sut.PinCid(context.Background(), testCid, nil)
+
+				assert.ErrorContains(t, err, "500")
+			})
 		})
 	})
 }
