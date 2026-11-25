@@ -55,7 +55,7 @@ otel is touched in exactly one place per module: a dedicated `metrics/` (and, wh
 - **DI**: `go.uber.org/dig`. Each module exposes `Add<Module>Configuration(container)`; wire it in the host's `configurations/di_configuration.go`.
 - **Config**: `koanf`. Every setting configurable from **both** `appsettings*.json` **and** env/`.env` (double-underscore lowercased → dotted, e.g. `JWT__SIGNING_KEY` → `jwt.signing_key`). Settings structs in each module's `settings/` with `koanf:"..."` tags + defaults in their `New...` constructor. New setting = tag + default + verified env override.
 - **Logging**: `go.uber.org/zap`.
-- **Errors → HTTP**: use cases fail with concrete types from `common/errors`, mapped and logged by `common/mvc.ErrorWriter`, also the fiber `ErrorHandler` (500s log their cause and answer a generic message; 502s log their hidden `Cause` and answer a fixed message, never the dependency's error text): `ValidationError`/`BadRequestError`→400, `UnavailableError`→502, `InternalError`→500; a plain error → 500. Controllers pick the success status (200/201/204).
+- **Errors → HTTP**: use cases fail with concrete types from `common/errors`, mapped and logged by `common/mvc.ErrorWriter`, also the fiber `ErrorHandler` (500s log their cause and answer a generic message; 502s log their hidden `Cause` and answer a fixed message, never the dependency's error text): `ValidationError`/`BadRequestError`→400, `ConflictError`→409, `UnavailableError`→502, `InternalError`→500; a plain error → 500. Controllers pick the success status (200/201/204).
 - (Secrets, persistence, and transport are tier-services — see §2.)
 
 ## 7. Naming
