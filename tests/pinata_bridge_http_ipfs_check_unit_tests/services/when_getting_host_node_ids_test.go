@@ -169,7 +169,7 @@ func TestWhenGettingHostNodeIds(t *testing.T) {
 			gomock.InOrder(
 				suite.client.EXPECT().
 					Check(gomock.Any(), "QmHash").
-					Return(nil, apperrors.NewUpstreamStatusError("ipfs-check", http.StatusServiceUnavailable, "")),
+					Return(nil, apperrors.NewUpstreamStatusError("ipfs-check", http.StatusServiceUnavailable, 0, "")),
 				suite.client.EXPECT().Check(gomock.Any(), "QmHash").Return([]models.ExternalCheckResponse{
 					{ID: "peer-1", ConnectionMaddrs: []string{"/ip4/1.1.1.1/tcp/4001"}},
 				}, nil),
@@ -256,7 +256,7 @@ func TestWhenGettingHostNodeIds(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingHostNodeIdsTestingSuite) {
 			suite.client.EXPECT().Check(gomock.Any(), "QmHash").
-				Return(nil, apperrors.NewUpstreamStatusError("ipfs-check", http.StatusServiceUnavailable, "")).
+				Return(nil, apperrors.NewUpstreamStatusError("ipfs-check", http.StatusServiceUnavailable, 0, "")).
 				Times(3)
 			suite.hostLookupMetrics.EXPECT().RecordHostLookup(
 				gomock.Any(), metrics_interfaces.HostLookupOutcomeFailed, int64(3))
@@ -310,7 +310,7 @@ func TestWhenGettingHostNodeIds(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingHostNodeIdsTestingSuite) {
 			suite.client.EXPECT().Check(gomock.Any(), "QmHash").
-				Return(nil, apperrors.NewUpstreamStatusError("ipfs-check", http.StatusBadRequest, "")).
+				Return(nil, apperrors.NewUpstreamStatusError("ipfs-check", http.StatusBadRequest, 0, "")).
 				Times(1)
 			suite.hostLookupMetrics.EXPECT().RecordHostLookup(
 				gomock.Any(), metrics_interfaces.HostLookupOutcomeFailed, int64(1))

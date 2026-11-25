@@ -232,8 +232,35 @@ func TestWhenCheckingCidIsUploaded(t *testing.T) {
 
 				isUploaded, err := suite.sut.IsCidUploaded(context.Background(), testCid)
 
-				assert.NoError(t, err)
-				assert.True(t, *isUploaded)
+				if assert.NoError(t, err) {
+					assert.True(t, *isUploaded)
+				}
+			})
+		})
+	})
+
+	t.Run("Given pinata fails with a server error", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenCheckingCidIsUploadedTestingSuite) {
+			suite.client.EXPECT().ListFilesWithResponse(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(&clients.ListFilesResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusServiceUnavailable},
+				}, nil).
+				Times(1)
+		}
+
+		t.Run("Should return the error without retrying", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenCheckingCidIsUploadedBeforeEach(t)
+				initSuite(suite)
+
+				isUploaded, err := suite.sut.IsCidUploaded(context.Background(), testCid)
+
+				assert.Nil(t, isUploaded)
+				assert.ErrorContains(t, err, "503")
 			})
 		})
 	})
