@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 
+	apperrors "github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/models"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_ipfs_check/settings"
 	"go.uber.org/zap"
@@ -81,7 +82,7 @@ func (client *IpfsCheckClient) Check(ctx context.Context, cid string) ([]models.
 			zap.Int("status", resp.StatusCode),
 			zap.String("body", string(body)),
 		)
-		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
+		return nil, apperrors.NewUpstreamStatusError("ipfs-check", resp.StatusCode, string(body))
 	}
 
 	// ipfs-check answers 200 with a diagnostic object instead of the provider array when the cid is not immutable.

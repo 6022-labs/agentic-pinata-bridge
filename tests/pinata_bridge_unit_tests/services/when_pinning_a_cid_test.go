@@ -2,8 +2,12 @@ package services_test
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"testing"
+	"testing/synctest"
 
+	apperrors "github.com/6022-labs/agentic-pinata-bridge/src/common/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge/services"
 	metrics_mocks "github.com/6022-labs/agentic-pinata-bridge/tests/pinata_bridge_mocks/metrics_mocks/interfaces_mocks"
@@ -114,14 +118,14 @@ func TestWhenPinningACid(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPinningACidTestSuite) {
-			suite.ipfsCheckRequester.EXPECT().GetHostNodeIds(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			suite.ipfsCheckRequester.EXPECT().GetHostNodeIds(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 			suite.pinataRequester.EXPECT().
 				PinCid(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(assert.AnError).
 				Times(1)
 
 			suite.pinMetrics.EXPECT().RecordHostLookup(
-				gomock.Any(), metrics_interfaces.HostLookupOutcomeEmpty, int64(3))
+				gomock.Any(), metrics_interfaces.HostLookupOutcomeEmpty, int64(1))
 			suite.pinMetrics.EXPECT().RecordPin(
 				gomock.Any(), metrics_interfaces.PinOutcomeFailed, false, gomock.Any())
 		}
@@ -134,6 +138,128 @@ func TestWhenPinningACid(t *testing.T) {
 
 			err := suite.sut.Pin(context.Background(), "test-cid")
 			assert.Equal(t, err, assert.AnError)
+		})
+	})
+
+	t.Run("Given the host lookup is unavailable then finds an address", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPinningACidTestSuite) {
+			gomock.InOrder(
+				suite.ipfsCheckRequester.EXPECT().GetHostNodeIds(gomock.Any(), gomock.Any()).
+					Return(nil, apperrors.NewUpstreamStatusError("ipfs-check", http.StatusServiceUnavailable, "")),
+				suite.ipfsCheckRequester.EXPECT().GetHostNodeIds(gomock.Any(), gomock.Any()).
+					Return([]string{testHostNodeId}, nil),
+			)
+			suite.pinMetrics.EXPECT().RecordHostLookup(
+				gomock.Any(), metrics_interfaces.HostLookupOutcomeFound, int64(2))
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			suite.pinMetrics.EXPECT().RecordPin(
+				gomock.Any(), metrics_interfaces.PinOutcomePinned, true, gomock.Any())
+		}
+
+		t.Run("Should retry the lookup and pin with the host address", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenPinningACidBeforeEach(t)
+				initSuite(suite)
+
+				err := suite.sut.Pin(context.Background(), "test-cid")
+
+				assert.NoError(t, err)
+			})
+		})
+	})
+
+	t.Run("Given the host lookup stays unavailable", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPinningACidTestSuite) {
+			gomock.InOrder(
+				suite.ipfsCheckRequester.EXPECT().GetHostNodeIds(gomock.Any(), gomock.Any()).
+					Return(nil, apperrors.NewUpstreamStatusError("ipfs-check", http.StatusServiceUnavailable, "")),
+				suite.ipfsCheckRequester.EXPECT().GetHostNodeIds(gomock.Any(), gomock.Any()).
+					Return(nil, apperrors.NewUpstreamStatusError("ipfs-check", http.StatusServiceUnavailable, "")),
+				suite.ipfsCheckRequester.EXPECT().GetHostNodeIds(gomock.Any(), gomock.Any()).
+					Return(nil, apperrors.NewUpstreamStatusError("ipfs-check", http.StatusServiceUnavailable, "")),
+			)
+			suite.pinMetrics.EXPECT().RecordHostLookup(
+				gomock.Any(), metrics_interfaces.HostLookupOutcomeFailed, int64(3))
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			suite.pinMetrics.EXPECT().RecordPin(
+				gomock.Any(), metrics_interfaces.PinOutcomePinned, false, gomock.Any())
+		}
+
+		t.Run("Should pin without host addresses after three attempts", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenPinningACidBeforeEach(t)
+				initSuite(suite)
+
+				err := suite.sut.Pin(context.Background(), "test-cid")
+
+				assert.NoError(t, err)
+			})
+		})
+	})
+
+	t.Run("Given the host lookup times out", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPinningACidTestSuite) {
+			gomock.InOrder(
+				suite.ipfsCheckRequester.EXPECT().GetHostNodeIds(gomock.Any(), gomock.Any()).
+					Return(nil, context.DeadlineExceeded),
+			)
+			suite.pinMetrics.EXPECT().RecordHostLookup(
+				gomock.Any(), metrics_interfaces.HostLookupOutcomeFailed, int64(1))
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			suite.pinMetrics.EXPECT().RecordPin(
+				gomock.Any(), metrics_interfaces.PinOutcomePinned, false, gomock.Any())
+		}
+
+		t.Run("Should pin without host addresses and not retry the lookup", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenPinningACidBeforeEach(t)
+				initSuite(suite)
+
+				err := suite.sut.Pin(context.Background(), "test-cid")
+
+				assert.NoError(t, err)
+			})
+		})
+	})
+
+	t.Run("Given the host lookup rejects the cid", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenPinningACidTestSuite) {
+			gomock.InOrder(
+				suite.ipfsCheckRequester.EXPECT().GetHostNodeIds(gomock.Any(), gomock.Any()).
+					Return(nil, errors.New("not immutable")),
+			)
+			suite.pinMetrics.EXPECT().RecordHostLookup(
+				gomock.Any(), metrics_interfaces.HostLookupOutcomeFailed, int64(1))
+			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			suite.pinMetrics.EXPECT().RecordPin(
+				gomock.Any(), metrics_interfaces.PinOutcomePinned, false, gomock.Any())
+		}
+
+		t.Run("Should pin without host addresses and not retry the lookup", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenPinningACidBeforeEach(t)
+				initSuite(suite)
+
+				err := suite.sut.Pin(context.Background(), "test-cid")
+
+				assert.NoError(t, err)
+			})
 		})
 	})
 }

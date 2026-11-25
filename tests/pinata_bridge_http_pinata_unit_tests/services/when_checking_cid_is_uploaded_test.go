@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+	"testing/synctest"
 
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/clients"
 	"github.com/6022-labs/agentic-pinata-bridge/src/pinata_bridge_http_pinata/services"
@@ -205,6 +206,35 @@ func TestWhenCheckingCidIsUploaded(t *testing.T) {
 
 			assert.Nil(t, isUploaded)
 			assert.ErrorIs(t, err, context.DeadlineExceeded)
+		})
+	})
+
+	t.Run("Given pinata is rate limiting then answers", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(t *testing.T, suite *WhenCheckingCidIsUploadedTestingSuite) {
+			gomock.InOrder(
+				suite.client.EXPECT().ListFilesWithResponse(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&clients.ListFilesResponse{
+						HTTPResponse: &http.Response{StatusCode: http.StatusTooManyRequests},
+					}, nil),
+				suite.client.EXPECT().ListFilesWithResponse(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(listFilesResponseWith(t, 1), nil),
+			)
+		}
+
+		t.Run("Should retry and report the cid as uploaded", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenCheckingCidIsUploadedBeforeEach(t)
+				initSuite(t, suite)
+
+				isUploaded, err := suite.sut.IsCidUploaded(context.Background(), testCid)
+
+				assert.NoError(t, err)
+				assert.True(t, *isUploaded)
+			})
 		})
 	})
 }

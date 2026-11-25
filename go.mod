@@ -3,6 +3,7 @@ module github.com/6022-labs/agentic-pinata-bridge
 go 1.27.4
 
 require (
+	github.com/avast/retry-go/v5 v5.1.1
 	github.com/ethereum/go-ethereum v1.17.10
 	github.com/gofiber/contrib/v3/otel v1.3.5
 	github.com/gofiber/contrib/v3/zap v1.0.19
