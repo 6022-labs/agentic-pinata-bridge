@@ -41,18 +41,6 @@ func (m *MockPinMetricsInterface) EXPECT() *MockPinMetricsInterfaceMockRecorder 
 	return m.recorder
 }
 
-// RecordHostLookup mocks base method.
-func (m *MockPinMetricsInterface) RecordHostLookup(ctx context.Context, outcome string, attempts int64) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RecordHostLookup", ctx, outcome, attempts)
-}
-
-// RecordHostLookup indicates an expected call of RecordHostLookup.
-func (mr *MockPinMetricsInterfaceMockRecorder) RecordHostLookup(ctx, outcome, attempts any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordHostLookup", reflect.TypeOf((*MockPinMetricsInterface)(nil).RecordHostLookup), ctx, outcome, attempts)
-}
-
 // RecordPin mocks base method.
 func (m *MockPinMetricsInterface) RecordPin(ctx context.Context, outcome string, withHostAddresses bool, duration time.Duration) {
 	m.ctrl.T.Helper()

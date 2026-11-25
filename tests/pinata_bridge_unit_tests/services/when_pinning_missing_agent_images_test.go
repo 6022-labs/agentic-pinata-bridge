@@ -155,8 +155,6 @@ func TestWhenPinningMissingAgentImages(t *testing.T) {
 				Return([]string{testHostNodeId}, nil).
 				AnyTimes()
 
-			suite.pinMetrics.EXPECT().
-				RecordHostLookup(gomock.Any(), metrics_interfaces.HostLookupOutcomeFound, int64(1))
 			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomeFailed, true, gomock.Any())
 			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomeFailed, false, gomock.Any())
 			suite.pinMetrics.EXPECT().
@@ -237,9 +235,6 @@ func TestWhenPinningMissingAgentImages(t *testing.T) {
 			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), testValidCid, nil).Return(assert.AnError)
 			suite.pinataRequester.EXPECT().PinCid(gomock.Any(), testOtherValidCid, nil).Return(nil)
 
-			suite.pinMetrics.EXPECT().
-				RecordHostLookup(gomock.Any(), metrics_interfaces.HostLookupOutcomeFailed, gomock.Any()).
-				Times(2)
 			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomeFailed, false, gomock.Any())
 			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomePinned, false, gomock.Any())
 			suite.pinMetrics.EXPECT().
@@ -322,8 +317,6 @@ func TestWhenPinningMissingAgentImages(t *testing.T) {
 				Return([]string{testHostNodeId}, nil).
 				AnyTimes()
 
-			suite.pinMetrics.EXPECT().
-				RecordHostLookup(gomock.Any(), metrics_interfaces.HostLookupOutcomeFound, int64(1))
 			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomePinned, true, gomock.Any())
 			suite.pinMetrics.EXPECT().
 				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindAgent, metrics_interfaces.PinOutcomePinned)

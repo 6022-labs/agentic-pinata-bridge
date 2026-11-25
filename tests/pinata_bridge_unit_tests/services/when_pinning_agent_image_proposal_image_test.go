@@ -115,8 +115,6 @@ func TestWhenPinningAgentImageProposalImage(t *testing.T) {
 				Return([]string{testHostNodeId}, nil).
 				AnyTimes()
 
-			suite.pinMetrics.EXPECT().
-				RecordHostLookup(gomock.Any(), metrics_interfaces.HostLookupOutcomeFound, int64(1))
 			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomeFailed, true, gomock.Any())
 			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomeFailed, false, gomock.Any())
 			suite.pinMetrics.EXPECT().
@@ -194,8 +192,6 @@ func TestWhenPinningAgentImageProposalImage(t *testing.T) {
 				Return([]string{testHostNodeId}, nil).
 				AnyTimes()
 
-			suite.pinMetrics.EXPECT().
-				RecordHostLookup(gomock.Any(), metrics_interfaces.HostLookupOutcomeFound, int64(1))
 			suite.pinMetrics.EXPECT().RecordPin(gomock.Any(), metrics_interfaces.PinOutcomePinned, true, gomock.Any())
 			suite.pinMetrics.EXPECT().
 				RecordSweepImage(gomock.Any(), metrics_interfaces.SweepKindImageProposal, metrics_interfaces.PinOutcomePinned)

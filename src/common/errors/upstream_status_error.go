@@ -20,6 +20,15 @@ func (e *UpstreamStatusError) Error() string {
 	return fmt.Sprintf("%s returned %d: %s", e.Upstream, e.StatusCode, e.Body)
 }
 
+// IsRetryable leaves 504 and other gateway timeouts out, like any timeout.
 func (e *UpstreamStatusError) IsRetryable() bool {
-	return e.StatusCode == http.StatusTooManyRequests || e.StatusCode >= http.StatusInternalServerError
+	switch e.StatusCode {
+	case http.StatusTooManyRequests,
+		http.StatusInternalServerError,
+		http.StatusBadGateway,
+		http.StatusServiceUnavailable:
+		return true
+	default:
+		return false
+	}
 }
